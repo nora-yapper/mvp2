@@ -20,187 +20,66 @@ export default function ProductTaskPage() {
     }
   }, [])
 
-  // Sample data for Action Table Part 2
+  // Sample data for Action Table Part 2 with instructional content
   const actionTableData = [
     {
       id: 1,
-      feature: "VP for VCs",
-      description: "come up with specific additional features for investors",
-      potential: 8.33,
-      importance: 9.33,
-      complexity: 6.0,
-      score: 7.92,
-      priority: "BETA",
+      ideaFromPart1: "User feedback system for investor interactions",
+      feature: "Click here to define your feature name",
+      description: "Describe what this feature does and how it helps users solve their problem",
+      potential: "Rate 1-10: Market opportunity size",
+      importance: "Rate 1-10: How critical is this for users?",
+      complexity: "Rate 1-10: Development difficulty",
+      score: "Auto-calculated priority score",
+      priority: "MVP",
       priorityColor: "#4A90E2",
     },
     {
       id: 2,
-      feature: "MVP testing platform",
-      description: "project to develop a baby platform for MVP testing",
-      potential: 6.0,
-      importance: 4.0,
-      complexity: 5.67,
-      score: 5.08,
-      priority: "Postpone",
-      priorityColor: "#F5A623",
+      ideaFromPart1: "Simplified onboarding for new startups",
+      feature: "Click here to define your feature name",
+      description: "Describe what this feature does and how it helps users solve their problem",
+      potential: "Rate 1-10: Market opportunity size",
+      importance: "Rate 1-10: How critical is this for users?",
+      complexity: "Rate 1-10: Development difficulty",
+      score: "Auto-calculated priority score",
+      priority: "BETA",
+      priorityColor: "#7ED321",
     },
     {
       id: 3,
-      feature: "App for founders",
-      description:
-        "focused on entrepreneurial mindset, skills, work-life balance, habits, and team skills and cohesion (team buildings/team management), track energy levels!",
-      potential: 6.0,
-      importance: 4.33,
-      complexity: 5.67,
-      score: 5.22,
+      ideaFromPart1: "AI-powered mentor matching",
+      feature: "Click here to define your feature name",
+      description: "Describe what this feature does and how it helps users solve their problem",
+      potential: "Rate 1-10: Market opportunity size",
+      importance: "Rate 1-10: How critical is this for users?",
+      complexity: "Rate 1-10: Development difficulty",
+      score: "Auto-calculated priority score",
       priority: "Postpone",
       priorityColor: "#F5A623",
     },
     {
       id: 4,
-      feature: "Alstronaut",
-      description: "chatbot",
-      potential: 6.33,
-      importance: 8.0,
-      complexity: 6.33,
-      score: 7.0,
-      priority: "BETA",
+      ideaFromPart1: "Progress tracking dashboard",
+      feature: "Click here to define your feature name",
+      description: "Describe what this feature does and how it helps users solve their problem",
+      potential: "Rate 1-10: Market opportunity size",
+      importance: "Rate 1-10: How critical is this for users?",
+      complexity: "Rate 1-10: Development difficulty",
+      score: "Auto-calculated priority score",
+      priority: "MVP",
       priorityColor: "#4A90E2",
     },
     {
       id: 5,
-      feature: "Personalized motivational reminders",
-      description: "popup reminders while screens load",
-      potential: 7.33,
-      importance: 4.0,
-      complexity: 2.0,
-      score: 4.13,
+      ideaFromPart1: "Gamified learning modules",
+      feature: "Click here to define your feature name",
+      description: "Describe what this feature does and how it helps users solve their problem",
+      potential: "Rate 1-10: Market opportunity size",
+      importance: "Rate 1-10: How critical is this for users?",
+      complexity: "Rate 1-10: Development difficulty",
+      score: "Auto-calculated priority score",
       priority: "BETA",
-      priorityColor: "#4A90E2",
-    },
-    {
-      id: 6,
-      feature: "Ranking investors (reviews) + incubators",
-      description:
-        "rank globally investors and incubators (founders can leave reviews and their experiences with them)",
-      potential: 8.67,
-      importance: 6.33,
-      complexity: 6.33,
-      score: 6.92,
-      priority: "Postpone",
-      priorityColor: "#F5A623",
-    },
-    {
-      id: 7,
-      feature: "Verified startups (+requirements)",
-      description: "startups need to meet a certain set of requirements to be able to contact a mentor or an investor",
-      potential: 9.33,
-      importance: 8.67,
-      complexity: 7.0,
-      score: 8.25,
-      priority: "MVP",
-      priorityColor: "#7ED321",
-    },
-    {
-      id: 8,
-      feature: "AI adapted for small businesses",
-      description: "add a set of rules to the AI model in order to make specific map for small business owners",
-      potential: 4.67,
-      importance: 4.0,
-      complexity: 4.67,
-      score: 4.4,
-      priority: "Postpone",
-      priorityColor: "#F5A623",
-    },
-    {
-      id: 9,
-      feature: "Hackatons",
-      description: "project to develop a baby platform for hackatons",
-      potential: 8.33,
-      importance: 3.0,
-      complexity: 4.67,
-      score: 4.92,
-      priority: "Postpone",
-      priorityColor: "#F5A623",
-    },
-    {
-      id: 10,
-      feature: "Startup get feedback from the platform (analysis)",
-      description:
-        "Analysis button - analyses your weaknesses, areas for improvement, strengths, gives suggestions like a person...",
-      potential: 10.0,
-      importance: 10.0,
-      complexity: 9.0,
-      score: 9.65,
-      priority: "MVP",
-      priorityColor: "#7ED321",
-    },
-    {
-      id: 11,
-      feature: "Gamification",
-      description:
-        "develop a system of gamified features that keep the startups engaged (progress bars, badges, levels, rewards, +RESEARCH, animated characters)",
-      potential: 9.33,
-      importance: 9.33,
-      complexity: 7.0,
-      score: 8.52,
-      priority: "MVP",
-      priorityColor: "#7ED321",
-    },
-    {
-      id: 12,
-      feature: "Business evaluation",
-      description: "advanced financial analysis prior to the funding process + person",
-      potential: 8.67,
-      importance: 7.33,
-      complexity: 9.33,
-      score: 8.37,
-      priority: "Postpone",
-      priorityColor: "#F5A623",
-    },
-    {
-      id: 13,
-      feature: "Video course",
-      description: "educational part of the AI map",
-      potential: 6.67,
-      importance: 7.0,
-      complexity: 5.33,
-      score: 6.33,
-      priority: "BETA",
-      priorityColor: "#4A90E2",
-    },
-    {
-      id: 14,
-      feature: "Reporting hirarchy",
-      description:
-        "task level, weekly level, quarterly, yearly... plus they have to be automated, but founders can review them before sending + ON DEMAND reports",
-      potential: 9.67,
-      importance: 9.0,
-      complexity: 8.33,
-      score: 8.93,
-      priority: "MVP",
-      priorityColor: "#7ED321",
-    },
-    {
-      id: 15,
-      feature: "AI animated characters (anime girls)",
-      description: "guiding through the platform (for Vito)",
-      potential: 4.67,
-      importance: 3.0,
-      complexity: 3.67,
-      score: 3.65,
-      priority: "BETA",
-      priorityColor: "#4A90E2",
-    },
-    {
-      id: 16,
-      feature: "Progress tracking",
-      description: "set KPIs to follow + metrics to follow",
-      potential: 9.33,
-      importance: 9.67,
-      complexity: 7.0,
-      score: 8.65,
-      priority: "MVP",
       priorityColor: "#7ED321",
     },
   ]
@@ -217,8 +96,8 @@ export default function ProductTaskPage() {
       {/* Header */}
       <div
         style={{
-          backgroundColor: "#e8b4cb",
-          padding: "15px 20px",
+          backgroundColor: "#4A90E2",
+          padding: "20px 30px",
           borderRadius: "8px 8px 0 0",
           marginBottom: "0",
         }}
@@ -226,32 +105,154 @@ export default function ProductTaskPage() {
         <h1
           style={{
             margin: 0,
-            fontSize: "18px",
+            fontSize: "24px",
             fontWeight: "600",
-            color: "#333",
+            color: "white",
           }}
         >
-          Action Table
+          Action Table Part 2: Feature Development & Prioritization
         </h1>
+      </div>
+
+      {/* Instructions Section */}
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "25px 30px",
+          borderBottom: "1px solid #e1e5e9",
+          fontSize: "14px",
+          lineHeight: "1.6",
+        }}
+      >
+        <div style={{ marginBottom: "20px" }}>
+          <h3 style={{ margin: "0 0 12px 0", fontSize: "16px", fontWeight: "600", color: "#333" }}>
+            How to Use This Table
+          </h3>
+          <p style={{ margin: "0 0 15px 0", color: "#666" }}>
+            Transform your ideas from Action Table Part 1 into concrete, evaluated features. This table helps you define
+            what to build, assess its value, and decide when to develop it.
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "25px" }}>
+          <div>
+            <h4 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "#4A90E2" }}>
+              Step 1: Define Features
+            </h4>
+            <ul style={{ margin: "0", paddingLeft: "18px", color: "#666" }}>
+              <li>Review ideas imported from Part 1</li>
+              <li>Define concrete feature names</li>
+              <li>Write clear descriptions of functionality</li>
+            </ul>
+          </div>
+          <div>
+            <h4 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "#4A90E2" }}>
+              Step 2: Evaluate & Prioritize
+            </h4>
+            <ul style={{ margin: "0", paddingLeft: "18px", color: "#666" }}>
+              <li>Rate potential, importance, and complexity</li>
+              <li>Review auto-calculated priority scores</li>
+              <li>Assign development stages (MVP, BETA, etc.)</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       {/* Toolbar */}
       <div
         style={{
           backgroundColor: "white",
-          padding: "12px 20px",
+          padding: "12px 30px",
           borderBottom: "1px solid #e1e5e9",
           display: "flex",
           alignItems: "center",
           gap: "15px",
         }}
       >
-        <button style={{ background: "none", border: "none", fontSize: "16px", cursor: "pointer" }}>↻</button>
-        <button style={{ background: "none", border: "none", fontSize: "16px", cursor: "pointer" }}>⊞</button>
-        <button style={{ background: "none", border: "none", fontSize: "16px", cursor: "pointer" }}>∇</button>
-        <button style={{ background: "none", border: "none", fontSize: "16px", cursor: "pointer" }}>↕</button>
-        <button style={{ background: "none", border: "none", fontSize: "16px", cursor: "pointer" }}>≡</button>
-        <button style={{ background: "none", border: "none", fontSize: "16px", cursor: "pointer" }}>🔗</button>
+        <button
+          style={{
+            background: "none",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
+            padding: "6px 8px",
+            fontSize: "14px",
+            cursor: "pointer",
+            color: "#666",
+          }}
+          title="Refresh data"
+        >
+          ↻
+        </button>
+        <button
+          style={{
+            background: "none",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
+            padding: "6px 8px",
+            fontSize: "14px",
+            cursor: "pointer",
+            color: "#666",
+          }}
+          title="Add new row"
+        >
+          +
+        </button>
+        <button
+          style={{
+            background: "none",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
+            padding: "6px 8px",
+            fontSize: "14px",
+            cursor: "pointer",
+            color: "#666",
+          }}
+          title="Filter"
+        >
+          ⚡
+        </button>
+        <button
+          style={{
+            background: "none",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
+            padding: "6px 8px",
+            fontSize: "14px",
+            cursor: "pointer",
+            color: "#666",
+          }}
+          title="Sort"
+        >
+          ↕
+        </button>
+        <button
+          style={{
+            background: "none",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
+            padding: "6px 8px",
+            fontSize: "14px",
+            cursor: "pointer",
+            color: "#666",
+          }}
+          title="View options"
+        >
+          ≡
+        </button>
+        <button
+          style={{
+            background: "none",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
+            padding: "6px 8px",
+            fontSize: "14px",
+            cursor: "pointer",
+            color: "#666",
+          }}
+          title="Export"
+        >
+          📤
+        </button>
       </div>
 
       {/* Table Container */}
@@ -260,49 +261,77 @@ export default function ProductTaskPage() {
           backgroundColor: "white",
           borderRadius: "0 0 8px 8px",
           overflow: "hidden",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         }}
       >
         {/* Table Header */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "40px 200px 350px 80px 80px 80px 80px 100px 60px",
+            gridTemplateColumns: "40px 220px 200px 300px 100px 100px 100px 100px 120px 60px",
             backgroundColor: "#f8f9fa",
-            borderBottom: "1px solid #e1e5e9",
+            borderBottom: "2px solid #e1e5e9",
             fontSize: "13px",
-            fontWeight: "500",
-            color: "#6c757d",
+            fontWeight: "600",
+            color: "#495057",
           }}
         >
-          <div style={{ padding: "12px 8px", textAlign: "center" }}>⋮⋮</div>
-          <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: "6px" }}>
-            <span>📋</span> Feature
+          <div style={{ padding: "16px 8px", textAlign: "center" }}>⋮⋮</div>
+          <div style={{ padding: "16px 16px", display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ color: "#4A90E2" }}>💡</span> Ideas from Part 1
           </div>
-          <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: "6px" }}>
-            <span>≡</span> Description
+          <div style={{ padding: "16px 16px", display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ color: "#4A90E2" }}>🎯</span> Feature Name
           </div>
-          <div style={{ padding: "12px 8px", textAlign: "center" }}># Potential</div>
-          <div style={{ padding: "12px 8px", textAlign: "center" }}># Importance</div>
-          <div style={{ padding: "12px 8px", textAlign: "center" }}># Complexity</div>
-          <div style={{ padding: "12px 8px", textAlign: "center" }}># Score</div>
-          <div style={{ padding: "12px 8px", textAlign: "center", display: "flex", alignItems: "center", gap: "6px" }}>
-            <span>⊙</span> Priority
+          <div style={{ padding: "16px 16px", display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ color: "#4A90E2" }}>📝</span> Feature Description
           </div>
-          <div style={{ padding: "12px 8px", textAlign: "center" }}># no</div>
+          <div style={{ padding: "16px 8px", textAlign: "center" }}>
+            <div style={{ fontWeight: "600" }}>Potential</div>
+            <div style={{ fontSize: "11px", color: "#6c757d", marginTop: "2px" }}>Market Size</div>
+          </div>
+          <div style={{ padding: "16px 8px", textAlign: "center" }}>
+            <div style={{ fontWeight: "600" }}>Importance</div>
+            <div style={{ fontSize: "11px", color: "#6c757d", marginTop: "2px" }}>User Need</div>
+          </div>
+          <div style={{ padding: "16px 8px", textAlign: "center" }}>
+            <div style={{ fontWeight: "600" }}>Complexity</div>
+            <div style={{ fontSize: "11px", color: "#6c757d", marginTop: "2px" }}>Dev Effort</div>
+          </div>
+          <div style={{ padding: "16px 8px", textAlign: "center" }}>
+            <div style={{ fontWeight: "600" }}>Score</div>
+            <div style={{ fontSize: "11px", color: "#6c757d", marginTop: "2px" }}>Priority</div>
+          </div>
+          <div
+            style={{
+              padding: "16px 8px",
+              textAlign: "center",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              flexDirection: "column",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <span style={{ color: "#4A90E2" }}>🚀</span> Stage
+            </div>
+            <div style={{ fontSize: "11px", color: "#6c757d" }}>Development</div>
+          </div>
+          <div style={{ padding: "16px 8px", textAlign: "center" }}>#</div>
         </div>
 
         {/* Table Body */}
-        <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+        <div style={{ maxHeight: "60vh", overflowY: "auto" }}>
           {actionTableData.map((row, index) => (
             <div
               key={row.id}
               style={{
                 display: "grid",
-                gridTemplateColumns: "40px 200px 350px 80px 80px 80px 80px 100px 60px",
+                gridTemplateColumns: "40px 220px 200px 300px 100px 100px 100px 100px 120px 60px",
                 borderBottom: index < actionTableData.length - 1 ? "1px solid #f1f3f4" : "none",
                 fontSize: "13px",
                 backgroundColor: index % 2 === 0 ? "white" : "#fafbfc",
+                minHeight: "60px",
               }}
             >
               {/* Drag Handle */}
@@ -316,35 +345,70 @@ export default function ProductTaskPage() {
                   gap: "2px",
                 }}
               >
-                <span style={{ fontSize: "10px", color: "#9aa0a6" }}>⋮</span>
-                <span style={{ fontSize: "10px", color: "#9aa0a6" }}>⊞</span>
-                <span style={{ fontSize: "10px", color: "#9aa0a6" }}>⊟</span>
+                <span style={{ fontSize: "12px", color: "#9aa0a6", cursor: "grab" }}>⋮⋮</span>
               </div>
 
-              {/* Feature */}
+              {/* Ideas from Part 1 */}
               <div
                 style={{
                   padding: "12px 16px",
-                  fontWeight: "500",
-                  color: "#202124",
+                  color: "#495057",
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: "12px",
+                  fontStyle: "italic",
+                  backgroundColor: "#f8f9fa",
+                  border: "1px dashed #dee2e6",
+                  margin: "8px 4px",
+                  borderRadius: "4px",
+                }}
+              >
+                {row.ideaFromPart1}
+              </div>
+
+              {/* Feature Name */}
+              <div
+                style={{
+                  padding: "12px 16px",
                   display: "flex",
                   alignItems: "center",
                 }}
               >
-                {row.feature}
+                <input
+                  type="text"
+                  placeholder={row.feature}
+                  style={{
+                    width: "100%",
+                    border: "1px solid #dee2e6",
+                    borderRadius: "4px",
+                    padding: "8px 10px",
+                    fontSize: "12px",
+                    backgroundColor: "white",
+                  }}
+                />
               </div>
 
-              {/* Description */}
+              {/* Feature Description */}
               <div
                 style={{
                   padding: "12px 16px",
-                  color: "#5f6368",
-                  lineHeight: "1.4",
                   display: "flex",
                   alignItems: "center",
                 }}
               >
-                {row.description}
+                <textarea
+                  placeholder={row.description}
+                  style={{
+                    width: "100%",
+                    border: "1px solid #dee2e6",
+                    borderRadius: "4px",
+                    padding: "8px 10px",
+                    fontSize: "12px",
+                    backgroundColor: "white",
+                    minHeight: "36px",
+                    resize: "vertical",
+                  }}
+                />
               </div>
 
               {/* Potential */}
@@ -352,13 +416,28 @@ export default function ProductTaskPage() {
                 style={{
                   padding: "12px 8px",
                   textAlign: "center",
-                  color: "#202124",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                {row.potential.toFixed(2)}
+                <select
+                  style={{
+                    width: "60px",
+                    border: "1px solid #dee2e6",
+                    borderRadius: "4px",
+                    padding: "4px",
+                    fontSize: "12px",
+                    textAlign: "center",
+                  }}
+                >
+                  <option value="">Rate</option>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                    <option key={num} value={num}>
+                      {num}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Importance */}
@@ -366,13 +445,28 @@ export default function ProductTaskPage() {
                 style={{
                   padding: "12px 8px",
                   textAlign: "center",
-                  color: "#202124",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                {row.importance.toFixed(2)}
+                <select
+                  style={{
+                    width: "60px",
+                    border: "1px solid #dee2e6",
+                    borderRadius: "4px",
+                    padding: "4px",
+                    fontSize: "12px",
+                    textAlign: "center",
+                  }}
+                >
+                  <option value="">Rate</option>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                    <option key={num} value={num}>
+                      {num}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Complexity */}
@@ -380,13 +474,28 @@ export default function ProductTaskPage() {
                 style={{
                   padding: "12px 8px",
                   textAlign: "center",
-                  color: "#202124",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                {row.complexity.toFixed(2)}
+                <select
+                  style={{
+                    width: "60px",
+                    border: "1px solid #dee2e6",
+                    borderRadius: "4px",
+                    padding: "4px",
+                    fontSize: "12px",
+                    textAlign: "center",
+                  }}
+                >
+                  <option value="">Rate</option>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                    <option key={num} value={num}>
+                      {num}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Score */}
@@ -394,17 +503,19 @@ export default function ProductTaskPage() {
                 style={{
                   padding: "12px 8px",
                   textAlign: "center",
-                  color: "#202124",
+                  color: "#6c757d",
                   fontWeight: "500",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  fontSize: "12px",
+                  fontStyle: "italic",
                 }}
               >
-                {row.score.toFixed(2)}
+                Auto-calc
               </div>
 
-              {/* Priority */}
+              {/* Priority/Stage */}
               <div
                 style={{
                   padding: "12px 8px",
@@ -414,18 +525,34 @@ export default function ProductTaskPage() {
                   justifyContent: "center",
                 }}
               >
-                <span
+                <select
                   style={{
+                    border: "1px solid #dee2e6",
+                    borderRadius: "4px",
+                    padding: "4px 8px",
+                    fontSize: "11px",
                     backgroundColor: row.priorityColor,
                     color: "white",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    fontSize: "11px",
                     fontWeight: "500",
                   }}
+                  defaultValue={row.priority}
                 >
-                  {row.priority}
-                </span>
+                  <option value="MVP" style={{ backgroundColor: "#4A90E2", color: "white" }}>
+                    MVP
+                  </option>
+                  <option value="BETA" style={{ backgroundColor: "#7ED321", color: "white" }}>
+                    BETA
+                  </option>
+                  <option value="Prototype" style={{ backgroundColor: "#9013FE", color: "white" }}>
+                    Prototype
+                  </option>
+                  <option value="Postpone" style={{ backgroundColor: "#F5A623", color: "white" }}>
+                    Postpone
+                  </option>
+                  <option value="Later" style={{ backgroundColor: "#757575", color: "white" }}>
+                    Later
+                  </option>
+                </select>
               </div>
 
               {/* Number */}
@@ -433,16 +560,116 @@ export default function ProductTaskPage() {
                 style={{
                   padding: "12px 8px",
                   textAlign: "center",
-                  color: "#5f6368",
+                  color: "#6c757d",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  fontWeight: "500",
                 }}
               >
                 {row.id}
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Bottom Instructions */}
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "25px 30px",
+          marginTop: "20px",
+          borderRadius: "8px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        }}
+      >
+        <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", fontWeight: "600", color: "#333" }}>
+          Column Explanations
+        </h3>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "20px",
+            fontSize: "14px",
+          }}
+        >
+          <div>
+            <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
+              💡 Ideas from Part 1
+            </h4>
+            <p style={{ margin: "0", color: "#666", fontSize: "12px", lineHeight: "1.4" }}>
+              Automatically imported from your Action Table Part 1. These are the raw ideas you identified during your
+              research phase.
+            </p>
+          </div>
+
+          <div>
+            <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
+              🎯 Feature Name
+            </h4>
+            <p style={{ margin: "0", color: "#666", fontSize: "12px", lineHeight: "1.4" }}>
+              Transform your idea into a concrete feature name. Be specific and user-focused (e.g., "One-click investor
+              matching").
+            </p>
+          </div>
+
+          <div>
+            <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
+              📝 Feature Description
+            </h4>
+            <p style={{ margin: "0", color: "#666", fontSize: "12px", lineHeight: "1.4" }}>
+              Clearly explain what this feature does and how it solves the user's problem. Focus on benefits and
+              functionality.
+            </p>
+          </div>
+
+          <div>
+            <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
+              📊 Potential (1-10)
+            </h4>
+            <p style={{ margin: "0", color: "#666", fontSize: "12px", lineHeight: "1.4" }}>
+              Rate the market opportunity size. How many users could benefit? What's the revenue potential?
+            </p>
+          </div>
+
+          <div>
+            <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
+              ⭐ Importance (1-10)
+            </h4>
+            <p style={{ margin: "0", color: "#666", fontSize: "12px", lineHeight: "1.4" }}>
+              How critical is this feature for your users? Does it solve a major pain point or nice-to-have?
+            </p>
+          </div>
+
+          <div>
+            <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
+              🔧 Complexity (1-10)
+            </h4>
+            <p style={{ margin: "0", color: "#666", fontSize: "12px", lineHeight: "1.4" }}>
+              Rate development difficulty. Consider technical challenges, time required, and resources needed.
+            </p>
+          </div>
+
+          <div>
+            <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
+              🎯 Priority Score
+            </h4>
+            <p style={{ margin: "0", color: "#666", fontSize: "12px", lineHeight: "1.4" }}>
+              Auto-calculated based on your ratings. Higher scores indicate features that should be prioritized.
+            </p>
+          </div>
+
+          <div>
+            <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
+              🚀 Development Stage
+            </h4>
+            <p style={{ margin: "0", color: "#666", fontSize: "12px", lineHeight: "1.4" }}>
+              Choose when to build: MVP (core launch), BETA (early testing), Prototype (validation), or Later.
+            </p>
+          </div>
         </div>
       </div>
     </div>
