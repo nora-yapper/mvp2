@@ -530,16 +530,17 @@ export default function ProductTaskPage() {
         style={{
           backgroundColor: "#2a2a2a",
           padding: "25px 30px",
-          borderBottom: "1px solid #555",
+          borderBottom: "1px solid #e1e5e9",
           fontSize: "14px",
           lineHeight: "1.6",
+          color: "#e0e0e0",
         }}
       >
         <div style={{ marginBottom: "20px" }}>
           <h3 style={{ margin: "0 0 12px 0", fontSize: "16px", fontWeight: "600", color: "#e0e0e0" }}>
             How to Use This Table
           </h3>
-          <p style={{ margin: "0 0 15px 0", color: "#ccc" }}>
+          <p style={{ margin: "0 0 15px 0", color: "#b0b0b0" }}>
             Transform your ideas from Action Table Part 1 into concrete, evaluated features. This table helps you define
             what to build, assess its value, and decide when to develop it.
           </p>
@@ -550,7 +551,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "#4A90E2" }}>
               Step 1: Define Features
             </h4>
-            <ul style={{ margin: "0", paddingLeft: "18px", color: "#ccc" }}>
+            <ul style={{ margin: "0", paddingLeft: "18px", color: "#b0b0b0" }}>
               <li>Review ideas imported from Part 1</li>
               <li>Define concrete feature names</li>
               <li>Write clear descriptions of functionality</li>
@@ -560,7 +561,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "#4A90E2" }}>
               Step 2: Evaluate & Prioritize
             </h4>
-            <ul style={{ margin: "0", paddingLeft: "18px", color: "#ccc" }}>
+            <ul style={{ margin: "0", paddingLeft: "18px", color: "#b0b0b0" }}>
               <li>Rate potential, importance, and complexity</li>
               <li>Review auto-calculated priority scores</li>
               <li>Assign development stages (MVP, BETA, etc.)</li>
@@ -574,10 +575,11 @@ export default function ProductTaskPage() {
         style={{
           backgroundColor: "#2a2a2a",
           padding: "12px 30px",
-          borderBottom: "1px solid #555",
+          borderBottom: "1px solid #e1e5e9",
           display: "flex",
           alignItems: "center",
           gap: "15px",
+          color: "#e0e0e0",
         }}
       >
         <button
@@ -638,12 +640,12 @@ export default function ProductTaskPage() {
           }}
           style={{
             background: "none",
-            border: "1px solid #555",
+            border: "1px solid #ddd",
             borderRadius: "4px",
             padding: "6px 8px",
             fontSize: "14px",
             cursor: "pointer",
-            color: "#ccc",
+            color: "#666",
           }}
           title="Export table as CSV"
         >
@@ -696,7 +698,8 @@ export default function ProductTaskPage() {
           backgroundColor: "#2a2a2a",
           borderRadius: "0 0 8px 8px",
           overflow: "hidden",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          color: "#e0e0e0",
         }}
       >
         {/* Table Header */}
@@ -705,7 +708,7 @@ export default function ProductTaskPage() {
             display: "grid",
             gridTemplateColumns: "40px 220px 200px 300px 100px 100px 100px 100px 120px 60px 40px",
             backgroundColor: "#333",
-            borderBottom: "2px solid #555",
+            borderBottom: "2px solid #e1e5e9",
             fontSize: "13px",
             fontWeight: "600",
             color: "#e0e0e0",
@@ -723,19 +726,19 @@ export default function ProductTaskPage() {
           </div>
           <div style={{ padding: "16px 8px", textAlign: "center" }}>
             <div style={{ fontWeight: "600" }}>Potential</div>
-            <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Market Size</div>
+            <div style={{ fontSize: "11px", color: "#6c757d", marginTop: "2px" }}>Market Size</div>
           </div>
           <div style={{ padding: "16px 8px", textAlign: "center" }}>
             <div style={{ fontWeight: "600" }}>Importance</div>
-            <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>User Need</div>
+            <div style={{ fontSize: "11px", color: "#6c757d", marginTop: "2px" }}>User Need</div>
           </div>
           <div style={{ padding: "16px 8px", textAlign: "center" }}>
             <div style={{ fontWeight: "600" }}>Complexity</div>
-            <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Dev Effort</div>
+            <div style={{ fontSize: "11px", color: "#6c757d", marginTop: "2px" }}>Dev Effort</div>
           </div>
           <div style={{ padding: "16px 8px", textAlign: "center" }}>
             <div style={{ fontWeight: "600" }}>Score</div>
-            <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Priority</div>
+            <div style={{ fontSize: "11px", color: "#6c757d", marginTop: "2px" }}>Priority</div>
           </div>
           <div
             style={{
@@ -750,7 +753,7 @@ export default function ProductTaskPage() {
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span style={{ color: "#4A90E2" }}>🚀</span> Stage
             </div>
-            <div style={{ fontSize: "11px", color: "#999" }}>Development</div>
+            <div style={{ fontSize: "11px", color: "#6c757d" }}>Development</div>
           </div>
           <div style={{ padding: "16px 8px", textAlign: "center" }}>#</div>
           <div style={{ padding: "16px 8px", textAlign: "center" }}>🗑️</div>
@@ -764,10 +767,11 @@ export default function ProductTaskPage() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "40px 220px 200px 300px 100px 100px 100px 100px 120px 60px 40px",
-                borderBottom: index < actionTableRows.length - 1 ? "1px solid #444" : "none",
+                borderBottom: index < actionTableRows.length - 1 ? "1px solid #f1f3f4" : "none",
                 fontSize: "13px",
                 backgroundColor: index % 2 === 0 ? "#2a2a2a" : "#333",
                 minHeight: "60px",
+                color: "#e0e0e0",
               }}
             >
               {/* Drag Handle */}
@@ -781,7 +785,7 @@ export default function ProductTaskPage() {
                   gap: "2px",
                 }}
               >
-                <span style={{ fontSize: "12px", color: "#999", cursor: "grab" }}>⋮⋮</span>
+                <span style={{ fontSize: "12px", color: "#9aa0a6", cursor: "grab" }}>⋮⋮</span>
               </div>
 
               {/* Ideas from Part 1 */}
@@ -803,9 +807,9 @@ export default function ProductTaskPage() {
                     borderRadius: "4px",
                     padding: "8px 10px",
                     fontSize: "12px",
-                    backgroundColor: "#1a1a1a",
-                    color: "#e0e0e0",
+                    backgroundColor: "#333",
                     fontStyle: row.ideaFromPart1 ? "normal" : "italic",
+                    color: "#e0e0e0",
                   }}
                 />
               </div>
@@ -825,11 +829,11 @@ export default function ProductTaskPage() {
                   placeholder="Define your feature name"
                   style={{
                     width: "100%",
-                    border: "1px solid #555",
+                    border: "1px solid #dee2e6",
                     borderRadius: "4px",
                     padding: "8px 10px",
                     fontSize: "12px",
-                    backgroundColor: "#1a1a1a",
+                    backgroundColor: "#333",
                     color: "#e0e0e0",
                   }}
                 />
@@ -849,14 +853,14 @@ export default function ProductTaskPage() {
                   placeholder="Describe what this feature does and how it helps users"
                   style={{
                     width: "100%",
-                    border: "1px solid #555",
+                    border: "1px solid #dee2e6",
                     borderRadius: "4px",
                     padding: "8px 10px",
                     fontSize: "12px",
-                    backgroundColor: "#1a1a1a",
-                    color: "#e0e0e0",
+                    backgroundColor: "#333",
                     minHeight: "36px",
                     resize: "vertical",
+                    color: "#e0e0e0",
                   }}
                 />
               </div>
@@ -878,12 +882,12 @@ export default function ProductTaskPage() {
                   }
                   style={{
                     width: "60px",
-                    border: "1px solid #555",
+                    border: "1px solid #dee2e6",
                     borderRadius: "4px",
                     padding: "4px",
                     fontSize: "12px",
                     textAlign: "center",
-                    backgroundColor: "#1a1a1a",
+                    backgroundColor: "#333",
                     color: "#e0e0e0",
                   }}
                 >
@@ -913,12 +917,12 @@ export default function ProductTaskPage() {
                   }
                   style={{
                     width: "60px",
-                    border: "1px solid #555",
+                    border: "1px solid #dee2e6",
                     borderRadius: "4px",
                     padding: "4px",
                     fontSize: "12px",
                     textAlign: "center",
-                    backgroundColor: "#1a1a1a",
+                    backgroundColor: "#333",
                     color: "#e0e0e0",
                   }}
                 >
@@ -948,12 +952,12 @@ export default function ProductTaskPage() {
                   }
                   style={{
                     width: "60px",
-                    border: "1px solid #555",
+                    border: "1px solid #dee2e6",
                     borderRadius: "4px",
                     padding: "4px",
                     fontSize: "12px",
                     textAlign: "center",
-                    backgroundColor: "#1a1a1a",
+                    backgroundColor: "#333",
                     color: "#e0e0e0",
                   }}
                 >
@@ -971,7 +975,7 @@ export default function ProductTaskPage() {
                 style={{
                   padding: "12px 8px",
                   textAlign: "center",
-                  color: row.score ? "#e0e0e0" : "#999",
+                  color: row.score ? "#333" : "#6c757d",
                   fontWeight: "500",
                   display: "flex",
                   alignItems: "center",
@@ -996,7 +1000,7 @@ export default function ProductTaskPage() {
                   value={row.priority}
                   onChange={(e) => updateRowField(row.id, "priority", e.target.value)}
                   style={{
-                    border: "1px solid #555",
+                    border: "1px solid #dee2e6",
                     borderRadius: "4px",
                     padding: "4px 8px",
                     fontSize: "11px",
@@ -1018,7 +1022,7 @@ export default function ProductTaskPage() {
                 style={{
                   padding: "12px 8px",
                   textAlign: "center",
-                  color: "#999",
+                  color: "#6c757d",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1066,7 +1070,8 @@ export default function ProductTaskPage() {
           padding: "25px 30px",
           marginTop: "20px",
           borderRadius: "8px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          color: "#e0e0e0",
         }}
       >
         <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", fontWeight: "600", color: "#e0e0e0" }}>
@@ -1085,7 +1090,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               💡 Ideas from Part 1
             </h4>
-            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
               Auto-imported from your Action Table Part 1 "Ideas" section. You can edit these or add new ones manually.
             </p>
           </div>
@@ -1094,7 +1099,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               🎯 Feature Name
             </h4>
-            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
               Transform your idea into a concrete feature name. Be specific and user-focused (e.g., "One-click investor
               matching").
             </p>
@@ -1104,7 +1109,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               📝 Feature Description
             </h4>
-            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
               Clearly explain what this feature does and how it solves the user's problem. Focus on benefits and
               functionality.
             </p>
@@ -1114,7 +1119,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               📊 Potential (1-10)
             </h4>
-            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
               Rate the market opportunity size. How many users could benefit? What's the revenue potential?
             </p>
           </div>
@@ -1123,7 +1128,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               ⭐ Importance (1-10)
             </h4>
-            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
               How critical is this feature for your users? Does it solve a major pain point or nice-to-have?
             </p>
           </div>
@@ -1132,7 +1137,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               🔧 Complexity (1-10)
             </h4>
-            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
               Rate development difficulty. Consider technical challenges, time required, and resources needed.
             </p>
           </div>
@@ -1141,7 +1146,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               🎯 Priority Score
             </h4>
-            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
               Auto-calculated based on your ratings: (Potential + Importance) ÷ Complexity × 2. Higher scores = higher
               priority.
             </p>
@@ -1151,7 +1156,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               🚀 Development Stage
             </h4>
-            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
               Choose when to build: MVP (core launch), BETA (early testing), Prototype (validation), or Later.
             </p>
           </div>
@@ -1280,15 +1285,24 @@ export default function ProductTaskPage() {
             <h3 style={{ fontSize: "1.2rem", fontWeight: "bold", marginBottom: "10px", color: "#ccc" }}>
               How to Use It:
             </h3>
-            <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
-              Action Table Part 1 helps you take the insights you gathered from interviews and start turning them into
-              product opportunities. For each problem or need you uncovered, write down an initial idea in response—it
-              doesn't have to be a finished feature yet, just a potential direction to explore.
-            </p>
-            <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
-              Alongside each idea, note any issues it might cause or challenges it could bring. This is your space to
-              think critically and creatively about how to move from research to action.
-            </p>
+            <ul style={{ lineHeight: "1.6", color: "#b0b0b0", paddingLeft: "20px" }}>
+              <li style={{ marginBottom: "8px" }}>
+                <strong>Add Notes:</strong> Click the "+ Add Note" button in each section to create virtual post-it
+                notes
+              </li>
+              <li style={{ marginBottom: "8px" }}>
+                <strong>Edit Notes:</strong> Double-click any post-it to edit its content and change its color
+              </li>
+              <li style={{ marginBottom: "8px" }}>
+                <strong>Move Notes:</strong> Drag and drop post-its to reorganize them within each section
+              </li>
+              <li style={{ marginBottom: "8px" }}>
+                <strong>Delete Notes:</strong> Click the "×" button on any post-it to remove it
+              </li>
+              <li>
+                <strong>Organize:</strong> Use different colored post-its to categorize related ideas and insights
+              </li>
+            </ul>
           </div>
         </div>
 
