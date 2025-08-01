@@ -596,6 +596,45 @@ export default function ProductTaskPage() {
           + Add Feature
         </button>
         <button
+          onClick={() => {
+            // Create CSV content
+            const headers = [
+              "Ideas from Part 1",
+              "Feature Name",
+              "Feature Description",
+              "Potential",
+              "Importance",
+              "Complexity",
+              "Score",
+              "Priority",
+            ]
+            const csvContent = [
+              headers.join(","),
+              ...actionTableRows.map((row) =>
+                [
+                  `"${row.ideaFromPart1.replace(/"/g, '""')}"`,
+                  `"${row.feature.replace(/"/g, '""')}"`,
+                  `"${row.description.replace(/"/g, '""')}"`,
+                  row.potential || "",
+                  row.importance || "",
+                  row.complexity || "",
+                  row.score || "",
+                  row.priority,
+                ].join(","),
+              ),
+            ].join("\n")
+
+            // Create and download file
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+            const link = document.createElement("a")
+            const url = URL.createObjectURL(blob)
+            link.setAttribute("href", url)
+            link.setAttribute("download", "action-table-features.csv")
+            link.style.visibility = "hidden"
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+          }}
           style={{
             background: "none",
             border: "1px solid #ddd",
@@ -605,7 +644,7 @@ export default function ProductTaskPage() {
             cursor: "pointer",
             color: "#666",
           }}
-          title="Export"
+          title="Export table as CSV"
         >
           📤
         </button>
