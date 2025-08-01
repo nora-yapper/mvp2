@@ -114,7 +114,7 @@ const PostItBoard: React.FC<PostItBoardProps> = ({
   }
 
   return (
-    <div style={{ flex: 1, minHeight: "400px", position: "relative" }}>
+    <div style={{ flex: 1, minHeight: "400px", position: "relative", overflow: "visible" }}>
       <div
         style={{
           display: "flex",
@@ -157,7 +157,8 @@ const PostItBoard: React.FC<PostItBoardProps> = ({
           minHeight: "350px",
           position: "relative",
           backgroundColor: "#1a1a1a",
-          overflow: "hidden",
+          overflow: "visible", // Changed from "hidden" to "visible"
+          padding: "10px", // Add padding to provide space for notes near edges
         }}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
@@ -169,8 +170,8 @@ const PostItBoard: React.FC<PostItBoardProps> = ({
             onDragStart={(e) => handleDragStart(e, postIt.id)}
             style={{
               position: "absolute",
-              left: `${postIt.x}px`,
-              top: `${postIt.y}px`,
+              left: `${Math.max(0, Math.min(postIt.x, 280))}px`, // Constrain x position
+              top: `${Math.max(0, Math.min(postIt.y, 250))}px`, // Constrain y position
               width: editingPostIt === postIt.id ? "160px" : "120px",
               minHeight: editingPostIt === postIt.id ? "140px" : "80px",
               backgroundColor: postIt.color,
@@ -280,6 +281,7 @@ const PostItBoard: React.FC<PostItBoardProps> = ({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    zIndex: 10, // Ensure button stays on top
                   }}
                 >
                   ×
@@ -1229,12 +1231,12 @@ export default function ProductTaskPage() {
             <h3 style={{ fontSize: "1.2rem", fontWeight: "bold", marginBottom: "10px", color: "#ccc" }}>
               What This Task Is For:
             </h3>
-            <p style={{ lineHeight: "1.6", color: "#b0b0b0", marginBottom: "15px" }}>
+            <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
               Action Table Part 1 helps you take the insights you gathered from interviews and start turning them into
               product opportunities. For each problem or need you uncovered, write down an initial idea in response—it
               doesn't have to be a finished feature yet, just a potential direction to explore.
             </p>
-            <p style={{ lineHeight: "1.6", color: "#b0b0b0" }}>
+            <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
               Alongside each idea, note any issues it might cause or challenges it could bring. This is your space to
               think critically and creatively about how to move from research to action.
             </p>
