@@ -332,21 +332,9 @@ export default function ProductTaskPage() {
       setSelectedOptions(options.split(","))
     }
 
-    // Auto-import ideas from Part 1 when loading Part 2
-    if (section === "action-table" && task === "development-plan") {
-      const importedRows: ActionTableRow[] = ideas.map((idea, index) => ({
-        id: `row-${idea.id}`,
-        ideaFromPart1: idea.text,
-        feature: "",
-        description: "",
-        potential: null,
-        importance: null,
-        complexity: null,
-        score: null,
-        priority: "MVP",
-        priorityColor: "#4A90E2",
-      }))
-      setActionTableRows(importedRows)
+    // Initialize with empty table - users can import manually using the button
+    if (section === "action-table" && task === "development-plan" && actionTableRows.length === 0) {
+      // Start with empty table
     }
   }, [ideas])
 
@@ -662,6 +650,45 @@ export default function ProductTaskPage() {
           title="Export"
         >
           📤
+        </button>
+        <button
+          onClick={() => {
+            if (actionTableRows.length > 0) {
+              const confirmed = window.confirm(
+                "This will overwrite all current ideas in the table with fresh data from Action Table Part 1. Are you sure you want to continue?",
+              )
+              if (!confirmed) return
+            }
+
+            // Import ideas from Part 1
+            const importedRows: ActionTableRow[] = ideas.map((idea, index) => ({
+              id: generateId(),
+              ideaFromPart1: idea.text,
+              feature: "",
+              description: "",
+              potential: null,
+              importance: null,
+              complexity: null,
+              score: null,
+              priority: "MVP",
+              priorityColor: "#4A90E2",
+            }))
+            setActionTableRows(importedRows)
+          }}
+          style={{
+            background: "#28a745",
+            border: "none",
+            borderRadius: "4px",
+            padding: "8px 12px",
+            fontSize: "14px",
+            cursor: "pointer",
+            color: "white",
+            fontWeight: "500",
+            marginLeft: "10px",
+          }}
+          title="Import ideas from Action Table Part 1"
+        >
+          📥 Import from Part 1
         </button>
       </div>
 
