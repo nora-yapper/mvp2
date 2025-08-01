@@ -60,6 +60,20 @@ export default function ResearchTaskPage() {
   // Add this state variable at the top with other useState declarations
   const [isMobile, setIsMobile] = useState(false)
 
+  // Add evaluation state variables
+  const [evaluationResults, setEvaluationResults] = useState<
+    Array<{
+      question: string
+      isStrong: boolean
+      reasoning: string
+      responseType: string
+      isGoodForEarlyStage: boolean
+      improvement?: string
+    }>
+  >([])
+  const [showEvaluation, setShowEvaluation] = useState(false)
+  const [isEvaluating, setIsEvaluating] = useState(false)
+
   useEffect(() => {
     // Load saved analysis from session storage
     const saved = sessionStorage.getItem("researchOverview")
@@ -828,17 +842,55 @@ export default function ResearchTaskPage() {
         setQuestionBankChatInput("")
         setQuestionBankIsTyping(true)
 
-        // Simulate AI response
-        setTimeout(() => {
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You are an AI assistant specialized in helping create effective customer interview questions. Focus on behavioral questions, avoid hypotheticals, and help users create questions that reveal real user problems and behaviors. Keep responses concise and actionable.",
+                },
+                ...questionBankChatMessages.map((msg) => ({
+                  role: msg.sender === "user" ? "user" : "assistant",
+                  content: msg.text,
+                })),
+                {
+                  role: "user",
+                  content: questionBankChatInput,
+                },
+              ],
+            }),
+          })
+
+          if (!response.ok) {
+            throw new Error("Failed to get AI response")
+          }
+
+          const data = await response.json()
+
           const assistantMessage = {
             id: questionBankChatMessages.length + 2,
-            text: "That's a great question! Here are some suggestions for improving your interview questions...",
+            text: data.message || "I'm here to help you create better interview questions!",
             sender: "assistant",
             timestamp: new Date().toLocaleTimeString(),
           }
+
           setQuestionBankChatMessages((prev) => [...prev, assistantMessage])
+        } catch (error) {
+          console.error("Error getting AI response:", error)
+          const errorMessage = {
+            id: questionBankChatMessages.length + 2,
+            text: "Sorry, I'm having trouble connecting right now. Please try again!",
+            sender: "assistant",
+            timestamp: new Date().toLocaleTimeString(),
+          }
+          setQuestionBankChatMessages((prev) => [...prev, errorMessage])
+        } finally {
           setQuestionBankIsTyping(false)
-        }, 1500)
+        }
       }
 
       const addNewQuestion = () => {
@@ -851,6 +903,37 @@ export default function ResearchTaskPage() {
 
       const deleteQuestion = (index: number) => {
         setQuestionBankInterviewQuestions((prev) => prev.filter((_, i) => i !== index))
+      }
+
+      const evaluateQuestions = async () => {
+        const questions = questionBankInterviewQuestions.filter((q) => q.trim() !== "")
+        if (questions.length === 0) {
+          alert("No questions to evaluate. Please add some questions first.")
+          return
+        }
+
+        setIsEvaluating(true)
+
+        try {
+          const response = await fetch("/api/evaluate-questions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ questions }),
+          })
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+
+          const data = await response.json()
+          setEvaluationResults(data.evaluations || [])
+          setShowEvaluation(true)
+        } catch (error) {
+          console.error("Error evaluating questions:", error)
+          alert("Error evaluating questions. Please try again.")
+        } finally {
+          setIsEvaluating(false)
+        }
       }
 
       return (
@@ -1018,39 +1101,27 @@ export default function ResearchTaskPage() {
                   <div style={{ display: "flex", gap: "10px" }}>
                     <button
                       onClick={() => {
-                        // Save current canvas to session storage
-                        const currentCanvas = {
-                          id: Date.now(),
-                          timestamp: new Date().toLocaleString(),
-                          questions: questionBankInterviewQuestions,
+                        // Create PDF content with interview questions
+                        const questions = questionBankInterviewQuestions.filter((q) => q.trim() !== "")
+                        if (questions.length === 0) {
+                          alert("No questions to export. Please add some questions first.")
+                          return
                         }
 
-                        const savedCanvases = JSON.parse(sessionStorage.getItem("interviewCanvases") || "[]")
-                        savedCanvases.push(currentCanvas)
-                        sessionStorage.setItem("interviewCanvases", JSON.stringify(savedCanvases))
+                        // Create a simple text content for PDF
+                        const pdfContent = `Interview Questions Canvas\n\nGenerated on: ${new Date().toLocaleDateString()}\n\n${questions.map((q, i) => `${i + 1}. ${q}`).join("\n\n")}`
 
-                        // Create new canvas with default questions
-                        setQuestionBankInterviewQuestions([
-                          "What problem are you currently facing in [topic]?",
-                          "How have you tried to solve this problem?",
-                          "What would an ideal solution look like for you?",
-                        ])
-
-                        alert("Current canvas saved! New canvas created.")
+                        // Create a blob and download
+                        const blob = new Blob([pdfContent], { type: "text/plain" })
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement("a")
+                        a.href = url
+                        a.download = `interview-questions-${new Date().toISOString().split("T")[0]}.txt`
+                        document.body.appendChild(a)
+                        a.click()
+                        document.body.removeChild(a)
+                        URL.revokeObjectURL(url)
                       }}
-                      style={{
-                        padding: "8px 12px",
-                        backgroundColor: "#007bff",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      New Canvas
-                    </button>
-                    <button
                       style={{
                         padding: "8px 12px",
                         backgroundColor: "#6c757d",
@@ -1062,19 +1133,6 @@ export default function ResearchTaskPage() {
                       }}
                     >
                       Download PDF
-                    </button>
-                    <button
-                      style={{
-                        padding: "8px 12px",
-                        backgroundColor: "#dc3545",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Delete Canvas
                     </button>
                   </div>
                 </div>
@@ -1153,32 +1211,159 @@ export default function ResearchTaskPage() {
                   }}
                 >
                   <button
+                    onClick={evaluateQuestions}
+                    disabled={isEvaluating}
                     style={{
                       padding: "10px 20px",
-                      backgroundColor: "#6c757d",
+                      backgroundColor: isEvaluating ? "#444" : "#6c757d",
                       color: "#fff",
                       border: "none",
                       borderRadius: "4px",
                       fontSize: "14px",
-                      cursor: "pointer",
+                      cursor: isEvaluating ? "not-allowed" : "pointer",
                     }}
                   >
-                    Purpose
-                  </button>
-                  <button
-                    style={{
-                      padding: "10px 20px",
-                      backgroundColor: "#6c757d",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "4px",
-                      fontSize: "14px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Evaluate
+                    {isEvaluating ? "Evaluating..." : "Evaluate"}
                   </button>
                 </div>
+
+                {/* Evaluation Results Section */}
+                {showEvaluation && evaluationResults.length > 0 && (
+                  <div
+                    style={{
+                      padding: "20px",
+                      backgroundColor: "#f8f9fa",
+                      borderTop: "1px solid #ddd",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "20px",
+                      }}
+                    >
+                      <h4 style={{ fontSize: "16px", color: "#333", margin: 0 }}>Question Evaluation Results</h4>
+                      <button
+                        onClick={() => setShowEvaluation(false)}
+                        style={{
+                          padding: "6px 12px",
+                          backgroundColor: "#6c757d",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Hide Evaluation
+                      </button>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                      {evaluationResults.map((result, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            backgroundColor: "#fff",
+                            padding: "20px",
+                            borderRadius: "6px",
+                            border: `2px solid ${result.isStrong ? "#28a745" : "#ffc107"}`,
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                          }}
+                        >
+                          <div style={{ marginBottom: "15px" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                marginBottom: "10px",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontSize: "18px",
+                                  color: result.isStrong ? "#28a745" : "#ffc107",
+                                }}
+                              >
+                                {result.isStrong ? "✅" : "⚠️"}
+                              </span>
+                              <strong style={{ fontSize: "14px", color: "#333" }}>
+                                Question {index + 1}: {result.isStrong ? "Strong" : "Needs Improvement"}
+                              </strong>
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "14px",
+                                color: "#666",
+                                fontStyle: "italic",
+                                backgroundColor: "#f8f9fa",
+                                padding: "10px",
+                                borderRadius: "4px",
+                                marginBottom: "15px",
+                              }}
+                            >
+                              "{result.question}"
+                            </div>
+                          </div>
+
+                          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                            <div>
+                              <strong style={{ fontSize: "13px", color: "#333" }}>Analysis:</strong>
+                              <p style={{ fontSize: "13px", color: "#666", margin: "5px 0", lineHeight: "1.4" }}>
+                                {result.reasoning}
+                              </p>
+                            </div>
+
+                            <div>
+                              <strong style={{ fontSize: "13px", color: "#333" }}>Response Type:</strong>
+                              <p style={{ fontSize: "13px", color: "#666", margin: "5px 0", lineHeight: "1.4" }}>
+                                {result.responseType}
+                              </p>
+                            </div>
+
+                            <div>
+                              <strong style={{ fontSize: "13px", color: "#333" }}>Early-Stage Suitability:</strong>
+                              <p
+                                style={{
+                                  fontSize: "13px",
+                                  color: result.isGoodForEarlyStage ? "#28a745" : "#dc3545",
+                                  margin: "5px 0",
+                                  lineHeight: "1.4",
+                                  fontWeight: "500",
+                                }}
+                              >
+                                {result.isGoodForEarlyStage
+                                  ? "✅ Good for early-stage interviews"
+                                  : "❌ Not ideal for early-stage interviews"}
+                              </p>
+                            </div>
+
+                            {result.improvement && (
+                              <div
+                                style={{
+                                  backgroundColor: "#e3f2fd",
+                                  padding: "12px",
+                                  borderRadius: "4px",
+                                  borderLeft: "4px solid #2196f3",
+                                }}
+                              >
+                                <strong style={{ fontSize: "13px", color: "#1976d2" }}>
+                                  💡 Improvement Suggestion:
+                                </strong>
+                                <p style={{ fontSize: "13px", color: "#1565c0", margin: "5px 0", lineHeight: "1.4" }}>
+                                  {result.improvement}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1761,263 +1946,39 @@ export default function ResearchTaskPage() {
               ×
             </button>
 
-            {!gameCompleted ? (
-              <>
-                {/* Game Header */}
-                <div style={{ textAlign: "center", marginBottom: "40px" }}>
-                  <h2 style={{ fontSize: "28px", color: "#fff", marginBottom: "10px" }}>MomTest Game</h2>
-                  <p style={{ fontSize: "16px", color: "#ccc" }}>
-                    Question {currentQuestionIndex + 1} of {gameQuestions.length}
-                  </p>
-                </div>
-
-                {/* Progress Bar */}
-                <div style={{ marginBottom: "40px" }}>
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "8px",
-                      backgroundColor: "#444",
-                      borderRadius: "4px",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: `${((currentQuestionIndex + 1) / gameQuestions.length) * 100}%`,
-                        height: "100%",
-                        backgroundColor: "#007bff",
-                        transition: "width 0.3s ease",
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Current Question */}
-                {gameQuestions[currentQuestionIndex] && (
-                  <div style={{ textAlign: "center" }}>
-                    <div
-                      style={{
-                        backgroundColor: "#1a1a1a",
-                        padding: "30px",
-                        borderRadius: "8px",
-                        border: "1px solid #444",
-                        marginBottom: "30px",
-                      }}
-                    >
-                      <h3 style={{ fontSize: "20px", color: "#fff", marginBottom: "30px", lineHeight: "1.6" }}>
-                        "{gameQuestions[currentQuestionIndex].question}"
-                      </h3>
-
-                      <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
-                        <button
-                          onClick={() => answerQuestion("✅ Good Question")}
-                          style={{
-                            padding: "15px 30px",
-                            backgroundColor: "#28a745",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            fontSize: "16px",
-                            cursor: "pointer",
-                            minWidth: "150px",
-                          }}
-                        >
-                          ✅ Good Question
-                        </button>
-
-                        <button
-                          onClick={() => answerQuestion("❌ Bad Question")}
-                          style={{
-                            padding: "15px 30px",
-                            backgroundColor: "#dc3545",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            fontSize: "16px",
-                            cursor: "pointer",
-                            minWidth: "150px",
-                          }}
-                        >
-                          ❌ Bad Question
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                {/* Game Results */}
-                <div style={{ textAlign: "center", marginBottom: "40px" }}>
-                  <h2 style={{ fontSize: "32px", color: "#fff", marginBottom: "15px" }}>Game Complete!</h2>
-                  <p style={{ fontSize: "24px", color: "#007bff", marginBottom: "30px" }}>
-                    Your Score: {gameScore}/10 correct
-                  </p>
-                </div>
-
-                {/* Results Breakdown */}
-                <div style={{ marginBottom: "30px" }}>
-                  <h3 style={{ fontSize: "20px", color: "#fff", marginBottom: "20px" }}>Results Breakdown:</h3>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                    {gameQuestions.map((q, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          backgroundColor: "#1a1a1a",
-                          padding: "20px",
-                          borderRadius: "8px",
-                          border: `1px solid ${q.userAnswer === q.correctAnswer ? "#28a745" : "#dc3545"}`,
-                        }}
-                      >
-                        <div style={{ marginBottom: "10px" }}>
-                          <strong style={{ color: "#fff" }}>"{q.question}"</strong>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: "10px",
-                          }}
-                        >
-                          <span>Your answer: {q.userAnswer}</span>
-                          <span style={{ color: q.userAnswer === q.correctAnswer ? "#28a745" : "#dc3545" }}>
-                            {q.userAnswer === q.correctAnswer ? "✅" : "❌"}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: "14px", color: "#ccc" }}>
-                          <strong>Correct answer:</strong> {q.correctAnswer}
-                        </div>
-                        <div style={{ fontSize: "14px", color: "#ccc", marginTop: "5px" }}>
-                          <strong>Explanation:</strong> {q.explanation}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ textAlign: "center" }}>
-                  <button
-                    onClick={startMomTestGame}
-                    style={{
-                      padding: "12px 24px",
-                      backgroundColor: "#007bff",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                      marginRight: "15px",
-                    }}
-                  >
-                    Play Again
-                  </button>
-                  <button
-                    onClick={() => setShowMomTestGame(false)}
-                    style={{
-                      padding: "12px 24px",
-                      backgroundColor: "#6c757d",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Close
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Game History Modal */}
-      {showGameHistory && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.8)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 2000,
-          }}
-          onClick={() => setShowGameHistory(false)}
-        >
-          <div
-            style={{
-              backgroundColor: "#2a2a2a",
-              color: "#e0e0e0",
-              padding: "40px",
-              borderRadius: "8px",
-              maxWidth: "600px",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              width: "90%",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}
-            >
-              <h3 style={{ fontSize: "24px", color: "#fff", margin: 0 }}>Game History</h3>
-              <button
-                onClick={() => setShowGameHistory(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  fontSize: "24px",
-                  color: "#ccc",
-                  cursor: "pointer",
-                }}
-              >
-                ×
-              </button>
+            {/* History Header */}
+            <div style={{ textAlign: "center", marginBottom: "40px" }}>
+              <h2 style={{ fontSize: "28px", color: "#fff", marginBottom: "10px" }}>Game History</h2>
+              <p style={{ fontSize: "16px", color: "#ccc" }}>Your past scores</p>
             </div>
 
+            {/* Score List */}
             {gameScores.length === 0 ? (
-              <p style={{ color: "#ccc", textAlign: "center", padding: "40px" }}>
-                No games played yet. Start your first game to see your scores here.
-              </p>
+              <p style={{ fontSize: "16px", color: "#ccc", textAlign: "center" }}>No scores yet. Play the game!</p>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+              <ul style={{ listStyle: "none", padding: 0 }}>
                 {gameScores.map((score, index) => (
-                  <div
+                  <li
                     key={index}
                     style={{
                       backgroundColor: "#1a1a1a",
                       padding: "20px",
-                      borderRadius: "8px",
-                      border: "1px solid #444",
+                      borderRadius: "6px",
+                      marginBottom: "10px",
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: "16px", color: "#fff", marginBottom: "5px" }}>
-                        Score: {score.score}/10
-                      </div>
-                      <div style={{ fontSize: "14px", color: "#888" }}>{score.date}</div>
+                      <p style={{ fontSize: "16px", color: "#fff", marginBottom: "5px" }}>
+                        Score: {score.score} / {momTestQuestions.length}
+                      </p>
+                      <p style={{ fontSize: "14px", color: "#888" }}>Date: {score.date}</p>
                     </div>
-                    <div
-                      style={{
-                        fontSize: "18px",
-                        color: score.score >= 8 ? "#28a745" : score.score >= 6 ? "#ffc107" : "#dc3545",
-                      }}
-                    >
-                      {score.score >= 8 ? "🏆" : score.score >= 6 ? "👍" : "📚"}
-                    </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </div>
         </div>

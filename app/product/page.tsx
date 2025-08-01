@@ -11,7 +11,7 @@ export default function ProductPage() {
     {
       id: "action-table",
       label: "Action Table",
-      info: "Create a comprehensive action table outlining key product development tasks and priorities.",
+      info: "Analyze the insights from your Customer Interviews and see what features would solve problems you discovered.",
     },
     {
       id: "features",

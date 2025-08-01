@@ -10,13 +10,23 @@ export default function SalesPage() {
   const options = [
     {
       id: "value-proposition",
-      label: "Value Proposition Canvas",
-      info: "Create a comprehensive value proposition canvas to clearly define your product's value to customers.",
+      label: "Value Proposition Canvas (Required)",
+      info: "A structured tool to map your user's jobs, pains, and gains - and how your solution fits them.",
     },
     {
-      id: "short-pitches",
-      label: "Short Pitches",
-      info: "Develop concise and compelling pitches for different audiences and scenarios.",
+      id: "benefit-list",
+      label: "Benefit List",
+      info: "A simple list of concrete gains your user gets - save time, reduce risk, earn more, etc.",
+    },
+    {
+      id: "60-second-pitch",
+      label: "60-Second Pitch",
+      info: "A short, spoken-style version of your idea - what it is, who it's for, and why it matters.",
+    },
+    {
+      id: "1-sentence-description",
+      label: "1-Sentence Startup Description",
+      info: "A sharp, written version of your startup's core idea (great for intros, emails, and decks).",
     },
   ]
 
@@ -216,8 +226,25 @@ export default function SalesPage() {
               letterSpacing: "0.05em",
             }}
           >
-            Sales Strategy
+            Idea Description
           </h2>
+
+          {/* Description Paragraph */}
+          <p
+            style={{
+              fontSize: "1rem",
+              fontWeight: "300",
+              margin: "0 0 50px 0",
+              textAlign: "center",
+              color: "#ccc",
+              lineHeight: "1.6",
+              letterSpacing: "0.02em",
+            }}
+          >
+            To sell your idea, you need to explain it simply. This level helps you get clear on what your startup does,
+            why it matters, and how it helps - so people instantly get it. You'll write a short pitch, describe your
+            value in one sentence, and explore what real benefits you offer.
+          </p>
 
           {/* Options */}
           <div style={{ marginBottom: "50px" }}>

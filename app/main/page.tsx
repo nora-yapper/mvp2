@@ -47,7 +47,7 @@ export default function MainPage() {
   }
 
   const handleHomebaseClick = () => {
-    window.location.href = "/homebase"
+    window.location.href = "/homebase/workspace"
   }
 
   // Geometric button component
@@ -175,7 +175,7 @@ export default function MainPage() {
           {[
             { label: "Map", onClick: () => (window.location.href = "/main"), active: true },
             { label: "Command Deck", onClick: () => {} },
-            { label: "Health Analysis", onClick: () => {} },
+            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check") },
             { label: "Forecast", onClick: () => {} },
             { label: "Reports", onClick: () => {} },
             { label: "Network", onClick: () => {} },
