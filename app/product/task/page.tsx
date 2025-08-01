@@ -539,7 +539,7 @@ export default function ProductTaskPage() {
           <h3 style={{ margin: "0 0 12px 0", fontSize: "16px", fontWeight: "600", color: "#e0e0e0" }}>
             How to Use This Table
           </h3>
-          <p style={{ margin: "0 0 15px 0", color: "#b0b0b0" }}>
+          <p style={{ margin: "0 0 15px 0", color: "#ccc" }}>
             Transform your ideas from Action Table Part 1 into concrete, evaluated features. This table helps you define
             what to build, assess its value, and decide when to develop it.
           </p>
@@ -550,7 +550,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "#4A90E2" }}>
               Step 1: Define Features
             </h4>
-            <ul style={{ margin: "0", paddingLeft: "18px", color: "#b0b0b0" }}>
+            <ul style={{ margin: "0", paddingLeft: "18px", color: "#ccc" }}>
               <li>Review ideas imported from Part 1</li>
               <li>Define concrete feature names</li>
               <li>Write clear descriptions of functionality</li>
@@ -560,7 +560,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "#4A90E2" }}>
               Step 2: Evaluate & Prioritize
             </h4>
-            <ul style={{ margin: "0", paddingLeft: "18px", color: "#b0b0b0" }}>
+            <ul style={{ margin: "0", paddingLeft: "18px", color: "#ccc" }}>
               <li>Rate potential, importance, and complexity</li>
               <li>Review auto-calculated priority scores</li>
               <li>Assign development stages (MVP, BETA, etc.)</li>
@@ -643,7 +643,7 @@ export default function ProductTaskPage() {
             padding: "6px 8px",
             fontSize: "14px",
             cursor: "pointer",
-            color: "#b0b0b0",
+            color: "#ccc",
           }}
           title="Export table as CSV"
         >
@@ -723,19 +723,19 @@ export default function ProductTaskPage() {
           </div>
           <div style={{ padding: "16px 8px", textAlign: "center" }}>
             <div style={{ fontWeight: "600" }}>Potential</div>
-            <div style={{ fontSize: "11px", color: "#b0b0b0", marginTop: "2px" }}>Market Size</div>
+            <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Market Size</div>
           </div>
           <div style={{ padding: "16px 8px", textAlign: "center" }}>
             <div style={{ fontWeight: "600" }}>Importance</div>
-            <div style={{ fontSize: "11px", color: "#b0b0b0", marginTop: "2px" }}>User Need</div>
+            <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>User Need</div>
           </div>
           <div style={{ padding: "16px 8px", textAlign: "center" }}>
             <div style={{ fontWeight: "600" }}>Complexity</div>
-            <div style={{ fontSize: "11px", color: "#b0b0b0", marginTop: "2px" }}>Dev Effort</div>
+            <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Dev Effort</div>
           </div>
           <div style={{ padding: "16px 8px", textAlign: "center" }}>
             <div style={{ fontWeight: "600" }}>Score</div>
-            <div style={{ fontSize: "11px", color: "#b0b0b0", marginTop: "2px" }}>Priority</div>
+            <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Priority</div>
           </div>
           <div
             style={{
@@ -750,7 +750,7 @@ export default function ProductTaskPage() {
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span style={{ color: "#4A90E2" }}>🚀</span> Stage
             </div>
-            <div style={{ fontSize: "11px", color: "#b0b0b0" }}>Development</div>
+            <div style={{ fontSize: "11px", color: "#999" }}>Development</div>
           </div>
           <div style={{ padding: "16px 8px", textAlign: "center" }}>#</div>
           <div style={{ padding: "16px 8px", textAlign: "center" }}>🗑️</div>
@@ -764,7 +764,7 @@ export default function ProductTaskPage() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "40px 220px 200px 300px 100px 100px 100px 100px 120px 60px 40px",
-                borderBottom: index < actionTableRows.length - 1 ? "1px solid #555" : "none",
+                borderBottom: index < actionTableRows.length - 1 ? "1px solid #444" : "none",
                 fontSize: "13px",
                 backgroundColor: index % 2 === 0 ? "#2a2a2a" : "#333",
                 minHeight: "60px",
@@ -781,7 +781,7 @@ export default function ProductTaskPage() {
                   gap: "2px",
                 }}
               >
-                <span style={{ fontSize: "12px", color: "#b0b0b0", cursor: "grab" }}>⋮⋮</span>
+                <span style={{ fontSize: "12px", color: "#999", cursor: "grab" }}>⋮⋮</span>
               </div>
 
               {/* Ideas from Part 1 */}
@@ -971,7 +971,7 @@ export default function ProductTaskPage() {
                 style={{
                   padding: "12px 8px",
                   textAlign: "center",
-                  color: row.score ? "#e0e0e0" : "#b0b0b0",
+                  color: row.score ? "#e0e0e0" : "#999",
                   fontWeight: "500",
                   display: "flex",
                   alignItems: "center",
@@ -1018,7 +1018,7 @@ export default function ProductTaskPage() {
                 style={{
                   padding: "12px 8px",
                   textAlign: "center",
-                  color: "#b0b0b0",
+                  color: "#999",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1085,7 +1085,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               💡 Ideas from Part 1
             </h4>
-            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
               Auto-imported from your Action Table Part 1 "Ideas" section. You can edit these or add new ones manually.
             </p>
           </div>
@@ -1094,7 +1094,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               🎯 Feature Name
             </h4>
-            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
               Transform your idea into a concrete feature name. Be specific and user-focused (e.g., "One-click investor
               matching").
             </p>
@@ -1104,7 +1104,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               📝 Feature Description
             </h4>
-            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
               Clearly explain what this feature does and how it solves the user's problem. Focus on benefits and
               functionality.
             </p>
@@ -1114,7 +1114,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               📊 Potential (1-10)
             </h4>
-            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
               Rate the market opportunity size. How many users could benefit? What's the revenue potential?
             </p>
           </div>
@@ -1123,7 +1123,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               ⭐ Importance (1-10)
             </h4>
-            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
               How critical is this feature for your users? Does it solve a major pain point or nice-to-have?
             </p>
           </div>
@@ -1132,7 +1132,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               🔧 Complexity (1-10)
             </h4>
-            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
               Rate development difficulty. Consider technical challenges, time required, and resources needed.
             </p>
           </div>
@@ -1141,7 +1141,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               🎯 Priority Score
             </h4>
-            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
               Auto-calculated based on your ratings: (Potential + Importance) ÷ Complexity × 2. Higher scores = higher
               priority.
             </p>
@@ -1151,7 +1151,7 @@ export default function ProductTaskPage() {
             <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", fontWeight: "600", color: "#4A90E2" }}>
               🚀 Development Stage
             </h4>
-            <p style={{ margin: "0", color: "#b0b0b0", fontSize: "12px", lineHeight: "1.4" }}>
+            <p style={{ margin: "0", color: "#ccc", fontSize: "12px", lineHeight: "1.4" }}>
               Choose when to build: MVP (core launch), BETA (early testing), Prototype (validation), or Later.
             </p>
           </div>
@@ -1160,27 +1160,444 @@ export default function ProductTaskPage() {
     </div>
   )
 
+  const renderActionTablePart1 = () => (
+    <div style={{ padding: "40px", backgroundColor: "#1a1a1a", minHeight: "100vh", color: "#e0e0e0" }}>
+      <h1
+        style={{
+          fontSize: "2.5rem",
+          fontWeight: "bold",
+          marginBottom: "30px",
+          color: "#e0e0e0",
+          textAlign: "center",
+        }}
+      >
+        ACTION TABLE PART 01
+      </h1>
+
+      {/* Main Board Layout */}
+      <div
+        style={{
+          display: "flex",
+          gap: "20px",
+          marginBottom: "40px",
+          minHeight: "500px",
+          backgroundColor: "#2a2a2a",
+          padding: "20px",
+          borderRadius: "8px",
+        }}
+      >
+        {/* Key Insights Column */}
+        <PostItBoard
+          title="Key Insights"
+          postIts={keyInsights}
+          onAddPostIt={handleAddPostIt("keyInsights")}
+          onEditPostIt={handleEditPostIt("keyInsights")}
+          onDeletePostIt={handleDeletePostIt("keyInsights")}
+          onMovePostIt={handleMovePostIt("keyInsights")}
+          onChangeColor={handleChangeColor("keyInsights")}
+        />
+
+        {/* Ideas Column */}
+        <PostItBoard
+          title="Ideas"
+          postIts={ideas}
+          onAddPostIt={handleAddPostIt("ideas")}
+          onEditPostIt={handleEditPostIt("ideas")}
+          onDeletePostIt={handleDeletePostIt("ideas")}
+          onMovePostIt={handleMovePostIt("ideas")}
+          onChangeColor={handleChangeColor("ideas")}
+        />
+
+        {/* Right Column - Split into two */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "20px" }}>
+          {/* Possible Directions */}
+          <div style={{ flex: 1 }}>
+            <PostItBoard
+              title="Possible Directions"
+              postIts={possibleDirections}
+              onAddPostIt={handleAddPostIt("possibleDirections")}
+              onEditPostIt={handleEditPostIt("possibleDirections")}
+              onDeletePostIt={handleDeletePostIt("possibleDirections")}
+              onMovePostIt={handleMovePostIt("possibleDirections")}
+              onChangeColor={handleChangeColor("possibleDirections")}
+            />
+          </div>
+
+          {/* Issues */}
+          <div style={{ flex: 1 }}>
+            <PostItBoard
+              title="Issues"
+              postIts={issues}
+              onAddPostIt={handleAddPostIt("issues")}
+              onEditPostIt={handleEditPostIt("issues")}
+              onDeletePostIt={handleDeletePostIt("issues")}
+              onMovePostIt={handleMovePostIt("issues")}
+              onChangeColor={handleChangeColor("issues")}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Instructions Section */}
+      <div
+        style={{
+          backgroundColor: "#2a2a2a",
+          padding: "30px",
+          borderRadius: "8px",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+          marginTop: "40px",
+          color: "#e0e0e0",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+            marginBottom: "20px",
+            color: "#e0e0e0",
+          }}
+        >
+          How to Use this Action Table
+        </h2>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px" }}>
+          <div>
+            <h3 style={{ fontSize: "1.2rem", fontWeight: "bold", marginBottom: "10px", color: "#ccc" }}>
+              What This Task Is For:
+            </h3>
+            <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
+              Action Table Part 1 helps you take the insights you gathered from interviews and start turning them into
+              product opportunities. For each problem or need you uncovered, write down an initial idea in response—it
+              doesn't have to be a finished feature yet, just a potential direction to explore.
+            </p>
+            <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
+              Alongside each idea, note any issues it might cause or challenges it could bring. This is your space to
+              think critically and creatively about how to move from research to action.
+            </p>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize: "1.2rem", fontWeight: "bold", marginBottom: "10px", color: "#ccc" }}>
+              How to Use It:
+            </h3>
+            <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
+              Action Table Part 1 helps you take the insights you gathered from interviews and start turning them into
+              product opportunities. For each problem or need you uncovered, write down an initial idea in response—it
+              doesn't have to be a finished feature yet, just a potential direction to explore.
+            </p>
+            <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
+              Alongside each idea, note any issues it might cause or challenges it could bring. This is your space to
+              think critically and creatively about how to move from research to action.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: "25px",
+            padding: "20px",
+            backgroundColor: "#1a1a1a",
+            borderRadius: "6px",
+          }}
+        >
+          <h4 style={{ fontSize: "1.1rem", fontWeight: "bold", marginBottom: "10px", color: "#ccc" }}>
+            Section Guidelines:
+          </h4>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "15px" }}>
+            <div>
+              <strong style={{ color: "#e0e0e0" }}>Key Insights:</strong>
+              <p style={{ fontSize: "14px", color: "#b0b0b0", margin: "5px 0 0 0" }}>
+                Important discoveries, user feedback, market observations
+              </p>
+            </div>
+            <div>
+              <strong style={{ color: "#e0e0e0" }}>Ideas:</strong>
+              <p style={{ fontSize: "14px", color: "#b0b0b0", margin: "5px 0 0 0" }}>
+                Potential solutions, features, or approaches to explore
+              </p>
+            </div>
+            <div>
+              <strong style={{ color: "#e0e0e0" }}>Possible Directions:</strong>
+              <p style={{ fontSize: "14px", color: "#b0b0b0", margin: "5px 0 0 0" }}>
+                Strategic paths and next steps to consider
+              </p>
+            </div>
+            <div>
+              <strong style={{ color: "#e0e0e0" }}>Issues:</strong>
+              <p style={{ fontSize: "14px", color: "#b0b0b0", margin: "5px 0 0 0" }}>
+                Challenges, risks, and problems that need attention
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderOverviewTask = () => (
+    <div
+      style={{
+        backgroundColor: "#1a1a1a",
+        minHeight: "100vh",
+        padding: "60px 40px",
+        color: "#e0e0e0",
+      }}
+    >
+      <h1
+        style={{
+          fontSize: "3rem",
+          color: "#666",
+          fontWeight: "bold",
+          marginBottom: "40px",
+          textAlign: "center",
+        }}
+      >
+        PRODUCT STRATEGY & VISION
+      </h1>
+
+      <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+        <div
+          style={{
+            backgroundColor: "#2a2a2a",
+            padding: "40px",
+            borderRadius: "8px",
+            marginBottom: "30px",
+          }}
+        >
+          <h3 style={{ fontSize: "20px", marginBottom: "20px", color: "#fff" }}>Define Your Product Foundation</h3>
+          <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
+            Establish a clear product vision that aligns with your business goals and user needs. This foundational work
+            will guide all subsequent product decisions.
+          </p>
+          <p style={{ lineHeight: "1.6" }}>
+            Create a comprehensive strategy that encompasses market positioning, target audience, and core value
+            propositions.
+          </p>
+        </div>
+
+        <div
+          style={{
+            backgroundColor: "#2a2a2a",
+            padding: "30px",
+            borderRadius: "8px",
+          }}
+        >
+          <h4 style={{ fontSize: "16px", marginBottom: "15px", color: "#ccc" }}>Strategic Components:</h4>
+          <ul style={{ lineHeight: "1.8", paddingLeft: "20px" }}>
+            <li>Product vision statement</li>
+            <li>Target market analysis</li>
+            <li>Competitive landscape review</li>
+            <li>Core value propositions</li>
+            <li>Success metrics and KPIs</li>
+            <li>Product roadmap framework</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderTaskContent = () => {
+    if (currentSection === "action-table") {
+      if (currentTask === "development-plan") {
+        return renderActionTablePart2()
+      } else if (currentTask === "priority-tasks") {
+        return renderActionTablePart1()
+      }
+    } else if (currentSection === "overview" && currentTask === "product-strategy") {
+      return renderOverviewTask()
+    }
+
+    return (
+      <div
+        style={{
+          backgroundColor: "#1a1a1a",
+          minHeight: "100vh",
+          padding: "60px 40px",
+          color: "#e0e0e0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>Task Not Found</h1>
+          <p>The requested task could not be found.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div>
-      <PostItBoard
-        title="Key Insights"
-        postIts={keyInsights}
-        onAddPostIt={handleAddPostIt("keyInsights")}
-        onEditPostIt={handleEditPostIt("keyInsights")}
-        onDeletePostIt={handleDeletePostIt("keyInsights")}
-        onMovePostIt={handleMovePostIt("keyInsights")}
-        onChangeColor={handleChangeColor("keyInsights")}
-      />
-      <PostItBoard
-        title="Ideas"
-        postIts={ideas}
-        onAddPostIt={handleAddPostIt("ideas")}
-        onEditPostIt={handleEditPostIt("ideas")}
-        onDeletePostIt={handleDeletePostIt("ideas")}
-        onMovePostIt={handleMovePostIt("ideas")}
-        onChangeColor={handleChangeColor("ideas")}
-      />
-      {renderActionTablePart2()}
+    <div style={{ minHeight: "100vh", position: "relative" }}>
+      {/* Top Bar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "60px",
+          backgroundColor: "white",
+          borderBottom: "1px solid #ccc",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          zIndex: 1000,
+        }}
+      >
+        {/* Sidebar Toggle */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          style={{
+            background: "none",
+            border: "none",
+            fontSize: "24px",
+            cursor: "pointer",
+            marginRight: "15px",
+          }}
+        >
+          ☰
+        </button>
+
+        {/* Back Arrow */}
+        <button
+          onClick={() => window.history.back()}
+          style={{
+            background: "none",
+            border: "none",
+            fontSize: "24px",
+            cursor: "pointer",
+          }}
+        >
+          ←
+        </button>
+
+        {/* Task Title */}
+        <div style={{ marginLeft: "20px", fontSize: "16px", fontWeight: "500" }}>
+          {currentSection === "action-table" && currentTask === "development-plan" && "Action Table Part 2"}
+          {currentSection === "action-table" && currentTask === "priority-tasks" && "Action Table Part 1"}
+          {currentSection === "overview" && currentTask === "product-strategy" && "Product Strategy & Vision"}
+        </div>
+      </div>
+
+      {/* Sidebar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? 0 : "-300px",
+          width: "300px",
+          height: "100vh",
+          backgroundColor: "#f0f0f0",
+          transition: "left 0.3s ease",
+          zIndex: 999,
+          padding: "20px",
+        }}
+      >
+        {/* Top section - Settings and Profile icons */}
+        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
+            <button style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer" }}>⚙️</button>
+            <button style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer" }}>👤</button>
+          </div>
+        </div>
+
+        {/* Navigation buttons */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <button
+            onClick={() => (window.location.href = "/main")}
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Map
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Command Deck
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Health Analysis
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Forecast
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Reports
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Network
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ marginTop: "60px" }}>{renderTaskContent()}</div>
+
+      {/* Overlay for sidebar */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.3)",
+            zIndex: 998,
+          }}
+        />
+      )}
     </div>
   )
 }
