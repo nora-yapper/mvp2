@@ -605,20 +605,6 @@ export default function ProductTaskPage() {
             cursor: "pointer",
             color: "#666",
           }}
-          title="Refresh data"
-        >
-          ↻
-        </button>
-        <button
-          style={{
-            background: "none",
-            border: "1px solid #ddd",
-            borderRadius: "4px",
-            padding: "6px 8px",
-            fontSize: "14px",
-            cursor: "pointer",
-            color: "#666",
-          }}
           title="Filter"
         >
           ⚡
