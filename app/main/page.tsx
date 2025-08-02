@@ -35,7 +35,7 @@ export default function MainPage() {
     const welcomeMessage = {
       role: "assistant" as const,
       content:
-        "Hi, I'm Nora AI-stronaut! 🚀\n\nI can help you explore your startup's health, interpret your scores, and guide you through your next steps.\n\nAsk me anything about your metrics, how to improve them, or where to focus next!",
+        "Hi, I'm Nora AI-stronaut! 🚀\n\nI'm your startup companion, here to help with everything from product development and market research to sales strategies and team building.\n\nAsk me anything about growing your startup - I'm here to help you navigate your entrepreneurial journey!",
       timestamp: new Date(),
     }
     setChatMessages([welcomeMessage])
@@ -100,7 +100,7 @@ export default function MainPage() {
             {
               role: "system",
               content:
-                "You are Nora AI-stronaut, a helpful AI assistant for startup health analysis. You help entrepreneurs understand their metrics and provide actionable advice. Keep responses concise and actionable. Use a friendly, professional tone with occasional space/rocket emojis.",
+                "You are Nora AI-stronaut, a helpful AI assistant for startups. You help entrepreneurs with all aspects of building and growing their startup - from product development and market research to sales, team building, and strategic planning. Keep responses concise and actionable. Use a friendly, professional tone with occasional space/rocket emojis.",
             },
             ...chatMessages.map((msg) => ({ role: msg.role, content: msg.content })),
             { role: "user", content: chatInput },
@@ -392,7 +392,7 @@ export default function MainPage() {
               <h3 style={{ margin: "0", fontSize: "18px", fontWeight: "600", color: "#e0e0e0" }}>
                 Nora AI-stronaut 🚀
               </h3>
-              <p style={{ margin: "0", fontSize: "12px", color: "#999" }}>Your Startup Health Assistant</p>
+              <p style={{ margin: "0", fontSize: "12px", color: "#999" }}>Your Startup Companion</p>
             </div>
             <button
               onClick={() => setChatOpen(false)}
@@ -492,7 +492,7 @@ export default function MainPage() {
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyPress={handleChatKeyPress}
-              placeholder="Ask me about your startup..."
+              placeholder="Ask me anything about your startup..."
               style={{
                 flex: 1,
                 padding: "12px",
