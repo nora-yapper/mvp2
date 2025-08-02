@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { ArrowUp, ChevronDown, Send, MessageCircle, X } from "lucide-react"
+import type React from "react"
 
-interface Message {
-  id: string
-  text: string
-  isUser: boolean
+import { useState, useEffect, useRef } from "react"
+import { ArrowUp, ChevronDown, MessageCircle, X, Send } from "lucide-react"
+
+interface ChatMessage {
+  role: "user" | "assistant"
+  content: string
   timestamp: Date
 }
 
@@ -16,7 +17,7 @@ export default function HealthCheckPage() {
   const [showAnalysis, setShowAnalysis] = useState(false)
   const [expandedMetrics, setExpandedMetrics] = useState<Set<string>>(new Set())
   const [chatOpen, setChatOpen] = useState(false)
-  const [chatMessages, setChatMessages] = useState<Message[]>([])
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const chatMessagesRef = useRef<HTMLDivElement>(null)
@@ -32,16 +33,16 @@ export default function HealthCheckPage() {
 
   // Initialize chat with welcome message
   useEffect(() => {
-    const welcomeMessage: Message = {
-      id: "welcome",
-      text: "Hi, I'm Nora AI-stronaut! 🚀\n\nI can help you explore your startup's health, interpret your scores, and guide you through your next steps.\n\nAsk me anything about your metrics, how to improve them, or where to focus next!",
-      isUser: false,
+    const welcomeMessage: ChatMessage = {
+      role: "assistant",
+      content:
+        "Hi, I'm Nora AI-stronaut! 🚀\n\nI can help you explore your startup's health, interpret your scores, and guide you through your next steps.\n\nAsk me anything about your metrics, how to improve them, or where to focus next!",
       timestamp: new Date(),
     }
     setChatMessages([welcomeMessage])
   }, [])
 
-  // Auto-scroll chat to bottom
+  // Scroll to bottom of chat when new messages are added
   useEffect(() => {
     if (chatMessagesRef.current) {
       chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight
@@ -69,10 +70,9 @@ export default function HealthCheckPage() {
   const sendChatMessage = async () => {
     if (!chatInput.trim()) return
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: chatInput,
-      isUser: true,
+    const userMessage: ChatMessage = {
+      role: "user",
+      content: chatInput,
       timestamp: new Date(),
     }
 
@@ -91,37 +91,40 @@ export default function HealthCheckPage() {
             {
               role: "system",
               content:
-                "You are Nora AI-stronaut, a helpful AI assistant for startup health analysis. You help entrepreneurs understand their metrics and provide actionable advice. Keep responses concise and encouraging.",
+                "You are Nora AI-stronaut, a helpful AI assistant for startup health analysis. You help entrepreneurs understand their metrics and provide actionable advice. Keep responses concise and actionable. Use a friendly, professional tone with occasional space/rocket emojis.",
             },
-            {
-              role: "user",
-              content: chatInput,
-            },
+            ...chatMessages.map((msg) => ({ role: msg.role, content: msg.content })),
+            { role: "user", content: chatInput },
           ],
         }),
       })
 
       const data = await response.json()
 
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: data.message || "I'm here to help you with your startup health analysis!",
-        isUser: false,
+      const assistantMessage: ChatMessage = {
+        role: "assistant",
+        content: data.message || "I'm here to help you with your startup health analysis!",
         timestamp: new Date(),
       }
 
-      setChatMessages((prev) => [...prev, aiMessage])
+      setChatMessages((prev) => [...prev, assistantMessage])
     } catch (error) {
       console.error("Chat error:", error)
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "Sorry, I'm having trouble connecting right now. Please try again!",
-        isUser: false,
+      const errorMessage: ChatMessage = {
+        role: "assistant",
+        content: "Sorry, I'm having trouble connecting right now. Please try again in a moment! 🚀",
         timestamp: new Date(),
       }
       setChatMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsTyping(false)
+    }
+  }
+
+  const handleChatKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      sendChatMessage()
     }
   }
 
@@ -287,6 +290,215 @@ export default function HealthCheckPage() {
         ☰
       </button>
 
+      {/* Chat Button */}
+      <button
+        onClick={() => setChatOpen(true)}
+        style={{
+          position: "fixed",
+          bottom: "30px",
+          right: "30px",
+          background: "#007bff",
+          border: "1px solid #0056b3",
+          color: "#fff",
+          width: "60px",
+          height: "60px",
+          borderRadius: "50%",
+          cursor: "pointer",
+          zIndex: 1000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 4px 12px rgba(0, 123, 255, 0.3)",
+          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "scale(1.1)"
+          e.currentTarget.style.boxShadow = "0 6px 16px rgba(0, 123, 255, 0.4)"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "scale(1)"
+          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 123, 255, 0.3)"
+        }}
+      >
+        <MessageCircle size={24} />
+      </button>
+
+      {/* Chat Window */}
+      {chatOpen && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "100px",
+            right: "30px",
+            width: "400px",
+            height: "500px",
+            backgroundColor: "#2a2a2a",
+            border: "1px solid #444",
+            clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+            zIndex: 1001,
+            display: "flex",
+            flexDirection: "column",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+          }}
+        >
+          {/* Chat Header */}
+          <div
+            style={{
+              padding: "20px",
+              borderBottom: "1px solid #444",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              backgroundColor: "#333",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% calc(100% - 5px), 0 100%)",
+            }}
+          >
+            <div>
+              <h3 style={{ margin: "0", fontSize: "18px", fontWeight: "600", color: "#e0e0e0" }}>
+                Nora AI-stronaut 🚀
+              </h3>
+              <p style={{ margin: "0", fontSize: "12px", color: "#999" }}>Your Startup Health Assistant</p>
+            </div>
+            <button
+              onClick={() => setChatOpen(false)}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "#999",
+                cursor: "pointer",
+                padding: "5px",
+                transition: "color 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#fff"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#999"
+              }}
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Chat Messages */}
+          <div
+            ref={chatMessagesRef}
+            style={{
+              flex: 1,
+              padding: "20px",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "15px",
+            }}
+          >
+            {chatMessages.map((message, index) => (
+              <div
+                key={index}
+                style={{
+                  alignSelf: message.role === "user" ? "flex-end" : "flex-start",
+                  maxWidth: "80%",
+                }}
+              >
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    backgroundColor: message.role === "user" ? "#007bff" : "#333",
+                    color: "#e0e0e0",
+                    fontSize: "14px",
+                    lineHeight: "1.4",
+                    clipPath:
+                      message.role === "user"
+                        ? "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))"
+                        : "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {message.content}
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "#666",
+                    marginTop: "5px",
+                    textAlign: message.role === "user" ? "right" : "left",
+                  }}
+                >
+                  {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </div>
+            ))}
+
+            {isTyping && (
+              <div style={{ alignSelf: "flex-start", maxWidth: "80%" }}>
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    backgroundColor: "#333",
+                    color: "#999",
+                    fontSize: "14px",
+                    clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                  }}
+                >
+                  Nora is typing...
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Chat Input */}
+          <div
+            style={{
+              padding: "20px",
+              borderTop: "1px solid #444",
+              display: "flex",
+              gap: "10px",
+              alignItems: "flex-end",
+            }}
+          >
+            <textarea
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyPress={handleChatKeyPress}
+              placeholder="Ask me about your metrics..."
+              style={{
+                flex: 1,
+                padding: "12px",
+                backgroundColor: "#1a1a1a",
+                border: "1px solid #444",
+                color: "#e0e0e0",
+                fontSize: "14px",
+                resize: "none",
+                minHeight: "40px",
+                maxHeight: "100px",
+                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                outline: "none",
+              }}
+              rows={1}
+            />
+            <button
+              onClick={sendChatMessage}
+              disabled={!chatInput.trim() || isTyping}
+              style={{
+                background: chatInput.trim() && !isTyping ? "#007bff" : "#444",
+                border: "1px solid #555",
+                color: "#e0e0e0",
+                width: "40px",
+                height: "40px",
+                cursor: chatInput.trim() && !isTyping ? "pointer" : "not-allowed",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "background 0.3s ease",
+              }}
+            >
+              <Send size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar */}
       <div
         style={{
@@ -366,189 +578,6 @@ export default function HealthCheckPage() {
           ))}
         </div>
       </div>
-
-      {/* Chat Button */}
-      <button
-        onClick={() => setChatOpen(!chatOpen)}
-        style={{
-          position: "fixed",
-          bottom: "30px",
-          right: "30px",
-          background: "#007bff",
-          border: "1px solid #0056b3",
-          color: "#fff",
-          width: "60px",
-          height: "60px",
-          cursor: "pointer",
-          zIndex: 1000,
-          clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "all 0.3s ease",
-          boxShadow: "0 4px 12px rgba(0, 123, 255, 0.3)",
-        }}
-      >
-        {chatOpen ? <X size={24} /> : <MessageCircle size={24} />}
-      </button>
-
-      {/* Chat Window */}
-      {chatOpen && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "100px",
-            right: "30px",
-            width: "400px",
-            height: "500px",
-            backgroundColor: "#2a2a2a",
-            border: "1px solid #444",
-            clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-            zIndex: 1000,
-            display: "flex",
-            flexDirection: "column",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
-          }}
-        >
-          {/* Chat Header */}
-          <div
-            style={{
-              padding: "20px",
-              borderBottom: "1px solid #444",
-              backgroundColor: "#333",
-              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% calc(100% - 5px), 0 100%)",
-            }}
-          >
-            <h3
-              style={{
-                margin: "0",
-                color: "#e0e0e0",
-                fontSize: "18px",
-                fontWeight: "600",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              🚀 Nora AI-stronaut
-            </h3>
-            <p
-              style={{
-                margin: "5px 0 0 0",
-                color: "#999",
-                fontSize: "12px",
-              }}
-            >
-              Your startup health assistant
-            </p>
-          </div>
-
-          {/* Chat Messages */}
-          <div
-            ref={chatMessagesRef}
-            style={{
-              flex: 1,
-              padding: "20px",
-              overflowY: "auto",
-              display: "flex",
-              flexDirection: "column",
-              gap: "15px",
-            }}
-          >
-            {chatMessages.map((message) => (
-              <div
-                key={message.id}
-                style={{
-                  display: "flex",
-                  justifyContent: message.isUser ? "flex-end" : "flex-start",
-                }}
-              >
-                <div
-                  style={{
-                    maxWidth: "80%",
-                    padding: "12px 16px",
-                    backgroundColor: message.isUser ? "#007bff" : "#333",
-                    color: "#e0e0e0",
-                    fontSize: "14px",
-                    lineHeight: "1.4",
-                    clipPath: message.isUser
-                      ? "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))"
-                      : "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                    whiteSpace: "pre-wrap",
-                  }}
-                >
-                  {message.text}
-                </div>
-              </div>
-            ))}
-            {isTyping && (
-              <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                <div
-                  style={{
-                    padding: "12px 16px",
-                    backgroundColor: "#333",
-                    color: "#999",
-                    fontSize: "14px",
-                    clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                  }}
-                >
-                  Nora is typing...
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Chat Input */}
-          <div
-            style={{
-              padding: "20px",
-              borderTop: "1px solid #444",
-              display: "flex",
-              gap: "10px",
-            }}
-          >
-            <input
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              placeholder="Ask Nora about your metrics..."
-              style={{
-                flex: 1,
-                padding: "12px",
-                backgroundColor: "#1a1a1a",
-                border: "1px solid #444",
-                color: "#e0e0e0",
-                fontSize: "14px",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-                outline: "none",
-              }}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  sendChatMessage()
-                }
-              }}
-            />
-            <button
-              onClick={sendChatMessage}
-              disabled={!chatInput.trim() || isTyping}
-              style={{
-                padding: "12px",
-                backgroundColor: "#007bff",
-                border: "1px solid #0056b3",
-                color: "#fff",
-                cursor: chatInput.trim() && !isTyping ? "pointer" : "not-allowed",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-                opacity: chatInput.trim() && !isTyping ? 1 : 0.5,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Send size={16} />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Main Content */}
       <div style={{ padding: "100px 50px 50px 50px", maxWidth: "1200px", margin: "0 auto" }}>
