@@ -1,13 +1,25 @@
 "use client"
 
-import { useState } from "react"
-import { ArrowUp, ChevronDown } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { ArrowUp, ChevronDown, Send, MessageCircle, X } from "lucide-react"
+
+interface Message {
+  id: string
+  text: string
+  isUser: boolean
+  timestamp: Date
+}
 
 export default function HealthCheckPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [inputValue, setInputValue] = useState("")
   const [showAnalysis, setShowAnalysis] = useState(false)
   const [expandedMetrics, setExpandedMetrics] = useState<Set<string>>(new Set())
+  const [chatOpen, setChatOpen] = useState(false)
+  const [chatMessages, setChatMessages] = useState<Message[]>([])
+  const [chatInput, setChatInput] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
+  const chatMessagesRef = useRef<HTMLDivElement>(null)
 
   const metrics = [
     { title: "Product & Innovation", score: 85, category: "top" },
@@ -17,6 +29,24 @@ export default function HealthCheckPage() {
     { title: "Operations & Scalability", score: 45, category: "bottom" },
     { title: "Financial Health", score: 88, category: "bottom" },
   ]
+
+  // Initialize chat with welcome message
+  useEffect(() => {
+    const welcomeMessage: Message = {
+      id: "welcome",
+      text: "Hi, I'm Nora AI-stronaut! 🚀\n\nI can help you explore your startup's health, interpret your scores, and guide you through your next steps.\n\nAsk me anything about your metrics, how to improve them, or where to focus next!",
+      isUser: false,
+      timestamp: new Date(),
+    }
+    setChatMessages([welcomeMessage])
+  }, [])
+
+  // Auto-scroll chat to bottom
+  useEffect(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight
+    }
+  }, [chatMessages])
 
   const handleAnalyze = () => {
     if (inputValue.trim()) {
@@ -34,6 +64,65 @@ export default function HealthCheckPage() {
       }
       return newSet
     })
+  }
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim()) return
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: chatInput,
+      isUser: true,
+      timestamp: new Date(),
+    }
+
+    setChatMessages((prev) => [...prev, userMessage])
+    setChatInput("")
+    setIsTyping(true)
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are Nora AI-stronaut, a helpful AI assistant for startup health analysis. You help entrepreneurs understand their metrics and provide actionable advice. Keep responses concise and encouraging.",
+            },
+            {
+              role: "user",
+              content: chatInput,
+            },
+          ],
+        }),
+      })
+
+      const data = await response.json()
+
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: data.message || "I'm here to help you with your startup health analysis!",
+        isUser: false,
+        timestamp: new Date(),
+      }
+
+      setChatMessages((prev) => [...prev, aiMessage])
+    } catch (error) {
+      console.error("Chat error:", error)
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "Sorry, I'm having trouble connecting right now. Please try again!",
+        isUser: false,
+        timestamp: new Date(),
+      }
+      setChatMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsTyping(false)
+    }
   }
 
   // Metric Card Component
@@ -278,6 +367,189 @@ export default function HealthCheckPage() {
         </div>
       </div>
 
+      {/* Chat Button */}
+      <button
+        onClick={() => setChatOpen(!chatOpen)}
+        style={{
+          position: "fixed",
+          bottom: "30px",
+          right: "30px",
+          background: "#007bff",
+          border: "1px solid #0056b3",
+          color: "#fff",
+          width: "60px",
+          height: "60px",
+          cursor: "pointer",
+          zIndex: 1000,
+          clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.3s ease",
+          boxShadow: "0 4px 12px rgba(0, 123, 255, 0.3)",
+        }}
+      >
+        {chatOpen ? <X size={24} /> : <MessageCircle size={24} />}
+      </button>
+
+      {/* Chat Window */}
+      {chatOpen && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "100px",
+            right: "30px",
+            width: "400px",
+            height: "500px",
+            backgroundColor: "#2a2a2a",
+            border: "1px solid #444",
+            clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+            zIndex: 1000,
+            display: "flex",
+            flexDirection: "column",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+          }}
+        >
+          {/* Chat Header */}
+          <div
+            style={{
+              padding: "20px",
+              borderBottom: "1px solid #444",
+              backgroundColor: "#333",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% calc(100% - 5px), 0 100%)",
+            }}
+          >
+            <h3
+              style={{
+                margin: "0",
+                color: "#e0e0e0",
+                fontSize: "18px",
+                fontWeight: "600",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              🚀 Nora AI-stronaut
+            </h3>
+            <p
+              style={{
+                margin: "5px 0 0 0",
+                color: "#999",
+                fontSize: "12px",
+              }}
+            >
+              Your startup health assistant
+            </p>
+          </div>
+
+          {/* Chat Messages */}
+          <div
+            ref={chatMessagesRef}
+            style={{
+              flex: 1,
+              padding: "20px",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "15px",
+            }}
+          >
+            {chatMessages.map((message) => (
+              <div
+                key={message.id}
+                style={{
+                  display: "flex",
+                  justifyContent: message.isUser ? "flex-end" : "flex-start",
+                }}
+              >
+                <div
+                  style={{
+                    maxWidth: "80%",
+                    padding: "12px 16px",
+                    backgroundColor: message.isUser ? "#007bff" : "#333",
+                    color: "#e0e0e0",
+                    fontSize: "14px",
+                    lineHeight: "1.4",
+                    clipPath: message.isUser
+                      ? "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))"
+                      : "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {message.text}
+                </div>
+              </div>
+            ))}
+            {isTyping && (
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    backgroundColor: "#333",
+                    color: "#999",
+                    fontSize: "14px",
+                    clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                  }}
+                >
+                  Nora is typing...
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Chat Input */}
+          <div
+            style={{
+              padding: "20px",
+              borderTop: "1px solid #444",
+              display: "flex",
+              gap: "10px",
+            }}
+          >
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder="Ask Nora about your metrics..."
+              style={{
+                flex: 1,
+                padding: "12px",
+                backgroundColor: "#1a1a1a",
+                border: "1px solid #444",
+                color: "#e0e0e0",
+                fontSize: "14px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                outline: "none",
+              }}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  sendChatMessage()
+                }
+              }}
+            />
+            <button
+              onClick={sendChatMessage}
+              disabled={!chatInput.trim() || isTyping}
+              style={{
+                padding: "12px",
+                backgroundColor: "#007bff",
+                border: "1px solid #0056b3",
+                color: "#fff",
+                cursor: chatInput.trim() && !isTyping ? "pointer" : "not-allowed",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                opacity: chatInput.trim() && !isTyping ? 1 : 0.5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Send size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <div style={{ padding: "100px 50px 50px 50px", maxWidth: "1200px", margin: "0 auto" }}>
         {/* Header */}
@@ -476,17 +748,17 @@ export default function HealthCheckPage() {
         }}
       />
       <style jsx>{`
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-`}</style>
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   )
 }
