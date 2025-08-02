@@ -175,7 +175,7 @@ export default function MainPage() {
           {[
             { label: "Map", onClick: () => (window.location.href = "/main"), active: true },
             { label: "Command Deck", onClick: () => {} },
-            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check") },
+            { label: "Health Check", onClick: () => (window.location.href = "/health-check") },
             { label: "Forecast", onClick: () => {} },
             { label: "Reports", onClick: () => {} },
             { label: "Network", onClick: () => {} },
