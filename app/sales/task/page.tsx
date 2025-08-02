@@ -1,337 +1,567 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, DollarSign, CheckCircle, Plus, Edit, Trash2, Download } from "lucide-react"
-import Link from "next/link"
-
-interface Task {
-  id: string
-  title: string
-  description: string
-  status: "pending" | "in-progress" | "completed"
-  priority: "low" | "medium" | "high"
-  dueDate: string
-  category: string
-}
+import { useState, useEffect } from "react"
 
 export default function SalesTaskPage() {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: "1",
-      title: "Create sales pitch deck",
-      description: "Develop a compelling 10-slide pitch deck for potential customers",
-      status: "in-progress",
-      priority: "high",
-      dueDate: "2024-02-15",
-      category: "Content Creation",
-    },
-    {
-      id: "2",
-      title: "Identify 50 potential leads",
-      description: "Research and compile a list of qualified prospects in target market",
-      status: "completed",
-      priority: "high",
-      dueDate: "2024-02-10",
-      category: "Lead Generation",
-    },
-    {
-      id: "3",
-      title: "Set up CRM system",
-      description: "Configure customer relationship management system for tracking leads",
-      status: "pending",
-      priority: "medium",
-      dueDate: "2024-02-20",
-      category: "Tools & Systems",
-    },
-  ])
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([])
+  const [currentSection, setCurrentSection] = useState<string>("")
+  const [currentTask, setCurrentTask] = useState<string>("")
 
-  const [newTask, setNewTask] = useState({
-    title: "",
-    description: "",
-    priority: "medium" as const,
-    dueDate: "",
-    category: "General",
-  })
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const section = params.get("section") || ""
+    const task = params.get("task") || ""
+    const options = params.get("options")
 
-  const [showAddTask, setShowAddTask] = useState(false)
+    setCurrentSection(section)
+    setCurrentTask(task)
 
-  const addTask = () => {
-    if (newTask.title && newTask.description) {
-      const task: Task = {
-        id: Date.now().toString(),
-        title: newTask.title,
-        description: newTask.description,
-        status: "pending",
-        priority: newTask.priority,
-        dueDate: newTask.dueDate,
-        category: newTask.category,
-      }
-      setTasks([...tasks, task])
-      setNewTask({ title: "", description: "", priority: "medium", dueDate: "", category: "General" })
-      setShowAddTask(false)
+    if (options) {
+      setSelectedOptions(options.split(","))
     }
-  }
+  }, [])
 
-  const updateTaskStatus = (taskId: string, status: Task["status"]) => {
-    setTasks(tasks.map((task) => (task.id === taskId ? { ...task, status } : task)))
-  }
-
-  const deleteTask = (taskId: string) => {
-    setTasks(tasks.filter((task) => task.id !== taskId))
-  }
-
-  const getStatusColor = (status: Task["status"]) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-500"
-      case "in-progress":
-        return "bg-yellow-500"
-      default:
-        return "bg-slate-400"
+  const getTaskTitle = () => {
+    if (currentSection === "overview" && currentTask === "sales-strategy") {
+      return "Sales Strategy & Approach"
     }
-  }
-
-  const getPriorityColor = (priority: Task["priority"]) => {
-    switch (priority) {
-      case "high":
-        return "destructive"
-      case "medium":
-        return "default"
-      default:
-        return "secondary"
+    if (currentSection === "value-proposition" && currentTask === "customer-profile") {
+      return "Customer Profile"
     }
+    if (currentSection === "value-proposition" && currentTask === "value-map") {
+      return "Value Map"
+    }
+    return "Task Details"
   }
 
-  const completedTasks = tasks.filter((task) => task.status === "completed").length
-  const totalTasks = tasks.length
-  const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
+  const getTaskContent = () => {
+    if (currentSection === "overview" && currentTask === "sales-strategy") {
+      return (
+        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+          <div
+            style={{
+              backgroundColor: "#2a2a2a",
+              color: "#e0e0e0",
+              padding: "40px",
+              borderRadius: "8px",
+              marginBottom: "30px",
+            }}
+          >
+            <h3 style={{ fontSize: "24px", marginBottom: "20px", color: "#fff" }}>Define Your Sales Strategy</h3>
+            <p style={{ marginBottom: "20px", lineHeight: "1.6" }}>
+              Develop a comprehensive sales strategy that aligns with your business goals and target market. Define your
+              approach to customer acquisition and retention.
+            </p>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      {/* Header */}
-      <div className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/sales/plan"
-                className="flex items-center space-x-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span className="text-sm">Back to Sales Plan</span>
-              </Link>
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
-                  <DollarSign className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Sales Tasks</h1>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Execute your sales strategy step by step</p>
-                </div>
-              </div>
+            <div style={{ marginBottom: "30px" }}>
+              <label style={{ display: "block", marginBottom: "10px", fontWeight: "bold" }}>
+                What is your target market?
+              </label>
+              <textarea
+                style={{
+                  width: "100%",
+                  minHeight: "100px",
+                  padding: "15px",
+                  backgroundColor: "#1a1a1a",
+                  color: "#e0e0e0",
+                  border: "1px solid #444",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                }}
+                placeholder="Define your ideal customer segments and market size..."
+              />
             </div>
-            <div className="flex items-center space-x-3">
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-              <Badge variant="outline" className="px-3 py-1">
-                {completedTasks}/{totalTasks} Complete
-              </Badge>
+
+            <div style={{ marginBottom: "30px" }}>
+              <label style={{ display: "block", marginBottom: "10px", fontWeight: "bold" }}>
+                What is your sales process?
+              </label>
+              <textarea
+                style={{
+                  width: "100%",
+                  minHeight: "80px",
+                  padding: "15px",
+                  backgroundColor: "#1a1a1a",
+                  color: "#e0e0e0",
+                  border: "1px solid #444",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                }}
+                placeholder="Outline your sales funnel and process steps..."
+              />
             </div>
+
+            <div style={{ marginBottom: "30px" }}>
+              <label style={{ display: "block", marginBottom: "10px", fontWeight: "bold" }}>
+                What are your sales goals and metrics?
+              </label>
+              <textarea
+                style={{
+                  width: "100%",
+                  minHeight: "100px",
+                  padding: "15px",
+                  backgroundColor: "#1a1a1a",
+                  color: "#e0e0e0",
+                  border: "1px solid #444",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                }}
+                placeholder="Define revenue targets, conversion rates, customer acquisition costs..."
+              />
+            </div>
+
+            <button
+              style={{
+                padding: "12px 24px",
+                backgroundColor: "#007bff",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                fontSize: "16px",
+                cursor: "pointer",
+              }}
+            >
+              Save Sales Strategy
+            </button>
           </div>
         </div>
-      </div>
+      )
+    }
 
-      <div className="container mx-auto px-6 py-8">
-        {/* Progress Overview */}
-        <Card className="mb-8 shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Sales Progress Overview</span>
-              <Button onClick={() => setShowAddTask(true)} size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Task
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between text-sm">
-                <span>Overall Progress</span>
-                <span>{Math.round(progressPercentage)}% Complete</span>
-              </div>
-              <Progress value={progressPercentage} className="h-3" />
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {tasks.filter((t) => t.status === "pending").length}
-                  </p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Pending</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-yellow-600">
-                    {tasks.filter((t) => t.status === "in-progress").length}
-                  </p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">In Progress</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-green-600">{completedTasks}</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Completed</p>
-                </div>
+    if (currentSection === "value-proposition" && currentTask === "customer-profile") {
+      return (
+        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+          <div
+            style={{
+              backgroundColor: "#2a2a2a",
+              color: "#e0e0e0",
+              padding: "40px",
+              borderRadius: "8px",
+              marginBottom: "30px",
+            }}
+          >
+            <h3 style={{ fontSize: "24px", marginBottom: "20px", color: "#fff" }}>Customer Profile Analysis</h3>
+            <p style={{ marginBottom: "30px", lineHeight: "1.6" }}>
+              Create detailed customer profiles by identifying their jobs-to-be-done, pain points, and desired gains.
+              Understanding your customers is key to creating compelling value propositions.
+            </p>
+
+            <div style={{ marginBottom: "30px" }}>
+              <h4 style={{ fontSize: "18px", marginBottom: "15px", color: "#ccc" }}>Customer Jobs</h4>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {[
+                  "Functional jobs (practical tasks)",
+                  "Emotional jobs (feelings and emotions)",
+                  "Social jobs (how they want to be perceived)",
+                ].map((item, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      padding: "15px",
+                      backgroundColor: "#1a1a1a",
+                      borderRadius: "4px",
+                      border: "1px solid #444",
+                    }}
+                  >
+                    <label style={{ display: "block", marginBottom: "5px", fontSize: "14px", color: "#ccc" }}>
+                      {item}
+                    </label>
+                    <textarea
+                      style={{
+                        width: "100%",
+                        minHeight: "60px",
+                        padding: "10px",
+                        backgroundColor: "#0a0a0a",
+                        color: "#e0e0e0",
+                        border: "1px solid #333",
+                        borderRadius: "4px",
+                        fontSize: "13px",
+                      }}
+                      placeholder={`Describe ${item.toLowerCase()}...`}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Add Task Modal */}
-        {showAddTask && (
-          <Card className="mb-8 shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Add New Task</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Task Title</label>
-                  <Input
-                    value={newTask.title}
-                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                    placeholder="Enter task title"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Category</label>
-                  <Input
-                    value={newTask.category}
-                    onChange={(e) => setNewTask({ ...newTask, category: e.target.value })}
-                    placeholder="Task category"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
-                <Textarea
-                  value={newTask.description}
-                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                  placeholder="Describe the task"
-                  className="min-h-[80px]"
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Priority</label>
-                  <select
-                    value={newTask.priority}
-                    onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as Task["priority"] })}
-                    className="w-full p-2 border border-slate-300 rounded-md"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Due Date</label>
-                  <Input
-                    type="date"
-                    value={newTask.dueDate}
-                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end space-x-3">
-                <Button variant="outline" onClick={() => setShowAddTask(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={addTask}>Add Task</Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            <div style={{ marginBottom: "30px" }}>
+              <h4 style={{ fontSize: "18px", marginBottom: "15px", color: "#ccc" }}>Pain Points</h4>
+              <textarea
+                style={{
+                  width: "100%",
+                  minHeight: "100px",
+                  padding: "15px",
+                  backgroundColor: "#1a1a1a",
+                  color: "#e0e0e0",
+                  border: "1px solid #444",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                }}
+                placeholder="List customer frustrations, obstacles, and negative emotions..."
+              />
+            </div>
 
-        {/* Tasks List */}
-        <div className="space-y-6">
-          {tasks.map((task) => (
-            <Card key={task.id} className="shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full ${getStatusColor(task.status)}`} />
-                    <CardTitle className="text-lg">{task.title}</CardTitle>
-                    <Badge variant={getPriorityColor(task.priority)}>{task.priority}</Badge>
+            <div style={{ marginBottom: "30px" }}>
+              <h4 style={{ fontSize: "18px", marginBottom: "15px", color: "#ccc" }}>Desired Gains</h4>
+              <textarea
+                style={{
+                  width: "100%",
+                  minHeight: "100px",
+                  padding: "15px",
+                  backgroundColor: "#1a1a1a",
+                  color: "#e0e0e0",
+                  border: "1px solid #444",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                }}
+                placeholder="Describe benefits customers want, positive emotions they seek..."
+              />
+            </div>
+
+            <button
+              style={{
+                padding: "12px 24px",
+                backgroundColor: "#007bff",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                fontSize: "16px",
+                cursor: "pointer",
+              }}
+            >
+              Save Customer Profile
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    if (currentSection === "value-proposition" && currentTask === "value-map") {
+      return (
+        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+          <div
+            style={{
+              backgroundColor: "#2a2a2a",
+              color: "#e0e0e0",
+              padding: "40px",
+              borderRadius: "8px",
+              marginBottom: "30px",
+            }}
+          >
+            <h3 style={{ fontSize: "24px", marginBottom: "20px", color: "#fff" }}>Value Map Creation</h3>
+            <p style={{ marginBottom: "30px", lineHeight: "1.6" }}>
+              Map your products and services to customer needs. Define how you create value through pain relievers and
+              gain creators that directly address customer jobs, pains, and gains.
+            </p>
+
+            <div style={{ marginBottom: "30px" }}>
+              <label style={{ display: "block", marginBottom: "10px", fontWeight: "bold" }}>Products & Services</label>
+              <textarea
+                style={{
+                  width: "100%",
+                  minHeight: "80px",
+                  padding: "15px",
+                  backgroundColor: "#1a1a1a",
+                  color: "#e0e0e0",
+                  border: "1px solid #444",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                }}
+                placeholder="List your core products and services..."
+              />
+            </div>
+
+            <div style={{ marginBottom: "30px" }}>
+              <h4 style={{ fontSize: "18px", marginBottom: "15px", color: "#ccc" }}>Pain Relievers</h4>
+              <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                {[
+                  "How do you eliminate customer frustrations?",
+                  "How do you remove obstacles?",
+                  "How do you reduce risks?",
+                ].map((question, index) => (
+                  <div key={index}>
+                    <label style={{ display: "block", marginBottom: "5px", fontSize: "14px", color: "#ccc" }}>
+                      {question}
+                    </label>
+                    <textarea
+                      style={{
+                        width: "100%",
+                        minHeight: "60px",
+                        padding: "10px",
+                        backgroundColor: "#1a1a1a",
+                        color: "#e0e0e0",
+                        border: "1px solid #444",
+                        borderRadius: "4px",
+                        fontSize: "13px",
+                      }}
+                      placeholder="Describe how your solution addresses this..."
+                    />
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => deleteTask(task.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "30px" }}>
+              <h4 style={{ fontSize: "18px", marginBottom: "15px", color: "#ccc" }}>Gain Creators</h4>
+              <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                {[
+                  "How do you create benefits customers expect?",
+                  "How do you deliver outcomes that exceed expectations?",
+                  "How do you create positive emotions?",
+                ].map((question, index) => (
+                  <div key={index}>
+                    <label style={{ display: "block", marginBottom: "5px", fontSize: "14px", color: "#ccc" }}>
+                      {question}
+                    </label>
+                    <textarea
+                      style={{
+                        width: "100%",
+                        minHeight: "60px",
+                        padding: "10px",
+                        backgroundColor: "#1a1a1a",
+                        color: "#e0e0e0",
+                        border: "1px solid #444",
+                        borderRadius: "4px",
+                        fontSize: "13px",
+                      }}
+                      placeholder="Describe the value you create..."
+                    />
                   </div>
-                </div>
-                <CardDescription>{task.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <Badge variant="outline">{task.category}</Badge>
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      Due: {new Date(task.dueDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant={task.status === "pending" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => updateTaskStatus(task.id, "pending")}
-                    >
-                      Pending
-                    </Button>
-                    <Button
-                      variant={task.status === "in-progress" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => updateTaskStatus(task.id, "in-progress")}
-                    >
-                      In Progress
-                    </Button>
-                    <Button
-                      variant={task.status === "completed" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => updateTaskStatus(task.id, "completed")}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      Complete
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                ))}
+              </div>
+            </div>
+
+            <button
+              style={{
+                padding: "12px 24px",
+                backgroundColor: "#007bff",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                fontSize: "16px",
+                cursor: "pointer",
+              }}
+            >
+              Save Value Map
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    return <div>Task content not found</div>
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
+      {/* Top Bar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "60px",
+          backgroundColor: "white",
+          borderBottom: "1px solid #ccc",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          zIndex: 1000,
+        }}
+      >
+        {/* Sidebar Toggle */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          style={{
+            background: "none",
+            border: "none",
+            fontSize: "24px",
+            cursor: "pointer",
+            marginRight: "15px",
+          }}
+        >
+          ☰
+        </button>
+
+        {/* Back Arrow */}
+        <button
+          onClick={() => {
+            const optionsParam = selectedOptions.join(",")
+            window.location.href = `/sales/detail?step=${currentSection}&options=${optionsParam}`
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            fontSize: "24px",
+            cursor: "pointer",
+          }}
+        >
+          ←
+        </button>
+
+        {/* Task Title */}
+        <h2 style={{ marginLeft: "20px", fontSize: "18px", color: "#333" }}>{getTaskTitle()}</h2>
+      </div>
+
+      {/* Sidebar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? 0 : "-300px",
+          width: "300px",
+          height: "100vh",
+          backgroundColor: "#f0f0f0",
+          transition: "left 0.3s ease",
+          zIndex: 999,
+          padding: "20px",
+        }}
+      >
+        {/* Top section - Settings and Profile icons */}
+        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
+            <button
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: "24px",
+                cursor: "pointer",
+              }}
+            >
+              ⚙️
+            </button>
+            <button
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: "24px",
+                cursor: "pointer",
+              }}
+            >
+              👤
+            </button>
+          </div>
         </div>
 
-        {tasks.length === 0 && (
-          <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-            <CardContent className="text-center py-12">
-              <DollarSign className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No tasks yet</h3>
-              <p className="text-slate-600 dark:text-slate-400 mb-4">
-                Start by adding your first sales task to begin executing your strategy.
-              </p>
-              <Button onClick={() => setShowAddTask(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Task
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        {/* Six vertically stacked buttons */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <button
+            onClick={() => (window.location.href = "/main")}
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Map
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Command Deck
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Health Analysis
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Forecast
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Reports
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Network
+          </button>
+        </div>
       </div>
+
+      {/* Main Content */}
+      <div
+        style={{
+          marginTop: "60px",
+          padding: "40px 20px",
+          color: "#e0e0e0",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "3rem",
+            color: "#666",
+            fontWeight: "bold",
+            marginBottom: "40px",
+            textAlign: "center",
+            letterSpacing: "0.1em",
+          }}
+        >
+          {getTaskTitle().toUpperCase()}
+        </h1>
+
+        {getTaskContent()}
+      </div>
+
+      {/* Overlay for sidebar */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.3)",
+            zIndex: 998,
+          }}
+        />
+      )}
     </div>
   )
 }

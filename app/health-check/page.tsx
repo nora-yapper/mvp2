@@ -1,164 +1,492 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
-import { ArrowUp, ArrowDown, Menu } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-
-interface MetricData {
-  id: string
-  title: string
-  score: number
-  color: string
-}
-
-const metricsData: MetricData[] = [
-  { id: "product", title: "Product & Innovation", score: 85, color: "#E5E7EB" },
-  { id: "marketing", title: "Marketing & Brand", score: 62, color: "#E5E7EB" },
-  { id: "sales", title: "Sales & Revenue", score: 95, color: "#E5E7EB" },
-  { id: "team", title: "Team & Culture", score: 73, color: "#E5E7EB" },
-  { id: "operations", title: "Operations & Scalability", score: 45, color: "#E5E7EB" },
-  { id: "financial", title: "Financial Health", score: 88, color: "#E5E7EB" },
-]
+import { ArrowUp, ChevronDown } from "lucide-react"
 
 export default function HealthCheckPage() {
-  const [analysisInput, setAnalysisInput] = useState("")
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [inputValue, setInputValue] = useState("")
   const [showAnalysis, setShowAnalysis] = useState(false)
-  const [expandedMetric, setExpandedMetric] = useState<string | null>(null)
+  const [expandedMetrics, setExpandedMetrics] = useState<Set<string>>(new Set())
+
+  const metrics = [
+    { title: "Product & Innovation", score: 85, category: "top" },
+    { title: "Marketing & Brand", score: 62, category: "top" },
+    { title: "Sales & Revenue", score: 95, category: "top" },
+    { title: "Team & Culture", score: 73, category: "bottom" },
+    { title: "Operations & Scalability", score: 45, category: "bottom" },
+    { title: "Financial Health", score: 88, category: "bottom" },
+  ]
 
   const handleAnalyze = () => {
-    if (analysisInput.trim()) {
+    if (inputValue.trim()) {
       setShowAnalysis(true)
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleAnalyze()
-    }
+  const handleViewDetails = (title: string) => {
+    setExpandedMetrics((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(title)) {
+        newSet.delete(title)
+      } else {
+        newSet.add(title)
+      }
+      return newSet
+    })
   }
 
-  const toggleMetricDetails = (metricId: string) => {
-    setExpandedMetric(expandedMetric === metricId ? null : metricId)
+  // Metric Card Component
+  const MetricCard = ({ title, score }: { title: string; score: number }) => {
+    const isExpanded = expandedMetrics.has(title)
+
+    return (
+      <div>
+        <div
+          style={{
+            backgroundColor: "#2a2a2a",
+            border: "1px solid #444",
+            padding: "30px 20px",
+            clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+            textAlign: "center",
+            minHeight: "280px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          <h3
+            style={{
+              color: "#e0e0e0",
+              fontSize: "18px",
+              fontWeight: "500",
+              margin: "0 0 30px 0",
+              letterSpacing: "0.05em",
+            }}
+          >
+            {title}
+          </h3>
+
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {/* Vertical Bar Chart */}
+            <div
+              style={{
+                width: "40px",
+                height: "120px",
+                backgroundColor: "#1a1a1a",
+                border: "1px solid #444",
+                position: "relative",
+                marginBottom: "20px",
+                clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: "0",
+                  left: "0",
+                  right: "0",
+                  height: `${score}%`,
+                  background: "linear-gradient(to top, #666, #aaa)",
+                  clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                }}
+              />
+            </div>
+
+            <div
+              style={{
+                fontSize: "32px",
+                fontWeight: "bold",
+                color: "#e0e0e0",
+                marginBottom: "5px",
+              }}
+            >
+              {score}%
+            </div>
+            <div
+              style={{
+                fontSize: "14px",
+                color: "#999",
+                marginBottom: "20px",
+              }}
+            >
+              Current Score
+            </div>
+          </div>
+
+          <button
+            onClick={() => handleViewDetails(title)}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#ccc",
+              fontSize: "14px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "5px",
+              padding: "10px",
+              transition: "color 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#fff"
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#ccc"
+            }}
+          >
+            View Details{" "}
+            <ChevronDown
+              size={16}
+              style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s ease" }}
+            />
+          </button>
+        </div>
+
+        {/* Dropdown Details */}
+        {isExpanded && (
+          <div
+            style={{
+              marginTop: "10px",
+              padding: "20px",
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+              color: "#999",
+              fontSize: "14px",
+              lineHeight: "1.6",
+              textAlign: "center",
+              animation: "slideDown 0.3s ease-out",
+            }}
+          >
+            Details coming soon...
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-[#0F172A] text-white">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6">
-        <Button variant="ghost" size="icon" className="text-white hover:bg-slate-800">
-          <Menu className="h-6 w-6" />
-        </Button>
+    <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
+      {/* Hamburger Menu */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        style={{
+          position: "fixed",
+          top: "20px",
+          left: "20px",
+          background: "#2a2a2a",
+          border: "1px solid #444",
+          fontSize: "24px",
+          cursor: "pointer",
+          zIndex: 1000,
+          color: "#e0e0e0",
+          width: "50px",
+          height: "50px",
+          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+        }}
+      >
+        ☰
+      </button>
+
+      {/* Sidebar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? 0 : "-300px",
+          width: "300px",
+          height: "100vh",
+          backgroundColor: "#2a2a2a",
+          transition: "left 0.3s ease",
+          zIndex: 999,
+          padding: "20px",
+          borderRight: "1px solid #444",
+        }}
+      >
+        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
+            <button
+              style={{
+                background: "#1a1a1a",
+                border: "1px solid #444",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              }}
+            >
+              ⚙️
+            </button>
+            <button
+              style={{
+                background: "#1a1a1a",
+                border: "1px solid #444",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              }}
+            >
+              👤
+            </button>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {[
+            { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
+            { label: "Command Deck", onClick: () => {}, active: false },
+            { label: "Health Check", onClick: () => {}, active: true },
+            { label: "Forecast", onClick: () => {}, active: false },
+            { label: "Reports", onClick: () => {}, active: false },
+            { label: "Network", onClick: () => {}, active: false },
+          ].map((item, index) => (
+            <button
+              key={index}
+              onClick={item.onClick}
+              style={{
+                padding: "18px",
+                fontSize: "16px",
+                cursor: "pointer",
+                border: "1px solid #444",
+                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
+                color: "#e0e0e0",
+                width: "100%",
+                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                letterSpacing: "0.05em",
+                fontWeight: "500",
+                transition: "all 0.3s ease",
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 pb-12">
-        {/* Title Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-light mb-4">Health Check</h1>
-          <p className="text-slate-400 text-lg mb-8">
+      <div style={{ padding: "100px 50px 50px 50px", maxWidth: "1200px", margin: "0 auto" }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: "60px" }}>
+          <h1
+            style={{
+              fontSize: "48px",
+              fontWeight: "300",
+              margin: "0 0 20px 0",
+              letterSpacing: "0.05em",
+            }}
+          >
+            Health Check
+          </h1>
+          <p
+            style={{
+              fontSize: "18px",
+              color: "#999",
+              margin: "0 0 40px 0",
+              lineHeight: "1.6",
+            }}
+          >
             Choose an area to analyze and I'll show you how your startup is doing
           </p>
 
-          {/* Analysis Input */}
-          <div className="relative max-w-md mx-auto mb-8">
-            <Input
-              value={analysisInput}
-              onChange={(e) => setAnalysisInput(e.target.value)}
-              onKeyPress={handleKeyPress}
+          {/* Input Field */}
+          <div style={{ position: "relative", maxWidth: "500px", margin: "0 auto" }}>
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
               placeholder="e.g. team, product, growth, research..."
-              className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 pr-12 py-3"
+              style={{
+                width: "100%",
+                padding: "15px 60px 15px 20px",
+                backgroundColor: "#2a2a2a",
+                border: "1px solid #444",
+                color: "#e0e0e0",
+                fontSize: "16px",
+                clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                outline: "none",
+              }}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  handleAnalyze()
+                }
+              }}
             />
-            <Button
+            <button
               onClick={handleAnalyze}
-              size="icon"
-              className="absolute right-1 top-1 bg-slate-600 hover:bg-slate-500 h-8 w-8"
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "#666",
+                border: "1px solid #888",
+                color: "#e0e0e0",
+                width: "40px",
+                height: "40px",
+                cursor: "pointer",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <ArrowUp className="h-4 w-4" />
-            </Button>
+              <ArrowUp size={20} />
+            </button>
           </div>
         </div>
 
         {/* Analysis Results */}
         {showAnalysis && (
-          <div className="mb-12">
-            <div className="bg-slate-800/30 rounded-lg p-6 max-w-2xl mx-auto">
-              <h3 className="text-xl font-medium mb-4">Analysis Results</h3>
-              <p className="text-slate-300 leading-relaxed">
-                Analysis complete for "{analysisInput}": Your startup shows strong potential in this area with room for
-                strategic improvements. Key recommendations include focusing on data-driven decision making and
-                implementing scalable processes.
-              </p>
-            </div>
+          <div
+            style={{
+              marginBottom: "60px",
+              padding: "30px",
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+              maxWidth: "800px",
+              margin: "0 auto 60px auto",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "24px",
+                fontWeight: "500",
+                margin: "0 0 20px 0",
+                letterSpacing: "0.05em",
+              }}
+            >
+              Analysis Results
+            </h3>
+            <p
+              style={{
+                color: "#ccc",
+                lineHeight: "1.6",
+                margin: "0",
+                fontSize: "16px",
+              }}
+            >
+              Analysis complete for "{inputValue}": Your startup shows strong potential in this area with room for
+              strategic improvements. Key recommendations include focusing on data-driven decision making and
+              implementing scalable processes.
+            </p>
           </div>
         )}
 
         {/* Metrics Section */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-light mb-4">Your Startup Metrics</h2>
-          <p className="text-slate-400 text-lg">Real-time health metrics of key areas</p>
-        </div>
+        <div style={{ textAlign: "center", marginBottom: "60px" }}>
+          <h2
+            style={{
+              fontSize: "36px",
+              fontWeight: "300",
+              margin: "0 0 15px 0",
+              letterSpacing: "0.05em",
+            }}
+          >
+            Your Startup Metrics
+          </h2>
+          <p
+            style={{
+              fontSize: "16px",
+              color: "#999",
+              margin: "0 0 50px 0",
+            }}
+          >
+            Real-time health metrics of key areas
+          </p>
 
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {metricsData.map((metric) => (
-            <div key={metric.id} className="text-center">
-              <h3 className="text-xl font-medium mb-8">{metric.title}</h3>
+          {/* Top Row Metrics */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "30px",
+              marginBottom: "40px",
+            }}
+          >
+            {metrics
+              .filter((m) => m.category === "top")
+              .map((metric, index) => (
+                <MetricCard key={index} title={metric.title} score={metric.score} />
+              ))}
+          </div>
 
-              {/* Progress Bar Container */}
-              <div className="flex justify-center mb-6">
-                <div className="relative">
-                  {/* Background Bar */}
-                  <div className="w-12 h-32 bg-slate-700 rounded-full overflow-hidden">
-                    {/* Progress Fill */}
-                    <div
-                      className="w-full bg-gradient-to-t from-slate-300 to-white rounded-full transition-all duration-1000 ease-out"
-                      style={{
-                        height: `${metric.score}%`,
-                        marginTop: `${100 - metric.score}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Score Display */}
-              <div className="mb-6">
-                <div className="text-3xl font-light mb-1">{metric.score}%</div>
-                <div className="text-slate-400 text-sm">Current Score</div>
-              </div>
-
-              {/* View Details Button */}
-              <Button
-                variant="ghost"
-                onClick={() => toggleMetricDetails(metric.id)}
-                className="text-slate-300 hover:text-white hover:bg-slate-800/50 text-sm"
-              >
-                View Details{" "}
-                {expandedMetric === metric.id ? (
-                  <ArrowUp className="ml-1 h-4 w-4" />
-                ) : (
-                  <ArrowDown className="ml-1 h-4 w-4" />
-                )}
-              </Button>
-
-              {/* Expanded Details */}
-              {expandedMetric === metric.id && (
-                <div className="mt-4 p-4 bg-slate-800/30 rounded-lg">
-                  <p className="text-slate-400 text-sm">Detailed health analysis coming soon...</p>
-                </div>
-              )}
-            </div>
-          ))}
+          {/* Bottom Row Metrics */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "30px",
+            }}
+          >
+            {metrics
+              .filter((m) => m.category === "bottom")
+              .map((metric, index) => (
+                <MetricCard key={index} title={metric.title} score={metric.score} />
+              ))}
+          </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="fixed bottom-4 right-4">
-        <div className="text-xs text-slate-500">Edit with ❤️ Lovable</div>
-      </div>
+      {/* Overlay for sidebar */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.6)",
+            zIndex: 998,
+          }}
+        />
+      )}
+
+      {/* Background pattern */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `
+            linear-gradient(45deg, transparent 49%, rgba(255,255,255,0.01) 50%, transparent 51%),
+            linear-gradient(-45deg, transparent 49%, rgba(255,255,255,0.01) 50%, transparent 51%)
+          `,
+          backgroundSize: "30px 30px",
+          zIndex: -1,
+        }}
+      />
+      <style jsx>{`
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`}</style>
     </div>
   )
 }

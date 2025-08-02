@@ -1,376 +1,393 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  ArrowLeft,
-  Target,
-  Lightbulb,
-  TrendingUp,
-  Calendar,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  Download,
-  Share2,
-} from "lucide-react"
-import Link from "next/link"
+import { useState, useEffect } from "react"
 
 export default function ProductPlanPage() {
-  const [activePhase, setActivePhase] = useState(0)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([])
+  const [unlockedSteps, setUnlockedSteps] = useState<string[]>(["action-table"]) // Start with action-table unlocked
 
-  const phases = [
-    {
-      title: "Discovery & Validation",
-      duration: "4-6 weeks",
-      status: "current",
-      progress: 65,
-      tasks: [
-        { title: "Market Research", completed: true },
-        { title: "User Interviews", completed: true },
-        { title: "Competitive Analysis", completed: false },
-        { title: "Problem Validation", completed: false },
-      ],
-    },
-    {
-      title: "MVP Development",
-      duration: "8-12 weeks",
-      status: "upcoming",
-      progress: 0,
-      tasks: [
-        { title: "Feature Prioritization", completed: false },
-        { title: "Technical Architecture", completed: false },
-        { title: "UI/UX Design", completed: false },
-        { title: "Core Development", completed: false },
-      ],
-    },
-    {
-      title: "Testing & Launch",
-      duration: "4-6 weeks",
-      status: "upcoming",
-      progress: 0,
-      tasks: [
-        { title: "Beta Testing", completed: false },
-        { title: "User Feedback Integration", completed: false },
-        { title: "Launch Strategy", completed: false },
-        { title: "Go-to-Market Execution", completed: false },
-      ],
-    },
-  ]
+  // Get selected options from URL params or session storage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const options = params.get("options")
 
-  const keyMetrics = [
-    { label: "Market Size", value: "$2.5B", trend: "up" },
-    { label: "Target Users", value: "50K+", trend: "up" },
-    { label: "Competition Level", value: "Medium", trend: "neutral" },
-    { label: "Development Time", value: "16-24 weeks", trend: "neutral" },
-  ]
+    if (options) {
+      setSelectedOptions(options.split(","))
+    } else {
+      // Fallback to session storage if no URL params
+      const storedOptions = sessionStorage.getItem("productPlanOptions")
+      if (storedOptions) {
+        setSelectedOptions(storedOptions.split(","))
+      }
+    }
+
+    // Load unlocked steps from session storage
+    const storedUnlocked = sessionStorage.getItem("productUnlockedSteps")
+    if (storedUnlocked) {
+      setUnlockedSteps(storedUnlocked.split(","))
+    }
+  }, [])
+
+  // Always include Action Table as mandatory
+  const allSteps = ["action-table", ...selectedOptions.filter((opt) => opt !== "action-table")]
+
+  const stepLabels: { [key: string]: string } = {
+    "action-table": "Action Table",
+    features: "Features",
+    wireframes: "Wireframes & User Flow",
+    poc: "POC",
+  }
+
+  // Calculate positions for checkpoints in a network layout
+  const getCheckpointPosition = (index: number, total: number, stepId: string) => {
+    // Position Action Table on the left as the starting point
+    if (stepId === "action-table") {
+      return { x: 20, y: 50 }
+    }
+
+    // Arrange other checkpoints in a flowing network pattern
+    const positions = [
+      { x: 45, y: 30 }, // Features
+      { x: 70, y: 60 }, // Wireframes & User Flow
+      { x: 85, y: 40 }, // POC
+    ]
+
+    return positions[index - 1] || { x: 50, y: 50 }
+  }
+
+  const handleCheckpointClick = (stepId: string) => {
+    if (isStepUnlocked(stepId)) {
+      // Navigate to detail page with the specific step
+      window.location.href = `/product/detail?step=${stepId}&options=${selectedOptions.join(",")}`
+    }
+  }
+
+  const isStepUnlocked = (stepId: string) => {
+    return unlockedSteps.includes(stepId)
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      {/* Header */}
-      <div className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/main"
-                className="flex items-center space-x-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span className="text-sm">Back to Main</span>
-              </Link>
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
-                  <Target className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Your Product Development Plan</h1>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Strategic roadmap for your product launch
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button variant="outline" size="sm">
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-              <Badge variant="outline" className="px-3 py-1">
-                Generated Plan
-              </Badge>
-            </div>
+    <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
+      {/* Top Bar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "70px",
+          backgroundColor: "#2a2a2a",
+          borderBottom: "1px solid #444",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          zIndex: 1000,
+        }}
+      >
+        {/* Sidebar Toggle */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          style={{
+            background: "#1a1a1a",
+            border: "1px solid #444",
+            fontSize: "24px",
+            cursor: "pointer",
+            marginRight: "15px",
+            color: "#e0e0e0",
+            width: "50px",
+            height: "50px",
+            clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+          }}
+        >
+          ☰
+        </button>
+      </div>
+
+      {/* Title Section - Top Right */}
+      <div
+        style={{
+          position: "fixed",
+          top: "90px",
+          right: "40px",
+          textAlign: "right",
+          zIndex: 100,
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "2rem",
+            margin: "0 0 8px 0",
+            color: "#fff",
+            fontWeight: "bold",
+            letterSpacing: "0.1em",
+          }}
+        >
+          PRODUCT LEVEL 1
+        </h1>
+        <h2
+          style={{
+            fontSize: "1.1rem",
+            fontWeight: "300",
+            margin: "0",
+            color: "#ccc",
+            letterSpacing: "0.05em",
+          }}
+        >
+          Product Development
+        </h2>
+      </div>
+
+      {/* Sidebar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? 0 : "-300px",
+          width: "300px",
+          height: "100vh",
+          backgroundColor: "#2a2a2a",
+          transition: "left 0.3s ease",
+          zIndex: 999,
+          padding: "20px",
+          borderRight: "1px solid #444",
+        }}
+      >
+        {/* Top section - Settings and Profile icons */}
+        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
+            <button
+              style={{
+                background: "#1a1a1a",
+                border: "1px solid #444",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              }}
+            >
+              ⚙️
+            </button>
+            <button
+              style={{
+                background: "#1a1a1a",
+                border: "1px solid #444",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              }}
+            >
+              👤
+            </button>
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto px-6 py-8">
-        <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
-            <TabsTrigger value="strategy">Strategy</TabsTrigger>
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-8">
-            {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {keyMetrics.map((metric, index) => (
-                <Card key={index} className="shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{metric.label}</p>
-                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{metric.value}</p>
-                      </div>
-                      <TrendingUp
-                        className={`h-5 w-5 ${
-                          metric.trend === "up"
-                            ? "text-green-500"
-                            : metric.trend === "down"
-                              ? "text-red-500"
-                              : "text-slate-400"
-                        }`}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Product Summary */}
-            <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Lightbulb className="h-5 w-5" />
-                  <span>Product Summary</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Problem Statement</h4>
-                  <p className="text-slate-600 dark:text-slate-400">
-                    Your product addresses a significant market gap by providing an innovative solution that streamlines
-                    complex workflows for your target audience.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Unique Value Proposition</h4>
-                  <p className="text-slate-600 dark:text-slate-400">
-                    Unlike existing solutions, your product combines ease of use with powerful functionality, offering
-                    3x faster results at 50% lower cost.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Target Market</h4>
-                  <p className="text-slate-600 dark:text-slate-400">
-                    Small to medium businesses in the technology sector, specifically targeting teams of 10-100
-                    employees who need efficient workflow management.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="roadmap" className="space-y-8">
-            <div className="space-y-6">
-              {phases.map((phase, index) => (
-                <Card
-                  key={index}
-                  className={`shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm ${
-                    phase.status === "current" ? "ring-2 ring-purple-500" : ""
-                  }`}
-                >
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center space-x-3">
-                        <div
-                          className={`p-2 rounded-lg ${
-                            phase.status === "current"
-                              ? "bg-purple-500"
-                              : phase.status === "completed"
-                                ? "bg-green-500"
-                                : "bg-slate-400"
-                          }`}
-                        >
-                          {phase.status === "completed" ? (
-                            <CheckCircle className="h-5 w-5 text-white" />
-                          ) : phase.status === "current" ? (
-                            <Clock className="h-5 w-5 text-white" />
-                          ) : (
-                            <Calendar className="h-5 w-5 text-white" />
-                          )}
-                        </div>
-                        <span>{phase.title}</span>
-                      </CardTitle>
-                      <Badge variant={phase.status === "current" ? "default" : "secondary"}>{phase.duration}</Badge>
-                    </div>
-                    {phase.status === "current" && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Progress</span>
-                          <span>{phase.progress}%</span>
-                        </div>
-                        <Progress value={phase.progress} className="h-2" />
-                      </div>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {phase.tasks.map((task, taskIndex) => (
-                        <div key={taskIndex} className="flex items-center space-x-3">
-                          {task.completed ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <div className="h-4 w-4 border-2 border-slate-300 rounded-full" />
-                          )}
-                          <span
-                            className={`text-sm ${
-                              task.completed ? "text-slate-500 line-through" : "text-slate-700 dark:text-slate-300"
-                            }`}
-                          >
-                            {task.title}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="strategy" className="space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle>Go-to-Market Strategy</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold mb-2">Launch Channels</h4>
-                    <ul className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
-                      <li>• Product Hunt launch</li>
-                      <li>• Content marketing & SEO</li>
-                      <li>• Industry partnerships</li>
-                      <li>• Social media campaigns</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Pricing Strategy</h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      Freemium model with premium features starting at $29/month per user.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle>Risk Assessment</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-sm">Market Competition</h4>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">
-                        Medium risk - established competitors exist but with differentiated positioning
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-sm">Technical Complexity</h4>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">
-                        High risk - requires significant technical expertise and resources
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-sm">Market Demand</h4>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">
-                        Low risk - strong market validation and growing demand
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="tasks">
-            <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle>Immediate Action Items</CardTitle>
-                <CardDescription>Priority tasks to move your product forward</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { task: "Complete competitive analysis research", priority: "High", due: "This week" },
-                    { task: "Conduct 5 additional user interviews", priority: "High", due: "Next week" },
-                    { task: "Finalize MVP feature specifications", priority: "Medium", due: "2 weeks" },
-                    { task: "Set up development environment", priority: "Medium", due: "3 weeks" },
-                    { task: "Create initial UI mockups", priority: "Low", due: "1 month" },
-                  ].map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="h-4 w-4 border-2 border-slate-300 rounded-full" />
-                        <span className="font-medium">{item.task}</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <Badge
-                          variant={
-                            item.priority === "High"
-                              ? "destructive"
-                              : item.priority === "Medium"
-                                ? "default"
-                                : "secondary"
-                          }
-                        >
-                          {item.priority}
-                        </Badge>
-                        <span className="text-sm text-slate-500">{item.due}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {/* Action Buttons */}
-        <div className="flex justify-center space-x-4 pt-8">
-          <Link href="/product/task">
-            <Button size="lg" className="px-8">
-              <Target className="mr-2 h-5 w-5" />
-              Start Working on Tasks
-            </Button>
-          </Link>
-          <Link href="/main">
-            <Button variant="outline" size="lg" className="px-8 bg-transparent">
-              Back to Main
-            </Button>
-          </Link>
+        {/* Six vertically stacked buttons */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {[
+            { label: "Map", onClick: () => (window.location.href = "/main") },
+            { label: "Command Deck", onClick: () => {} },
+            { label: "Health Analysis", onClick: () => {} },
+            { label: "Forecast", onClick: () => {} },
+            { label: "Reports", onClick: () => {} },
+            { label: "Network", onClick: () => {} },
+          ].map((item, index) => (
+            <button
+              key={index}
+              onClick={item.onClick}
+              style={{
+                padding: "18px",
+                fontSize: "16px",
+                cursor: "pointer",
+                border: "1px solid #444",
+                backgroundColor: "#1a1a1a",
+                color: "#e0e0e0",
+                width: "100%",
+                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                letterSpacing: "0.05em",
+                fontWeight: "500",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#3a3a3a"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#1a1a1a"
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
       </div>
+
+      {/* Main Content - Network Map */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          padding: "90px 20px 20px 20px",
+        }}
+      >
+        <div
+          style={{
+            position: "relative",
+            width: "800px",
+            height: "600px",
+            backgroundColor: "#2a2a2a",
+            border: "1px solid #444",
+            clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+          }}
+        >
+          <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
+            {/* Draw connecting lines */}
+            {allSteps.map((step, index) => {
+              if (index === allSteps.length - 1) return null
+
+              const currentPos = getCheckpointPosition(index, allSteps.length, allSteps[index])
+              const nextPos = getCheckpointPosition(index + 1, allSteps.length, allSteps[index + 1])
+
+              return (
+                <line
+                  key={`line-${index}`}
+                  x1={`${currentPos.x}%`}
+                  y1={`${currentPos.y}%`}
+                  x2={`${nextPos.x}%`}
+                  y2={`${nextPos.y}%`}
+                  stroke="#007bff"
+                  strokeWidth="3"
+                  opacity={isStepUnlocked(allSteps[index + 1]) ? 1 : 0.3}
+                />
+              )
+            })}
+          </svg>
+
+          {/* Draw checkpoints */}
+          {allSteps.map((step, index) => {
+            const position = getCheckpointPosition(index, allSteps.length, step)
+            const isMandatory = step === "action-table"
+            const isUnlocked = isStepUnlocked(step)
+
+            return (
+              <div
+                key={step}
+                style={{
+                  position: "absolute",
+                  left: `${position.x}%`,
+                  top: `${position.y}%`,
+                  transform: "translate(-50%, -50%)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "10px",
+                }}
+              >
+                {/* Checkpoint Circle */}
+                <div
+                  onClick={() => handleCheckpointClick(step)}
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    backgroundColor: isUnlocked ? (isMandatory ? "#20c997" : "#007bff") : "#444",
+                    border: "2px solid #666",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                    color: "white",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    padding: "5px",
+                    cursor: isUnlocked ? "pointer" : "not-allowed",
+                    opacity: isUnlocked ? 1 : 0.5,
+                    transition: "all 0.3s ease",
+                    clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (isUnlocked) {
+                      e.currentTarget.style.transform = "translate(-50%, -50%) scale(1.1)"
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (isUnlocked) {
+                      e.currentTarget.style.transform = "translate(-50%, -50%) scale(1)"
+                    }
+                  }}
+                >
+                  {isUnlocked ? "✓" : "🔒"}
+                </div>
+
+                {/* Checkpoint Label */}
+                <div
+                  style={{
+                    backgroundColor: "#2a2a2a",
+                    padding: "10px 15px",
+                    border: "1px solid #444",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    textAlign: "center",
+                    maxWidth: "140px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                    opacity: isUnlocked ? 1 : 0.5,
+                    color: "#e0e0e0",
+                    letterSpacing: "0.05em",
+                    clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                  }}
+                >
+                  {stepLabels[step]}
+                  {isMandatory && (
+                    <div style={{ fontSize: "10px", color: "#dc3545", marginTop: "4px", fontWeight: "400" }}>
+                      (Required)
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Overlay for sidebar */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.6)",
+            zIndex: 998,
+          }}
+        />
+      )}
+
+      {/* Subtle background pattern */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `
+          linear-gradient(45deg, transparent 49%, rgba(255,255,255,0.01) 50%, transparent 51%),
+          linear-gradient(-45deg, transparent 49%, rgba(255,255,255,0.01) 50%, transparent 51%)
+        `,
+          backgroundSize: "30px 30px",
+          zIndex: -1,
+        }}
+      />
     </div>
   )
 }
