@@ -2,7 +2,8 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import { MessageCircle, X, Send } from "lucide-react"
 
 export default function MainPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -10,6 +11,13 @@ export default function MainPage() {
   const [hasResearchPlan, setHasResearchPlan] = useState(false)
   const [hasProductPlan, setHasProductPlan] = useState(false)
   const [hasSalesPlan, setHasSalesPlan] = useState(false)
+
+  const [chatMessages, setChatMessages] = useState<
+    Array<{ role: "user" | "assistant"; content: string; timestamp: Date }>
+  >([])
+  const [chatInput, setChatInput] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
+  const chatMessagesRef = useRef<HTMLDivElement>(null)
 
   // Check if user has generated plans in this session
   useEffect(() => {
@@ -21,6 +29,24 @@ export default function MainPage() {
     setHasProductPlan(!!productPlan)
     setHasSalesPlan(!!salesPlan)
   }, [])
+
+  // Initialize chat with welcome message
+  useEffect(() => {
+    const welcomeMessage = {
+      role: "assistant" as const,
+      content:
+        "Hi, I'm Nora AI-stronaut! 🚀\n\nI can help you explore your startup's health, interpret your scores, and guide you through your next steps.\n\nAsk me anything about your metrics, how to improve them, or where to focus next!",
+      timestamp: new Date(),
+    }
+    setChatMessages([welcomeMessage])
+  }, [])
+
+  // Scroll to bottom of chat when new messages are added
+  useEffect(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight
+    }
+  }, [chatMessages])
 
   const handleResearchClick = () => {
     if (hasResearchPlan) {
@@ -48,6 +74,67 @@ export default function MainPage() {
 
   const handleHomebaseClick = () => {
     window.location.href = "/homebase/workspace"
+  }
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim()) return
+
+    const userMessage = {
+      role: "user" as const,
+      content: chatInput,
+      timestamp: new Date(),
+    }
+
+    setChatMessages((prev) => [...prev, userMessage])
+    setChatInput("")
+    setIsTyping(true)
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are Nora AI-stronaut, a helpful AI assistant for startup health analysis. You help entrepreneurs understand their metrics and provide actionable advice. Keep responses concise and actionable. Use a friendly, professional tone with occasional space/rocket emojis.",
+            },
+            ...chatMessages.map((msg) => ({ role: msg.role, content: msg.content })),
+            { role: "user", content: chatInput },
+          ],
+        }),
+      })
+
+      const data = await response.json()
+
+      const assistantMessage = {
+        role: "assistant" as const,
+        content: data.message || "I'm here to help you with your startup health analysis!",
+        timestamp: new Date(),
+      }
+
+      setChatMessages((prev) => [...prev, assistantMessage])
+    } catch (error) {
+      console.error("Chat error:", error)
+      const errorMessage = {
+        role: "assistant" as const,
+        content: "Sorry, I'm having trouble connecting right now. Please try again in a moment! 🚀",
+        timestamp: new Date(),
+      }
+      setChatMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsTyping(false)
+    }
+  }
+
+  const handleChatKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      sendChatMessage()
+    }
   }
 
   // Geometric button component
@@ -238,7 +325,7 @@ export default function MainPage() {
         </div>
       </div>
 
-      {/* Help Button - Bottom Right */}
+      {/* Chat Button - Bottom Right */}
       <button
         onClick={() => setChatOpen(!chatOpen)}
         style={{
@@ -255,6 +342,9 @@ export default function MainPage() {
           zIndex: 1000,
           clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
           transition: "all 0.3s ease",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor = "#0056b3"
@@ -265,31 +355,179 @@ export default function MainPage() {
           e.currentTarget.style.transform = "translateY(0px)"
         }}
       >
-        ?
+        <MessageCircle size={24} />
       </button>
 
-      {/* Chat Popup */}
+      {/* Chat Window */}
       {chatOpen && (
         <div
           style={{
             position: "fixed",
             bottom: "90px",
             right: "20px",
-            width: "320px",
-            height: "220px",
+            width: "400px",
+            height: "500px",
             backgroundColor: "#2a2a2a",
             border: "1px solid #444",
-            padding: "20px",
-            zIndex: 999,
-            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
             clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-            color: "#e0e0e0",
+            zIndex: 1001,
+            display: "flex",
+            flexDirection: "column",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
           }}
         >
-          <h3 style={{ margin: "0 0 15px 0", color: "#fff", letterSpacing: "0.05em" }}>SUPPORT</h3>
-          <p style={{ margin: "0", lineHeight: "1.6", color: "#ccc" }}>
-            Chat window placeholder - AI assistance coming soon.
-          </p>
+          {/* Chat Header */}
+          <div
+            style={{
+              padding: "20px",
+              borderBottom: "1px solid #444",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              backgroundColor: "#333",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% calc(100% - 5px), 0 100%)",
+            }}
+          >
+            <div>
+              <h3 style={{ margin: "0", fontSize: "18px", fontWeight: "600", color: "#e0e0e0" }}>
+                Nora AI-stronaut 🚀
+              </h3>
+              <p style={{ margin: "0", fontSize: "12px", color: "#999" }}>Your Startup Health Assistant</p>
+            </div>
+            <button
+              onClick={() => setChatOpen(false)}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "#999",
+                cursor: "pointer",
+                padding: "5px",
+                transition: "color 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#fff"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#999"
+              }}
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Chat Messages */}
+          <div
+            ref={chatMessagesRef}
+            style={{
+              flex: 1,
+              padding: "20px",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "15px",
+            }}
+          >
+            {chatMessages.map((message, index) => (
+              <div
+                key={index}
+                style={{
+                  alignSelf: message.role === "user" ? "flex-end" : "flex-start",
+                  maxWidth: "80%",
+                }}
+              >
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    backgroundColor: message.role === "user" ? "#007bff" : "#333",
+                    color: "#e0e0e0",
+                    fontSize: "14px",
+                    lineHeight: "1.4",
+                    clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {message.content}
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "#666",
+                    marginTop: "5px",
+                    textAlign: message.role === "user" ? "right" : "left",
+                  }}
+                >
+                  {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </div>
+            ))}
+
+            {isTyping && (
+              <div style={{ alignSelf: "flex-start", maxWidth: "80%" }}>
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    backgroundColor: "#333",
+                    color: "#999",
+                    fontSize: "14px",
+                    clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                  }}
+                >
+                  Nora is typing...
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Chat Input */}
+          <div
+            style={{
+              padding: "20px",
+              borderTop: "1px solid #444",
+              display: "flex",
+              gap: "10px",
+              alignItems: "flex-end",
+            }}
+          >
+            <textarea
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyPress={handleChatKeyPress}
+              placeholder="Ask me about your startup..."
+              style={{
+                flex: 1,
+                padding: "12px",
+                backgroundColor: "#1a1a1a",
+                border: "1px solid #444",
+                color: "#e0e0e0",
+                fontSize: "14px",
+                resize: "none",
+                minHeight: "40px",
+                maxHeight: "100px",
+                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                outline: "none",
+              }}
+              rows={1}
+            />
+            <button
+              onClick={sendChatMessage}
+              disabled={!chatInput.trim() || isTyping}
+              style={{
+                background: chatInput.trim() && !isTyping ? "#007bff" : "#444",
+                border: "1px solid #555",
+                color: "#e0e0e0",
+                width: "40px",
+                height: "40px",
+                cursor: chatInput.trim() && !isTyping ? "pointer" : "not-allowed",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "background 0.3s ease",
+              }}
+            >
+              <Send size={16} />
+            </button>
+          </div>
         </div>
       )}
 
