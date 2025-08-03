@@ -104,6 +104,24 @@ export default function NetworkPage() {
     setSelectedContact(null)
   }
 
+  // Add filtered contacts logic after the contacts array definition
+  const filteredContacts = contacts.filter((contact) => {
+    // Search filter - check name, role, and organization
+    const searchMatch =
+      searchTerm === "" ||
+      contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.organization.toLowerCase().includes(searchTerm.toLowerCase())
+
+    // Type filter
+    const typeMatch = typeFilter === "All Types" || contact.type === typeFilter
+
+    // Status filter
+    const statusMatch = statusFilter === "All Statuses" || contact.status === statusFilter
+
+    return searchMatch && typeMatch && statusMatch
+  })
+
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0", position: "relative" }}>
       {/* Header */}
@@ -230,7 +248,9 @@ export default function NetworkPage() {
               alignItems: "center",
             }}
           >
-            <h2 style={{ fontSize: "24px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>Contacts (5)</h2>
+            <h2 style={{ fontSize: "24px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>
+              Contacts ({filteredContacts.length})
+            </h2>
             <button
               style={{
                 padding: "12px 24px",
@@ -281,7 +301,7 @@ export default function NetworkPage() {
           </div>
 
           {/* Table Rows */}
-          {contacts.map((contact) => (
+          {filteredContacts.map((contact) => (
             <div
               key={contact.id}
               onClick={() => handleContactClick(contact)}
