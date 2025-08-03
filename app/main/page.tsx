@@ -264,7 +264,7 @@ export default function MainPage() {
             { label: "Command Deck", onClick: () => {} },
             { label: "Health Check", onClick: () => (window.location.href = "/health-check") },
             { label: "Forecast", onClick: () => {} },
-            { label: "Reports", onClick: () => {} },
+            { label: "Reports", onClick: () => (window.location.href = "/reports") },
             { label: "Network", onClick: () => {} },
           ].map((item, index) => (
             <button
