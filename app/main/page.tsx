@@ -265,7 +265,7 @@ export default function MainPage() {
             { label: "Health Check", onClick: () => (window.location.href = "/health-check") },
             { label: "Forecast", onClick: () => (window.location.href = "/forecast") },
             { label: "Reports", onClick: () => (window.location.href = "/reports") },
-            { label: "Network", onClick: () => {} },
+            { label: "Network", onClick: () => (window.location.href = "/network") },
           ].map((item, index) => (
             <button
               key={index}
