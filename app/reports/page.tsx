@@ -76,33 +76,58 @@ export default function ReportsPage() {
     </button>
   )
 
-  // Hamburger Menu
+  // Hamburger Menu with Step Back Button
   const HamburgerMenu = () => (
-    <button
-      style={{
-        position: "fixed",
-        top: "20px",
-        left: "20px",
-        background: "#2a2a2a",
-        border: "1px solid #444",
-        fontSize: "24px",
-        cursor: "pointer",
-        zIndex: 1000,
-        color: "#e0e0e0",
-        width: "50px",
-        height: "50px",
-        clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-        transition: "all 0.3s ease",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = "#3a3a3a"
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = "#2a2a2a"
-      }}
-    >
-      ☰
-    </button>
+    <div style={{ position: "fixed", top: "20px", left: "20px", display: "flex", gap: "10px", zIndex: 1000 }}>
+      <button
+        style={{
+          background: "#2a2a2a",
+          border: "1px solid #444",
+          fontSize: "24px",
+          cursor: "pointer",
+          color: "#e0e0e0",
+          width: "50px",
+          height: "50px",
+          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#3a3a3a"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#2a2a2a"
+        }}
+      >
+        ☰
+      </button>
+
+      <button
+        onClick={() => (window.location.href = "/main")}
+        style={{
+          background: "#2a2a2a",
+          border: "1px solid #444",
+          fontSize: "20px",
+          cursor: "pointer",
+          color: "#e0e0e0",
+          width: "50px",
+          height: "50px",
+          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+          transition: "all 0.3s ease",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#3a3a3a"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#2a2a2a"
+        }}
+        title="Back to Main"
+      >
+        ←
+      </button>
+    </div>
   )
 
   if (currentView === "history") {
