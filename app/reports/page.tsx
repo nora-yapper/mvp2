@@ -277,7 +277,7 @@ export default function ReportsPage() {
                     Reporting Period
                   </label>
                   <input
-                    type="text"
+                    type="date"
                     placeholder="Select date"
                     value={formData.period}
                     onChange={(e) => setFormData((prev) => ({ ...prev, period: e.target.value }))}
@@ -290,6 +290,7 @@ export default function ReportsPage() {
                       fontSize: "16px",
                       clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
                       outline: "none",
+                      colorScheme: "dark", // This makes the calendar picker dark themed
                     }}
                   />
                 </div>
