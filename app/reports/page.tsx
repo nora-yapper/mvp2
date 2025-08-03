@@ -20,6 +20,15 @@ export default function ReportsPage() {
     notes: "",
   })
 
+  const [savedReports, setSavedReports] = useState<
+    Array<{
+      id: string
+      title: string
+      date: string
+      content: string
+    }>
+  >([])
+
   const handleSectionToggle = (section: keyof typeof formData.sections) => {
     setFormData((prev) => ({
       ...prev,
@@ -130,6 +139,17 @@ export default function ReportsPage() {
     </div>
   )
 
+  const saveReport = () => {
+    const newReport = {
+      id: Date.now().toString(),
+      title: formData.title || "Untitled Report",
+      date: new Date().toLocaleDateString(),
+      content: "Executive Summary content...", // This would be the actual report content
+    }
+    setSavedReports((prev) => [newReport, ...prev])
+    alert("Report saved successfully!")
+  }
+
   const downloadPDF = () => {
     // Create a simple HTML content for the PDF
     const reportContent = `
@@ -212,57 +232,70 @@ export default function ReportsPage() {
               textAlign: "center",
             }}
           >
-            <FileText size={80} style={{ color: "#666", marginBottom: "30px" }} />
-
-            <h2
-              style={{
-                fontSize: "32px",
-                fontWeight: "400",
-                marginBottom: "20px",
-                color: "#e0e0e0",
-              }}
-            >
-              No Reports Generated Yet
-            </h2>
-
-            <p
-              style={{
-                fontSize: "18px",
-                color: "#999",
-                marginBottom: "40px",
-                lineHeight: "1.6",
-              }}
-            >
-              Once you generate your first stakeholder report, it will appear
-              <br />
-              here for easy access and reference.
-            </p>
-
-            <button
-              onClick={createFirstReport}
-              style={{
-                padding: "16px 32px",
-                fontSize: "16px",
-                backgroundColor: "#007bff",
-                color: "#fff",
-                border: "1px solid #0056b3",
-                cursor: "pointer",
-                clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
-                fontWeight: "500",
-                letterSpacing: "0.05em",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#0056b3"
-                e.currentTarget.style.transform = "translateY(-2px)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#007bff"
-                e.currentTarget.style.transform = "translateY(0px)"
-              }}
-            >
-              Create Your First Report
-            </button>
+            {savedReports.length === 0 ? (
+              <>
+                <FileText size={80} style={{ color: "#666", marginBottom: "30px" }} />
+                <h2 style={{ fontSize: "32px", fontWeight: "400", marginBottom: "20px", color: "#e0e0e0" }}>
+                  No Reports Generated Yet
+                </h2>
+                <p style={{ fontSize: "18px", color: "#999", marginBottom: "40px", lineHeight: "1.6" }}>
+                  Once you generate your first stakeholder report, it will appear here for easy access and reference.
+                </p>
+                <button
+                  onClick={createFirstReport}
+                  style={{
+                    padding: "16px 32px",
+                    fontSize: "16px",
+                    backgroundColor: "#007bff",
+                    color: "#fff",
+                    border: "1px solid #0056b3",
+                    cursor: "pointer",
+                    clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                    fontWeight: "500",
+                    letterSpacing: "0.05em",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  Create Your First Report
+                </button>
+              </>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                {savedReports.map((report) => (
+                  <div
+                    key={report.id}
+                    style={{
+                      backgroundColor: "#1a1a1a",
+                      border: "1px solid #555",
+                      clipPath:
+                        "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+                      padding: "20px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <h3 style={{ fontSize: "18px", fontWeight: "500", marginBottom: "5px" }}>{report.title}</h3>
+                      <p style={{ fontSize: "14px", color: "#999" }}>Generated on {report.date}</p>
+                    </div>
+                    <button
+                      style={{
+                        padding: "8px 16px",
+                        fontSize: "14px",
+                        backgroundColor: "#007bff",
+                        color: "#fff",
+                        border: "1px solid #0056b3",
+                        cursor: "pointer",
+                        clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                      }}
+                    >
+                      View Report
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -631,7 +664,7 @@ export default function ReportsPage() {
               }}
             >
               {[
-                { label: "Save Report", action: () => {} },
+                { label: "Save Report", action: saveReport },
                 { label: "Send Report", action: () => {} },
                 { label: "Download PDF", action: downloadPDF },
                 { label: "Back to Form", action: backToForm },
