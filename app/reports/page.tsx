@@ -317,8 +317,9 @@ export default function ReportsPage() {
                     >
                       <option value="">Select audience</option>
                       <option value="investors">Investors</option>
-                      <option value="board">Board Members</option>
-                      <option value="stakeholders">All Stakeholders</option>
+                      <option value="mentors">Mentors</option>
+                      <option value="incubators">Incubators</option>
+                      <option value="general">General</option>
                     </select>
                     <ChevronDown
                       size={20}
