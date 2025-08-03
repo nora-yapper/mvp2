@@ -130,6 +130,60 @@ export default function ReportsPage() {
     </div>
   )
 
+  const downloadPDF = () => {
+    // Create a simple HTML content for the PDF
+    const reportContent = `
+      <html>
+        <head>
+          <title>Generated Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+            h1 { color: #007bff; margin-bottom: 30px; }
+            h2 { color: #333; margin-top: 30px; margin-bottom: 15px; }
+            h3 { color: #555; margin-top: 25px; margin-bottom: 10px; }
+            p { line-height: 1.6; margin-bottom: 15px; }
+            ul { margin-bottom: 20px; }
+            li { margin-bottom: 8px; }
+          </style>
+        </head>
+        <body>
+          <h1>Generated Report</h1>
+          <h2>Executive Summary</h2>
+          <p>This quarterly report provides a comprehensive overview of our progress across all major initiatives. We have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction.</p>
+          
+          <h3>Key Achievements</h3>
+          <ul>
+            <li>Completed major platform upgrade affecting 50,000+ users</li>
+            <li>Reduced system downtime by 65% through infrastructure improvements</li>
+            <li>Onboarded 3 new team members with full integration success</li>
+            <li>Achieved 94% customer satisfaction score in latest survey</li>
+          </ul>
+          
+          <h3>Current Challenges</h3>
+          <p>While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas.</p>
+          
+          <h3>Next Quarter Outlook</h3>
+          <p>Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement.</p>
+        </body>
+      </html>
+    `
+
+    // Create a blob with the HTML content
+    const blob = new Blob([reportContent], { type: "text/html" })
+    const url = URL.createObjectURL(blob)
+
+    // Create a temporary link and trigger download
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `stakeholder-report-${new Date().toISOString().split("T")[0]}.html`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    // Clean up the URL
+    URL.revokeObjectURL(url)
+  }
+
   if (currentView === "history") {
     return (
       <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
@@ -579,7 +633,7 @@ export default function ReportsPage() {
               {[
                 { label: "Save Report", action: () => {} },
                 { label: "Send Report", action: () => {} },
-                { label: "Download PDF", action: () => {} },
+                { label: "Download PDF", action: downloadPDF },
                 { label: "Back to Form", action: backToForm },
               ].map((button, index) => (
                 <button
