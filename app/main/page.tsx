@@ -263,7 +263,7 @@ export default function MainPage() {
             { label: "Map", onClick: () => (window.location.href = "/main"), active: true },
             { label: "Command Deck", onClick: () => {} },
             { label: "Health Check", onClick: () => (window.location.href = "/health-check") },
-            { label: "Forecast", onClick: () => {} },
+            { label: "Forecast", onClick: () => (window.location.href = "/forecast") },
             { label: "Reports", onClick: () => (window.location.href = "/reports") },
             { label: "Network", onClick: () => {} },
           ].map((item, index) => (
