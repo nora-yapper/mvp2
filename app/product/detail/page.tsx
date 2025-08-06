@@ -544,6 +544,7 @@ export default function ProductDetailPage() {
             Map
           </button>
           <button
+          
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -568,6 +569,7 @@ export default function ProductDetailPage() {
             Health Check
           </button>
           <button
+          onClick={() => (window.location.href = "/health-check")}
             style={{
               padding: "15px",
               fontSize: "16px",
