@@ -593,7 +593,7 @@ export default function NetworkPage() {
           e.currentTarget.style.backgroundColor = "#2a2a2a"
         }}
       >
-        ← Step Back
+        ←
       </button>
 
       <style jsx>{`
