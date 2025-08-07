@@ -1,264 +1,459 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Menu, X, Map, Home, Activity, TrendingUp, FileText, Users, Plus, History } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+import React, { useState } from "react"
+import { Plus, Clock } from 'lucide-react'
 
 export default function CommandDeckPage() {
-  const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mission, setMission] = useState("")
-  const [activeView, setActiveView] = useState("Timeline")
-
-  const teamMembers = [
-    { name: "Sarah Chen", workload: 45, status: "Underloaded" },
-    { name: "Alex Johnson", workload: 75, status: "Balanced" },
-    { name: "Mike Rodriguez", workload: 92, status: "Overloaded" },
-    { name: "Emily Davis", workload: 68, status: "Balanced" },
-    { name: "James Wilson", workload: 34, status: "Underloaded" },
-  ]
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Overloaded": return "text-red-400"
-      case "Balanced": return "text-green-400"
-      case "Underloaded": return "text-yellow-400"
-      default: return "text-gray-400"
-    }
-  }
-
-  const navigationItems = [
-    { name: "Map", icon: Map, path: "/main" },
-    { name: "Command Deck", icon: Home, path: "/homebase", active: true },
-    { name: "Health Analysis", icon: Activity, path: "/health-check" },
-    { name: "Forecast", icon: TrendingUp, path: "/forecast" },
-    { name: "Reports", icon: FileText, path: "/reports" },
-    { name: "Network", icon: Users, path: "/network" },
-  ]
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-slate-700">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(true)}
-            className="text-white hover:bg-slate-800"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">Command Deck</h1>
-        </div>
-        <Button variant="outline" className="border-slate-600 text-white hover:bg-slate-800">
-          Recalibrate
-        </Button>
-      </div>
+    <div style={{ minHeight: "100vh", backgroundColor: "#0f172a", color: "#e2e8f0" }}>
+      {/* Hamburger Menu - Top Left */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        style={{
+          position: "fixed",
+          top: "20px",
+          left: "20px",
+          background: "#1e293b",
+          border: "1px solid #334155",
+          fontSize: "24px",
+          cursor: "pointer",
+          zIndex: 1000,
+          color: "#e2e8f0",
+          width: "50px",
+          height: "50px",
+          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#334155"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#1e293b"
+        }}
+      >
+        ☰
+      </button>
 
       {/* Sidebar */}
       <div
-        className="fixed inset-y-0 left-0 z-50 w-80 bg-slate-800 border-r border-slate-700 transform transition-transform duration-300 ease-in-out"
-        style={{ left: sidebarOpen ? 0 : "-320px" }}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? 0 : "-300px",
+          width: "300px",
+          height: "100vh",
+          backgroundColor: "#1e293b",
+          transition: "left 0.3s ease",
+          zIndex: 999,
+          padding: "20px",
+          borderRight: "1px solid #334155",
+        }}
       >
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <h2 className="text-xl font-semibold text-white">Navigation</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(false)}
-            className="text-white hover:bg-slate-700"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-        <nav className="p-4">
-          <ul className="space-y-2">
-            {navigationItems.map((item) => {
-              const IconComponent = item.icon
-              return (
-                <li key={item.name}>
-                  <button
-                    onClick={() => {
-                      router.push(item.path)
-                      setSidebarOpen(false)
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                      item.active
-                        ? "bg-blue-600 text-white"
-                        : "text-slate-300 hover:bg-slate-700 hover:text-white"
-                    }`}
-                  >
-                    <IconComponent className="h-5 w-5" />
-                    {item.name}
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        </nav>
-      </div>
-
-      {/* Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Main Content */}
-      <div className="p-6 space-y-8">
-        {/* Set Your Mission */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Set Your Mission</h2>
-          <div className="space-y-4">
-            <Textarea
-              placeholder="Describe your big goal..."
-              value={mission}
-              onChange={(e) => setMission(e.target.value)}
-              className="min-h-[120px] bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 resize-none"
-            />
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2">
-              Generate Plan
-            </Button>
+        {/* Top section - Settings and Profile icons */}
+        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
+            <button
+              style={{
+                background: "#0f172a",
+                border: "1px solid #334155",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e2e8f0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              }}
+            >
+              ⚙️
+            </button>
+            <button
+              style={{
+                background: "#0f172a",
+                border: "1px solid #334155",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e2e8f0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              }}
+            >
+              👤
+            </button>
           </div>
         </div>
 
-        {/* Your Current Plan */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-semibold">Your Current Plan</h2>
+        {/* Six vertically stacked buttons */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {[
+            { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
+            { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: true },
+            { label: "Health Check", onClick: () => (window.location.href = "/health-check"), active: false },
+            { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
+            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
+            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
+          ].map((item, index) => (
+            <button
+              key={index}
+              onClick={item.onClick}
+              style={{
+                padding: "18px",
+                fontSize: "16px",
+                cursor: "pointer",
+                border: "1px solid #334155",
+                backgroundColor: item.active ? "#3b82f6" : "#0f172a",
+                color: "#e2e8f0",
+                width: "100%",
+                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                letterSpacing: "0.05em",
+                fontWeight: "500",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#334155"
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#0f172a"
+                }
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ padding: "80px 40px 40px 40px", maxWidth: "1400px", margin: "0 auto" }}>
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
+          <h1 style={{ fontSize: "32px", fontWeight: "600", margin: "0", color: "#f1f5f9" }}>
+            Command Deck
+          </h1>
+          <button
+            style={{
+              background: "transparent",
+              border: "1px solid #475569",
+              color: "#e2e8f0",
+              padding: "12px 24px",
+              fontSize: "16px",
+              cursor: "pointer",
+              clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#1e293b"
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent"
+            }}
+          >
+            Recalibrate
+          </button>
+        </div>
+
+        {/* Set Your Mission Section */}
+        <div style={{ marginBottom: "60px" }}>
+          <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "20px", color: "#f1f5f9" }}>
+            Set Your Mission
+          </h2>
+          <textarea
+            value={mission}
+            onChange={(e) => setMission(e.target.value)}
+            placeholder="Describe your big goal..."
+            style={{
+              width: "100%",
+              height: "120px",
+              backgroundColor: "#1e293b",
+              border: "1px solid #334155",
+              color: "#e2e8f0",
+              fontSize: "16px",
+              padding: "20px",
+              resize: "none",
+              clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))",
+              outline: "none",
+              marginBottom: "20px",
+            }}
+          />
+          <button
+            style={{
+              background: "#3b82f6",
+              border: "1px solid #2563eb",
+              color: "white",
+              padding: "12px 24px",
+              fontSize: "16px",
+              fontWeight: "500",
+              cursor: "pointer",
+              clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#2563eb"
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#3b82f6"
+            }}
+          >
+            Generate Plan
+          </button>
+        </div>
+
+        {/* Your Current Plan Section */}
+        <div style={{ marginBottom: "60px" }}>
+          <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "20px", color: "#f1f5f9" }}>
+            Your Current Plan
+          </h2>
           
-          {/* Plan Views Container */}
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+          <div
+            style={{
+              backgroundColor: "#1e293b",
+              border: "1px solid #334155",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+              padding: "30px",
+            }}
+          >
             {/* Plan Views Header */}
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-medium">Plan Views</h3>
-              <div className="flex items-center gap-3">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="border-slate-600 text-white hover:bg-slate-700"
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
+              <h3 style={{ fontSize: "20px", fontWeight: "600", margin: "0", color: "#f1f5f9" }}>
+                Plan Views
+              </h3>
+              
+              <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+                {/* Action Buttons */}
+                <button
+                  style={{
+                    background: "#0f172a",
+                    border: "1px solid #334155",
+                    color: "#e2e8f0",
+                    padding: "10px 16px",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#334155"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#0f172a"
+                  }}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus size={16} />
                   Add Task
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="border-slate-600 text-white hover:bg-slate-700"
+                </button>
+                
+                <button
+                  style={{
+                    background: "#0f172a",
+                    border: "1px solid #334155",
+                    color: "#e2e8f0",
+                    padding: "10px 16px",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#334155"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#0f172a"
+                  }}
                 >
-                  <History className="h-4 w-4 mr-2" />
+                  <Clock size={16} />
                   Task History
-                </Button>
-                <div className="flex items-center gap-1 ml-4">
-                  <Button
-                    variant={activeView === "Timeline" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setActiveView("Timeline")}
-                    className={activeView === "Timeline" ? "bg-blue-600 hover:bg-blue-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-700"}
-                  >
-                    Timeline
-                  </Button>
-                  <Button
-                    variant={activeView === "Kanban" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setActiveView("Kanban")}
-                    className={activeView === "Kanban" ? "bg-blue-600 hover:bg-blue-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-700"}
-                  >
-                    Kanban
-                  </Button>
-                  <Button
-                    variant={activeView === "Table" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setActiveView("Table")}
-                    className={activeView === "Table" ? "bg-blue-600 hover:bg-blue-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-700"}
-                  >
-                    Table
-                  </Button>
+                </button>
+
+                {/* View Toggle Buttons */}
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {["Timeline", "Kanban", "Table"].map((view, index) => (
+                    <button
+                      key={view}
+                      style={{
+                        background: view === "Timeline" ? "#3b82f6" : "#0f172a",
+                        border: "1px solid #334155",
+                        color: "#e2e8f0",
+                        padding: "10px 16px",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                        clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                        transition: "all 0.3s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (view !== "Timeline") {
+                          e.currentTarget.style.backgroundColor = "#334155"
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (view !== "Timeline") {
+                          e.currentTarget.style.backgroundColor = "#0f172a"
+                        }
+                      }}
+                    >
+                      {view}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
 
             {/* Timeline View */}
-            <div className="grid grid-cols-3 gap-6">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", minHeight: "300px" }}>
               {/* Tasks Column */}
-              <div className="bg-slate-700 rounded-lg p-4">
-                <div className="mb-4">
-                  <h4 className="font-medium text-white">Tasks</h4>
-                  <p className="text-sm text-slate-400">0 records</p>
-                </div>
-                <div className="text-center py-8">
-                  <p className="text-slate-400 text-sm leading-relaxed">
-                    No tasks currently. Generate and implement a plan to see tasks here.
+              <div
+                style={{
+                  backgroundColor: "#0f172a",
+                  border: "1px solid #334155",
+                  clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                  padding: "20px",
+                }}
+              >
+                <div style={{ marginBottom: "15px" }}>
+                  <h4 style={{ fontSize: "18px", fontWeight: "600", margin: "0 0 5px 0", color: "#f1f5f9" }}>
+                    Tasks
+                  </h4>
+                  <p style={{ fontSize: "14px", color: "#94a3b8", margin: "0" }}>
+                    0 records
                   </p>
+                </div>
+                <div style={{ textAlign: "center", color: "#64748b", fontSize: "14px", lineHeight: "1.5", marginTop: "40px" }}>
+                  No tasks currently. Generate and implement a plan to see tasks here.
                 </div>
               </div>
 
               {/* August 2025 Column */}
-              <div className="bg-slate-700 rounded-lg p-4">
-                <div className="text-center mb-4">
-                  <h4 className="font-medium text-white">August</h4>
-                  <p className="text-sm text-slate-400">2025</p>
-                </div>
-                <div className="text-center py-8">
-                  <p className="text-slate-400 text-sm">
-                    Timeline will appear when tasks are added
+              <div
+                style={{
+                  backgroundColor: "#0f172a",
+                  border: "1px solid #334155",
+                  clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                  padding: "20px",
+                }}
+              >
+                <div style={{ marginBottom: "15px", textAlign: "center" }}>
+                  <h4 style={{ fontSize: "18px", fontWeight: "600", margin: "0 0 5px 0", color: "#f1f5f9" }}>
+                    August
+                  </h4>
+                  <p style={{ fontSize: "14px", color: "#94a3b8", margin: "0" }}>
+                    2025
                   </p>
+                </div>
+                <div style={{ textAlign: "center", color: "#64748b", fontSize: "14px", marginTop: "40px" }}>
+                  Timeline will appear when tasks are added
                 </div>
               </div>
 
               {/* September 2025 Column */}
-              <div className="bg-slate-700 rounded-lg p-4">
-                <div className="text-center mb-4">
-                  <h4 className="font-medium text-white">September</h4>
-                  <p className="text-sm text-slate-400">2025</p>
-                </div>
-                <div className="text-center py-8">
-                  <p className="text-slate-400 text-sm">
-                    Timeline will appear when tasks are added
+              <div
+                style={{
+                  backgroundColor: "#0f172a",
+                  border: "1px solid #334155",
+                  clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                  padding: "20px",
+                }}
+              >
+                <div style={{ marginBottom: "15px", textAlign: "center" }}>
+                  <h4 style={{ fontSize: "18px", fontWeight: "600", margin: "0 0 5px 0", color: "#f1f5f9" }}>
+                    September
+                  </h4>
+                  <p style={{ fontSize: "14px", color: "#94a3b8", margin: "0" }}>
+                    2025
                   </p>
+                </div>
+                <div style={{ textAlign: "center", color: "#64748b", fontSize: "14px", marginTop: "40px" }}>
+                  Timeline will appear when tasks are added
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Team Workload */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-semibold">Team Workload</h2>
+        {/* Team Workload Section */}
+        <div>
+          <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "20px", color: "#f1f5f9" }}>
+            Team Workload
+          </h2>
           
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-            <div className="space-y-6">
-              {teamMembers.map((member, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-white">{member.name}</h4>
-                    <div className="flex items-center gap-4">
-                      <span className={`text-sm ${getStatusColor(member.status)}`}>
-                        {member.status}
-                      </span>
-                      <span className="text-sm text-slate-400">
-                        {member.workload}%
-                      </span>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <div className="w-full bg-slate-700 rounded-full h-2">
-                      <div 
-                        className="h-2 rounded-full bg-blue-500"
-                        style={{ width: `${member.workload}%` }}
-                      />
-                    </div>
+          <div
+            style={{
+              backgroundColor: "#1e293b",
+              border: "1px solid #334155",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+              padding: "30px",
+            }}
+          >
+            {[
+              { name: "Sarah Chen", percentage: 45, status: "Underloaded", color: "#eab308" },
+              { name: "Alex Johnson", percentage: 75, status: "Balanced", color: "#22c55e" },
+              { name: "Mike Rodriguez", percentage: 92, status: "Overloaded", color: "#ef4444" },
+              { name: "Emily Davis", percentage: 68, status: "Balanced", color: "#22c55e" },
+              { name: "James Wilson", percentage: 34, status: "Underloaded", color: "#eab308" },
+            ].map((member, index) => (
+              <div key={index} style={{ marginBottom: index < 4 ? "25px" : "0" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <h4 style={{ fontSize: "16px", fontWeight: "500", margin: "0", color: "#f1f5f9" }}>
+                    {member.name}
+                  </h4>
+                  <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+                    <span style={{ fontSize: "14px", color: member.color, fontWeight: "500" }}>
+                      {member.status}
+                    </span>
+                    <span style={{ fontSize: "14px", color: "#94a3b8", fontWeight: "500" }}>
+                      {member.percentage}%
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
+                <div
+                  style={{
+                    width: "100%",
+                    height: "8px",
+                    backgroundColor: "#334155",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${member.percentage}%`,
+                      height: "100%",
+                      backgroundColor: "#3b82f6",
+                      transition: "width 0.3s ease",
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
+
+      {/* Overlay for sidebar */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.6)",
+            zIndex: 998,
+          }}
+        />
+      )}
     </div>
   )
 }
