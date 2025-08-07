@@ -1397,592 +1397,115 @@ export default function ResearchTaskPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
-      {/* Top Bar */}
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader />
+        <SidebarContent>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="/main">Map</a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="#">Command Deck</a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="/health-check">Health Check</a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="/forecast">Forecast</a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="/reports">Reports</a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="/network">Network</a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarContent>
+        <SidebarFooter />
+      </Sidebar>
+
       <div
         style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "60px",
-          backgroundColor: "white",
-          borderBottom: "1px solid #ccc",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
-          zIndex: 1000,
+          minHeight: "100vh",
+          position: "relative",
         }}
       >
-        {/* Sidebar Toggle */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{
-            background: "none",
-            border: "none",
-            fontSize: "24px",
-            cursor: "pointer",
-            marginRight: "15px",
-          }}
-        >
-          ☰
-        </button>
-
-        {/* Back Arrow */}
-        <button
-          onClick={() => {
-            const optionsParam = selectedOptions.join(",")
-            window.location.href = `/research/detail?step=${currentSection}&options=${optionsParam}`
-          }}
-          style={{
-            background: "none",
-            border: "none",
-            fontSize: "24px",
-            cursor: "pointer",
-          }}
-        >
-          ←
-        </button>
-
-        {/* Task Title */}
-        <h2 style={{ marginLeft: "20px", fontSize: "18px", color: "#333" }}>{getTaskTitle()}</h2>
-      </div>
-
-      {/* Sidebar */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: sidebarOpen ? 0 : "-300px",
-          width: "300px",
-          height: "100vh",
-          backgroundColor: "#f0f0f0",
-          transition: "left 0.3s ease",
-          zIndex: 999,
-          padding: "20px",
-        }}
-      >
-        {/* Top section - Settings and Profile icons */}
-        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
-          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                fontSize: "24px",
-                cursor: "pointer",
-              }}
-            >
-              ⚙️
-            </button>
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                fontSize: "24px",
-                cursor: "pointer",
-              }}
-            >
-              👤
-            </button>
-          </div>
-        </div>
-
-        {/* Six vertically stacked buttons */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <button
-            onClick={() => (window.location.href = "/main")}
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Map
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Command Deck
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Health Analysis
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Forecast
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Reports
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Network
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div
-        style={{
-          marginTop: "60px",
-          padding: "40px 20px",
-          color: "#e0e0e0",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "3rem",
-            color: "#666",
-            fontWeight: "bold",
-            marginBottom: "40px",
-            textAlign: "center",
-            letterSpacing: "0.1em",
-          }}
-        >
-          {getTaskTitle().toUpperCase()}
-        </h1>
-
-        {getTaskContent()}
-      </div>
-
-      {/* Overlay for sidebar */}
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.3)",
-            zIndex: 998,
-          }}
-        />
-      )}
-
-      {/* History Modal */}
-      {showHistory && (
+        {/* Top Bar */}
         <div
           style={{
             position: "fixed",
             top: 0,
             left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.8)",
+            right: 0,
+            height: "60px",
+            backgroundColor: "white",
+            borderBottom: "1px solid #ccc",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            zIndex: 2000,
+            padding: "0 20px",
+            zIndex: 1000,
           }}
-          onClick={() => setShowHistory(false)}
         >
-          <div
-            style={{
-              backgroundColor: "#2a2a2a",
-              color: "#e0e0e0",
-              padding: "40px",
-              borderRadius: "8px",
-              maxWidth: "800px",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              width: "90%",
+          {/* Sidebar Toggle */}
+          <SidebarTrigger className="-ml-1" />
+
+          {/* Back Arrow */}
+          <button
+            onClick={() => {
+              const optionsParam = selectedOptions.join(",")
+              window.location.href = `/research/detail?step=${currentSection}&options=${optionsParam}`
             }}
-            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: "24px",
+              cursor: "pointer",
+            }}
           >
-            <div
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}
-            >
-              <h3 style={{ fontSize: "24px", color: "#fff", margin: 0 }}>Analysis History</h3>
-              <button
-                onClick={() => setShowHistory(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  fontSize: "24px",
-                  color: "#ccc",
-                  cursor: "pointer",
-                }}
-              >
-                ×
-              </button>
-            </div>
+            ←
+          </button>
 
-            {analysisHistory.length === 0 ? (
-              <p style={{ color: "#ccc", textAlign: "center", padding: "40px" }}>
-                No previous versions found. Generate your first analysis to start building history.
-              </p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
-                {analysisHistory.map((entry, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      backgroundColor: "#1a1a1a",
-                      padding: "25px",
-                      borderRadius: "8px",
-                      border: "1px solid #444",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "15px",
-                        borderBottom: "1px solid #444",
-                        paddingBottom: "10px",
-                      }}
-                    >
-                      <h4 style={{ fontSize: "16px", color: "#fff", margin: 0 }}>
-                        Version {analysisHistory.length - index}
-                      </h4>
-                      <span style={{ fontSize: "14px", color: "#888" }}>{entry.timestamp}</span>
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "14px",
-                        lineHeight: "1.6",
-                        color: "#e0e0e0",
-                        whiteSpace: "pre-wrap",
-                      }}
-                    >
-                      {entry.content}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Task Title */}
+          <h2 style={{ marginLeft: "20px", fontSize: "18px", color: "#333" }}>{getTaskTitle()}</h2>
         </div>
-      )}
 
-      {/* Education Modal */}
-      {showEducationModal && (
+        {/* Main Content */}
         <div
           style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.9)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 2000,
+            marginTop: "60px",
+            padding: "40px 20px",
+            color: "#e0e0e0",
           }}
-          onClick={() => setShowEducationModal(false)}
         >
-          <div
+          <h1
             style={{
-              backgroundColor: "#2a2a2a",
-              color: "#e0e0e0",
-              padding: "60px",
-              borderRadius: "8px",
-              maxWidth: "900px",
-              width: "90%",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              position: "relative",
+              fontSize: "3rem",
+              color: "#666",
+              fontWeight: "bold",
+              marginBottom: "40px",
+              textAlign: "center",
+              letterSpacing: "0.1em",
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
-            <button
-              onClick={() => setShowEducationModal(false)}
-              style={{
-                position: "absolute",
-                top: "20px",
-                right: "20px",
-                background: "none",
-                border: "none",
-                fontSize: "24px",
-                color: "#ccc",
-                cursor: "pointer",
-              }}
-            >
-              ×
-            </button>
+            {getTaskTitle().toUpperCase()}
+          </h1>
 
-            {/* Title and Subtitle - Always Visible */}
-            <div style={{ textAlign: "center", marginBottom: "50px" }}>
-              <h2 style={{ fontSize: "32px", color: "#fff", marginBottom: "15px", fontWeight: "bold" }}>
-                How to Write Great Interview Questions
-              </h2>
-              <p style={{ fontSize: "18px", color: "#ccc", lineHeight: "1.6" }}>
-                Want honest insights? It starts with asking the right questions — here's how.
-              </p>
-            </div>
-
-            {/* Navigation */}
-            <div
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}
-            >
-              <button
-                onClick={() => setCurrentEducationPart(Math.max(1, currentEducationPart - 1))}
-                disabled={currentEducationPart === 1}
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: currentEducationPart === 1 ? "#444" : "#007bff",
-                  color: currentEducationPart === 1 ? "#888" : "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "16px",
-                  cursor: currentEducationPart === 1 ? "not-allowed" : "pointer",
-                }}
-              >
-                ← Previous
-              </button>
-
-              <div style={{ display: "flex", gap: "10px" }}>
-                {[1, 2, 3].map((part) => (
-                  <button
-                    key={part}
-                    onClick={() => setCurrentEducationPart(part)}
-                    style={{
-                      width: "12px",
-                      height: "12px",
-                      borderRadius: "50%",
-                      border: "none",
-                      backgroundColor: currentEducationPart === part ? "#007bff" : "#666",
-                      cursor: "pointer",
-                    }}
-                  />
-                ))}
-              </div>
-
-              <button
-                onClick={() => setCurrentEducationPart(Math.min(3, currentEducationPart + 1))}
-                disabled={currentEducationPart === 3}
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: currentEducationPart === 3 ? "#444" : "#007bff",
-                  color: currentEducationPart === 3 ? "#888" : "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "16px",
-                  cursor: currentEducationPart === 3 ? "not-allowed" : "pointer",
-                }}
-              >
-                Next →
-              </button>
-            </div>
-
-            {/* Content Parts */}
-            <div style={{ minHeight: "300px", fontSize: "16px", lineHeight: "1.8" }}>
-              {currentEducationPart === 1 && (
-                <div>
-                  <h3 style={{ fontSize: "24px", color: "#fff", marginBottom: "30px" }}>📘 Part 1</h3>
-                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                    <li style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start" }}>
-                      <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>•</span>
-                      <span>Focus on learning, not confirming what you hope is true.</span>
-                    </li>
-                    <li style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start" }}>
-                      <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>•</span>
-                      <span>Ask about past behavior, not opinions or guesses about the future.</span>
-                    </li>
-                    <li style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start" }}>
-                      <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>•</span>
-                      <span>Avoid yes/no questions – aim for open-ended ones.</span>
-                    </li>
-                  </ul>
-                </div>
-              )}
-
-              {currentEducationPart === 2 && (
-                <div>
-                  <h3 style={{ fontSize: "24px", color: "#fff", marginBottom: "30px" }}>📘 Part 2</h3>
-                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                    <li style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start" }}>
-                      <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>•</span>
-                      <span>Don't pitch your idea – you're here to listen, not sell.</span>
-                    </li>
-                    <li style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start" }}>
-                      <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>•</span>
-                      <span>Steer clear of leading questions (e.g. "Would you use this?").</span>
-                    </li>
-                    <li style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start" }}>
-                      <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>•</span>
-                      <span>Don't ask hypotheticals (e.g. "Would you pay for it?").</span>
-                    </li>
-                  </ul>
-                </div>
-              )}
-
-              {currentEducationPart === 3 && (
-                <div>
-                  <h3 style={{ fontSize: "24px", color: "#fff", marginBottom: "30px" }}>📘 Part 3</h3>
-                  <div style={{ marginBottom: "30px" }}>
-                    <p style={{ marginBottom: "20px", fontWeight: "bold" }}>Great questions sound like:</p>
-                    <ul style={{ listStyle: "none", padding: 0, margin: 0, marginBottom: "30px" }}>
-                      <li style={{ marginBottom: "15px", display: "flex", alignItems: "flex-start" }}>
-                        <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>–</span>
-                        <span>"Tell me about the last time you…"</span>
-                      </li>
-                      <li style={{ marginBottom: "15px", display: "flex", alignItems: "flex-start" }}>
-                        <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>–</span>
-                        <span>"How do you currently handle…"</span>
-                      </li>
-                      <li style={{ marginBottom: "15px", display: "flex", alignItems: "flex-start" }}>
-                        <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>–</span>
-                        <span>"What's the hardest part about…"</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <div>
-                    <p style={{ marginBottom: "15px" }}>Let them talk – silence is powerful.</p>
-                    <p style={{ marginBottom: "15px" }}>
-                      If something's unclear, ask: "Why?" or "Can you tell me more?"
-                    </p>
-                    <p style={{ marginBottom: "15px" }}>
-                      Always take notes or ask to record the conversation (with permission).
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Part indicator */}
-            <div style={{ textAlign: "center", marginTop: "30px", color: "#888", fontSize: "14px" }}>
-              Part {currentEducationPart} of 3
-            </div>
-          </div>
+          {getTaskContent()}
         </div>
-      )}
-
-      {/* MomTest Game Modal */}
-      {showMomTestGame && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.9)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 2000,
-          }}
-          onClick={() => setShowMomTestGame(false)}
-        >
-          <div
-            style={{
-              backgroundColor: "#2a2a2a",
-              color: "#e0e0e0",
-              padding: "60px",
-              borderRadius: "8px",
-              maxWidth: "800px",
-              width: "90%",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              position: "relative",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setShowMomTestGame(false)}
-              style={{
-                position: "absolute",
-                top: "20px",
-                right: "20px",
-                background: "none",
-                border: "none",
-                fontSize: "24px",
-                color: "#ccc",
-                cursor: "pointer",
-              }}
-            >
-              ×
-            </button>
-
-            {/* History Header */}
-            <div style={{ textAlign: "center", marginBottom: "40px" }}>
-              <h2 style={{ fontSize: "28px", color: "#fff", marginBottom: "10px" }}>Game History</h2>
-              <p style={{ fontSize: "16px", color: "#ccc" }}>Your past scores</p>
-            </div>
-
-            {/* Score List */}
-            {gameScores.length === 0 ? (
-              <p style={{ fontSize: "16px", color: "#ccc", textAlign: "center" }}>No scores yet. Play the game!</p>
-            ) : (
-              <ul style={{ listStyle: "none", padding: 0 }}>
-                {gameScores.map((score, index) => (
-                  <li
-                    key={index}
-                    style={{
-                      backgroundColor: "#1a1a1a",
-                      padding: "20px",
-                      borderRadius: "6px",
-                      marginBottom: "10px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <div>
-                      <p style={{ fontSize: "16px", color: "#fff", marginBottom: "5px" }}>
-                        Score: {score.score} / {momTestQuestions.length}
-                      </p>
-                      <p style={{ fontSize: "14px", color: "#888" }}>Date: {score.date}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+      </div>
+    </SidebarProvider>
   )
 }

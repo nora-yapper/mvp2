@@ -1,9 +1,8 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { MessageCircle, X, Send } from 'lucide-react'
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 
 export default function MainPage() {
   const [chatOpen, setChatOpen] = useState(false)
@@ -178,180 +177,190 @@ export default function MainPage() {
   )
 
   return (
-    <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
-      {/* Step Back Button */}
-      <div style={{ position: "fixed", top: "20px", left: "20px", display: "flex", gap: "10px", zIndex: 1000 }}>
-        <button
-          onClick={() => (window.location.href = "/main")}
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader />
+        <SidebarContent>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="/main">Map</a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="#">Command Deck</a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="/health-check">Health Check</a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="/forecast">Forecast</a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="/reports">Reports</a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="/network">Network</a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarContent>
+        <SidebarFooter />
+      </Sidebar>
+
+      <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
+        {/* Main Content - Center Grid */}
+        <div
           style={{
-            background: "#2a2a2a",
-            border: "1px solid #444",
-            fontSize: "20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "100vh",
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "30px",
+              width: "500px",
+            }}
+          >
+            <GeometricButton onClick={handleResearchClick}>RESEARCH</GeometricButton>
+            <GeometricButton onClick={handleProductClick}>PRODUCT</GeometricButton>
+            <GeometricButton onClick={handleHomebaseClick}>HOMEBASE</GeometricButton>
+            <GeometricButton onClick={handleSalesClick}>SALES</GeometricButton>
+          </div>
+        </div>
+
+        {/* Chat Button - Bottom Right */}
+        <button
+          onClick={() => setChatOpen(!chatOpen)}
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            right: "20px",
+            width: "60px",
+            height: "60px",
+            backgroundColor: "#007bff",
+            color: "white",
+            border: "1px solid #0056b3",
+            fontSize: "24px",
             cursor: "pointer",
-            color: "#e0e0e0",
-            width: "50px",
-            height: "50px",
-            clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+            zIndex: 1000,
+            clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
             transition: "all 0.3s ease",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#3a3a3a"
+            e.currentTarget.style.backgroundColor = "#0056b3"
+            e.currentTarget.style.transform = "translateY(-2px)"
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#2a2a2a"
+            e.currentTarget.style.backgroundColor = "#007bff"
+            e.currentTarget.style.transform = "translateY(0px)"
           }}
-          title="Back to Main"
         >
-          ←
+          <MessageCircle size={24} />
         </button>
-      </div>
 
-      {/* Main Content - Center Grid */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          padding: "20px",
-        }}
-      >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "30px",
-            width: "500px",
-          }}
-        >
-          <GeometricButton onClick={handleResearchClick}>RESEARCH</GeometricButton>
-          <GeometricButton onClick={handleProductClick}>PRODUCT</GeometricButton>
-          <GeometricButton onClick={handleHomebaseClick}>HOMEBASE</GeometricButton>
-          <GeometricButton onClick={handleSalesClick}>SALES</GeometricButton>
-        </div>
-      </div>
-
-      {/* Chat Button - Bottom Right */}
-      <button
-        onClick={() => setChatOpen(!chatOpen)}
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          right: "20px",
-          width: "60px",
-          height: "60px",
-          backgroundColor: "#007bff",
-          color: "white",
-          border: "1px solid #0056b3",
-          fontSize: "24px",
-          cursor: "pointer",
-          zIndex: 1000,
-          clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
-          transition: "all 0.3s ease",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#0056b3"
-          e.currentTarget.style.transform = "translateY(-2px)"
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "#007bff"
-          e.currentTarget.style.transform = "translateY(0px)"
-        }}
-      >
-        <MessageCircle size={24} />
-      </button>
-
-      {/* Chat Window */}
-      {chatOpen && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "90px",
-            right: "20px",
-            width: "400px",
-            height: "500px",
-            backgroundColor: "#2a2a2a",
-            border: "1px solid #444",
-            clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-            zIndex: 1001,
-            display: "flex",
-            flexDirection: "column",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
-          }}
-        >
-          {/* Chat Header */}
+        {/* Chat Window */}
+        {chatOpen && (
           <div
             style={{
-              padding: "20px",
-              borderBottom: "1px solid #444",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              backgroundColor: "#333",
-              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% calc(100% - 5px), 0 100%)",
-            }}
-          >
-            <div>
-              <h3 style={{ margin: "0", fontSize: "18px", fontWeight: "600", color: "#e0e0e0" }}>
-                Nora AI-stronaut 🚀
-              </h3>
-              <p style={{ margin: "0", fontSize: "12px", color: "#999" }}>Your Startup Companion</p>
-            </div>
-            <button
-              onClick={() => setChatOpen(false)}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "#999",
-                cursor: "pointer",
-                padding: "5px",
-                transition: "color 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#fff"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "#999"
-              }}
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Chat Messages */}
-          <div
-            ref={chatMessagesRef}
-            style={{
-              flex: 1,
-              padding: "20px",
-              overflowY: "auto",
+              position: "fixed",
+              bottom: "90px",
+              right: "20px",
+              width: "400px",
+              height: "500px",
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+              zIndex: 1001,
               display: "flex",
               flexDirection: "column",
-              gap: "15px",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
             }}
           >
-            {chatMessages.map((message, index) => (
-              <div
-                key={index}
+            {/* Chat Header */}
+            <div
+              style={{
+                padding: "20px",
+                borderBottom: "1px solid #444",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                backgroundColor: "#333",
+                clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% calc(100% - 5px), 0 100%)",
+              }}
+            >
+              <div>
+                <h3 style={{ margin: "0", fontSize: "18px", fontWeight: "600", color: "#e0e0e0" }}>
+                  Nora AI-stronaut 🚀
+                </h3>
+                <p style={{ margin: "0", fontSize: "12px", color: "#999" }}>Your Startup Companion</p>
+              </div>
+              <button
+                onClick={() => setChatOpen(false)}
                 style={{
-                  alignSelf: message.role === "user" ? "flex-end" : "flex-start",
-                  maxWidth: "80%",
+                  background: "transparent",
+                  border: "none",
+                  color: "#999",
+                  cursor: "pointer",
+                  padding: "5px",
+                  transition: "color 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#fff"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#999"
                 }}
               >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Chat Messages */}
+            <div
+              ref={chatMessagesRef}
+              style={{
+                flex: 1,
+                padding: "20px",
+                overflowY: "auto",
+                display: "flex",
+                flexDirection: "column",
+                gap: "15px",
+              }}
+            >
+              {chatMessages.map((message, index) => (
                 <div
+                  key={index}
                   style={{
-                    padding: "12px 16px",
-                    backgroundColor: message.role === "user" ? "#007bff" : "#333",
-                    color: "#e0e0e0",
-                    fontSize: "14px",
-                    lineHeight: "1.4",
-                    clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                    alignSelf: message.role === "user" ? "flex-end" : "flex-start",
+                    maxWidth: "80%",
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: "12px 16px",
+                      backgroundColor: message.role === "user" ? "#007bff" : "#333",
+                      color: "#e0e0e0",
+                      fontSize: "14px",
+                      lineHeight: "1.4",
+                      clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
                     whiteSpace: "pre-wrap",
                   }}
                 >
@@ -456,6 +465,6 @@ export default function MainPage() {
           zIndex: -1,
         }}
       />
-    </div>
+    </SidebarProvider>
   )
 }
