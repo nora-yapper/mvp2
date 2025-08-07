@@ -160,7 +160,7 @@ export default function ResearchPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {[
             { label: "Map", onClick: () => (window.location.href = "/main") },
-            { label: "Command Deck", onClick: () => {} },
+            { label: "Command Deck", onClick: () => (window.location.href = "/homebase") },
             { label: "Health Analysis", onClick: () => (window.location.href = "/health-check") },
             { label: "Forecast", onClick: () => (window.location.href = "/forecast") },
             { label: "Reports", onClick: () => (window.location.href = "/reports") },

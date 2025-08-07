@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { ArrowUp, ChevronDown, MessageCircle, X, Send } from "lucide-react"
+import { ArrowUp, ChevronDown, MessageCircle, X, Send } from 'lucide-react'
 
 interface ChatMessage {
   role: "user" | "assistant"
@@ -341,11 +341,11 @@ export default function HealthCheckPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {[
             { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
-            { label: "Command Deck", onClick: () => {}, active: false },
+            { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: false },
             { label: "Health Check", onClick: () => {}, active: true },
-            { label: "Forecast", onClick: () => {}, active: false },
-            { label: "Reports", onClick: () => {}, active: false },
-            { label: "Network", onClick: () => {}, active: false },
+            { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
+            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
+            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
           ].map((item, index) => (
             <button
               key={index}

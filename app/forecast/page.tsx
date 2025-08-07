@@ -1,246 +1,340 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState } from "react"
 import { ArrowUp } from 'lucide-react'
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 
 export default function ForecastPage() {
   const [whatIfQuestion, setWhatIfQuestion] = useState("")
+  // Hamburger Menu with Sidebar
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader />
-        <SidebarContent>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/main">Map</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#">Command Deck</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/health-check">Health Check</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/forecast">Forecast</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/reports">Reports</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/network">Network</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter />
-      </Sidebar>
+    <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
+      {/* Hamburger Menu */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        style={{
+          position: "fixed",
+          top: "20px",
+          left: "20px",
+          background: "#2a2a2a",
+          border: "1px solid #444",
+          fontSize: "24px",
+          cursor: "pointer",
+          zIndex: 1000,
+          color: "#e0e0e0",
+          width: "50px",
+          height: "50px",
+          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#3a3a3a"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#2a2a2a"
+        }}
+      >
+        ☰
+      </button>
 
-      <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
-        {/* Header */}
-        <div style={{ padding: "40px 60px 0", textAlign: "center" }}>
-          <h1 style={{ fontSize: "48px", fontWeight: "400", margin: "0 0 16px 0", color: "#e0e0e0" }}>Forecast</h1>
-          <p style={{ fontSize: "18px", color: "#999", margin: "0 0 60px 0" }}>
-            Review predictions. Explore outcomes. Adjust course.
-          </p>
-        </div>
-
-        {/* Current Forecast Overview */}
-        <div style={{ padding: "0 60px 60px" }}>
-          <h2 style={{ fontSize: "28px", fontWeight: "500", margin: "0 0 30px 0", color: "#e0e0e0" }}>
-            Current Forecast Overview
-          </h2>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px" }}>
-            {/* Product Progress Card */}
-            <div
+      {/* Sidebar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? 0 : "-300px",
+          width: "300px",
+          height: "100vh",
+          backgroundColor: "#2a2a2a",
+          transition: "left 0.3s ease",
+          zIndex: 999,
+          padding: "20px",
+          borderRight: "1px solid #444",
+        }}
+      >
+        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
+            <button
               style={{
-                backgroundColor: "#2a2a2a",
+                background: "#1a1a1a",
                 border: "1px solid #444",
-                clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-                padding: "24px",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginBottom: "16px",
-                }}
-              >
-                <h3 style={{ fontSize: "18px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>Product Progress</h3>
-                <span
-                  style={{
-                    padding: "4px 12px",
-                    backgroundColor: "#22c55e",
-                    color: "white",
-                    fontSize: "12px",
-                    fontWeight: "500",
-                    clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                  }}
-                >
-                  High Confidence
-                </span>
-              </div>
-              <p style={{ fontSize: "16px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
-                MVP milestone expected in 19 days, 86% confidence
-              </p>
-              <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>On track with current velocity</p>
-            </div>
-
-            {/* Team Execution Card */}
-            <div
+              ⚙️
+            </button>
+            <button
               style={{
-                backgroundColor: "#2a2a2a",
+                background: "#1a1a1a",
                 border: "1px solid #444",
-                clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-                padding: "24px",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginBottom: "16px",
-                }}
-              >
-                <h3 style={{ fontSize: "18px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>Team Execution</h3>
-                <span
-                  style={{
-                    padding: "4px 12px",
-                    backgroundColor: "#6b7280",
-                    color: "white",
-                    fontSize: "12px",
-                    fontWeight: "500",
-                    clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                  }}
-                >
-                  Stable
-                </span>
-              </div>
-              <p style={{ fontSize: "16px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
-                Sprint completion rate holding at 78%
-              </p>
-              <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>Consistent delivery pace maintained</p>
-            </div>
-
-            {/* Burn Rate Card */}
-            <div
-              style={{
-                backgroundColor: "#2a2a2a",
-                border: "1px solid #444",
-                clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-                padding: "24px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginBottom: "16px",
-                }}
-              >
-                <h3 style={{ fontSize: "18px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>Burn Rate</h3>
-                <span
-                  style={{
-                    padding: "4px 12px",
-                    backgroundColor: "#ef4444",
-                    color: "white",
-                    fontSize: "12px",
-                    fontWeight: "500",
-                    clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                  }}
-                >
-                  High Risk
-                </span>
-              </div>
-              <p style={{ fontSize: "16px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
-                Current runway extends 127 days at present spend
-              </p>
-              <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>Consider fundraising or cost optimization</p>
-            </div>
-
-            {/* User Insight Card */}
-            <div
-              style={{
-                backgroundColor: "#2a2a2a",
-                border: "1px solid #444",
-                clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-                padding: "24px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginBottom: "16px",
-                }}
-              >
-                <h3 style={{ fontSize: "18px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>User Insight</h3>
-                <span
-                  style={{
-                    padding: "4px 12px",
-                    backgroundColor: "#22c55e",
-                    color: "white",
-                    fontSize: "12px",
-                    fontWeight: "500",
-                    clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                  }}
-                >
-                  Positive
-                </span>
-              </div>
-              <p style={{ fontSize: "16px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
-                Feature adoption trending 23% above projection
-              </p>
-              <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>Strong product-market fit signals</p>
-            </div>
+              👤
+            </button>
           </div>
         </div>
 
-        {/* Actual vs Projection */}
-        <div style={{ padding: "0 60px 60px" }}>
-          <h2 style={{ fontSize: "28px", fontWeight: "500", margin: "0 0 30px 0", color: "#e0e0e0" }}>
-            Actual vs Projection
-          </h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {[
+            { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
+            { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: false },
+            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
+            { label: "Forecast", onClick: () => {}, active: true },
+            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
+            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
+          ].map((item, index) => (
+            <button
+              key={index}
+              onClick={item.onClick}
+              style={{
+                padding: "18px",
+                fontSize: "16px",
+                cursor: "pointer",
+                border: "1px solid #444",
+                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
+                color: "#e0e0e0",
+                width: "100%",
+                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                letterSpacing: "0.05em",
+                fontWeight: "500",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#3a3a3a"
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#1a1a1a"
+                }
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
+      {/* Overlay for sidebar */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.6)",
+            zIndex: 998,
+          }}
+        />
+      )}
+      {/* Header */}
+      <div style={{ padding: "40px 60px 0", textAlign: "center" }}>
+        <h1 style={{ fontSize: "48px", fontWeight: "400", margin: "0 0 16px 0", color: "#e0e0e0" }}>Forecast</h1>
+        <p style={{ fontSize: "18px", color: "#999", margin: "0 0 60px 0" }}>
+          Review predictions. Explore outcomes. Adjust course.
+        </p>
+      </div>
+
+      {/* Current Forecast Overview */}
+      <div style={{ padding: "0 60px 60px" }}>
+        <h2 style={{ fontSize: "28px", fontWeight: "500", margin: "0 0 30px 0", color: "#e0e0e0" }}>
+          Current Forecast Overview
+        </h2>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px" }}>
+          {/* Product Progress Card */}
           <div
             style={{
               backgroundColor: "#2a2a2a",
               border: "1px solid #444",
               clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-              overflow: "hidden",
+              padding: "24px",
             }}
           >
-            {/* Table Header */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "200px 180px 180px 140px 1fr 100px",
-                gap: "20px",
-                padding: "20px 30px",
-                borderBottom: "1px solid #444",
-                fontSize: "14px",
-                fontWeight: "500",
-                color: "#999",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "16px",
               }}
             >
+              <h3 style={{ fontSize: "18px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>Product Progress</h3>
+              <span
+                style={{
+                  padding: "4px 12px",
+                  backgroundColor: "#22c55e",
+                  color: "white",
+                  fontSize: "12px",
+                  fontWeight: "500",
+                  clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                }}
+              >
+                High Confidence
+              </span>
+            </div>
+            <p style={{ fontSize: "16px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
+              MVP milestone expected in 19 days, 86% confidence
+            </p>
+            <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>On track with current velocity</p>
+          </div>
+
+          {/* Team Execution Card */}
+          <div
+            style={{
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+              padding: "24px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "16px",
+              }}
+            >
+              <h3 style={{ fontSize: "18px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>Team Execution</h3>
+              <span
+                style={{
+                  padding: "4px 12px",
+                  backgroundColor: "#6b7280",
+                  color: "white",
+                  fontSize: "12px",
+                  fontWeight: "500",
+                  clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                }}
+              >
+                Stable
+              </span>
+            </div>
+            <p style={{ fontSize: "16px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
+              Sprint completion rate holding at 78%
+            </p>
+            <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>Consistent delivery pace maintained</p>
+          </div>
+
+          {/* Burn Rate Card */}
+          <div
+            style={{
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+              padding: "24px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "16px",
+              }}
+            >
+              <h3 style={{ fontSize: "18px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>Burn Rate</h3>
+              <span
+                style={{
+                  padding: "4px 12px",
+                  backgroundColor: "#ef4444",
+                  color: "white",
+                  fontSize: "12px",
+                  fontWeight: "500",
+                  clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                }}
+              >
+                High Risk
+              </span>
+            </div>
+            <p style={{ fontSize: "16px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
+              Current runway extends 127 days at present spend
+            </p>
+            <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>Consider fundraising or cost optimization</p>
+          </div>
+
+          {/* User Insight Card */}
+          <div
+            style={{
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+              padding: "24px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "16px",
+              }}
+            >
+              <h3 style={{ fontSize: "18px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>User Insight</h3>
+              <span
+                style={{
+                  padding: "4px 12px",
+                  backgroundColor: "#22c55e",
+                  color: "white",
+                  fontSize: "12px",
+                  fontWeight: "500",
+                  clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                }}
+              >
+                Positive
+              </span>
+            </div>
+            <p style={{ fontSize: "16px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
+              Feature adoption trending 23% above projection
+            </p>
+            <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>Strong product-market fit signals</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Actual vs Projection */}
+      <div style={{ padding: "0 60px 60px" }}>
+        <h2 style={{ fontSize: "28px", fontWeight: "500", margin: "0 0 30px 0", color: "#e0e0e0" }}>
+          Actual vs Projection
+        </h2>
+
+        <div
+          style={{
+            backgroundColor: "#2a2a2a",
+            border: "1px solid #444",
+            clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+            overflow: "hidden",
+          }}
+        >
+          {/* Table Header */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "200px 180px 180px 140px 1fr 100px",
+              gap: "20px",
+              padding: "20px 30px",
+              borderBottom: "1px solid #444",
+              fontSize: "14px",
+              fontWeight: "500",
+              color: "#999",
+            }}
+          >
             <div>Domain</div>
             <div>Original Projection</div>
             <div>Actual Outcome</div>
@@ -592,35 +686,6 @@ export default function ForecastPage() {
           </div>
         </div>
       </div>
-
-      {/* Back Button */}
-      <button
-        onClick={() => (window.location.href = "/main")}
-        style={{
-          position: "fixed",
-          top: "20px",
-          left: "20px",
-          background: "#2a2a2a",
-          border: "1px solid #444",
-          color: "#e0e0e0",
-          fontSize: "16px",
-          cursor: "pointer",
-          padding: "12px 20px",
-          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-          fontWeight: "500",
-          transition: "all 0.3s ease",
-          zIndex: 100,
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#3a3a3a"
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "#2a2a2a"
-        }}
-      >
-        ← Step Back
-      </button>
     </div>
-    </SidebarProvider>
   )
 }

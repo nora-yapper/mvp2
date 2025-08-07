@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { useState, useEffect } from "react"
 
 export default function SalesTaskPage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedOptions, setSelectedOptions] = useState<string[]>([])
   const [currentSection, setCurrentSection] = useState<string>("")
   const [currentTask, setCurrentTask] = useState<string>("")
@@ -354,115 +354,214 @@ export default function SalesTaskPage() {
   }
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader />
-        <SidebarContent>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/main">Map</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#">Command Deck</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/health-check">Health Check</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/forecast">Forecast</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/reports">Reports</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/network">Network</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter />
-      </Sidebar>
-
+    <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
+      {/* Top Bar */}
       <div
         style={{
-          minHeight: "100vh",
-          position: "relative",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "60px",
+          backgroundColor: "white",
+          borderBottom: "1px solid #ccc",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          zIndex: 1000,
         }}
       >
-        {/* Top Bar */}
+        {/* Sidebar Toggle */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          style={{
+            background: "none",
+            border: "none",
+            fontSize: "24px",
+            cursor: "pointer",
+            marginRight: "15px",
+          }}
+        >
+          ☰
+        </button>
+
+        {/* Back Arrow */}
+        <button
+          onClick={() => {
+            const optionsParam = selectedOptions.join(",")
+            window.location.href = `/sales/detail?step=${currentSection}&options=${optionsParam}`
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            fontSize: "24px",
+            cursor: "pointer",
+          }}
+        >
+          ←
+        </button>
+
+        {/* Task Title */}
+        <h2 style={{ marginLeft: "20px", fontSize: "18px", color: "#333" }}>{getTaskTitle()}</h2>
+      </div>
+
+      {/* Sidebar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? 0 : "-300px",
+          width: "300px",
+          height: "100vh",
+          backgroundColor: "#f0f0f0",
+          transition: "left 0.3s ease",
+          zIndex: 999,
+          padding: "20px",
+        }}
+      >
+        {/* Top section - Settings and Profile icons */}
+        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
+            <button
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: "24px",
+                cursor: "pointer",
+              }}
+            >
+              ⚙️
+            </button>
+            <button
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: "24px",
+                cursor: "pointer",
+              }}
+            >
+              👤
+            </button>
+          </div>
+        </div>
+
+        {/* Six vertically stacked buttons */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <button
+            onClick={() => (window.location.href = "/main")}
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Map
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Command Deck
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Health Analysis
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Forecast
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Reports
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Network
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div
+        style={{
+          marginTop: "60px",
+          padding: "40px 20px",
+          color: "#e0e0e0",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "3rem",
+            color: "#666",
+            fontWeight: "bold",
+            marginBottom: "40px",
+            textAlign: "center",
+            letterSpacing: "0.1em",
+          }}
+        >
+          {getTaskTitle().toUpperCase()}
+        </h1>
+
+        {getTaskContent()}
+      </div>
+
+      {/* Overlay for sidebar */}
+      {sidebarOpen && (
         <div
+          onClick={() => setSidebarOpen(false)}
           style={{
             position: "fixed",
             top: 0,
             left: 0,
-            right: 0,
-            height: "60px",
-            backgroundColor: "white",
-            borderBottom: "1px solid #ccc",
-            display: "flex",
-            alignItems: "center",
-            padding: "0 20px",
-            zIndex: 1000,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.3)",
+            zIndex: 998,
           }}
-        >
-          {/* Sidebar Toggle */}
-          <SidebarTrigger className="-ml-1" />
-
-          {/* Back Arrow */}
-          <button
-            onClick={() => {
-              const optionsParam = selectedOptions.join(",")
-              window.location.href = `/sales/detail?step=${currentSection}&options=${optionsParam}`
-            }}
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: "24px",
-              cursor: "pointer",
-            }}
-          >
-            ←
-          </button>
-
-          {/* Task Title */}
-          <h2 style={{ marginLeft: "20px", fontSize: "18px", color: "#333" }}>{getTaskTitle()}</h2>
-        </div>
-
-        {/* Main Content */}
-        <div
-          style={{
-            marginTop: "60px",
-            padding: "40px 20px",
-            color: "#e0e0e0",
-          }}
-        >
-          <h1
-            style={{
-              fontSize: "3rem",
-              color: "#666",
-              fontWeight: "bold",
-              marginBottom: "40px",
-              textAlign: "center",
-              letterSpacing: "0.1em",
-            }}
-          >
-            {getTaskTitle().toUpperCase()}
-          </h1>
-
-          {getTaskContent()}
-        </div>
-      </div>
-    </SidebarProvider>
+        />
+      )}
+    </div>
   )
 }

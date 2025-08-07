@@ -1,10 +1,12 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
-import { MessageCircle, X, Send } from 'lucide-react'
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import type React from "react"
+
+import { useState, useEffect, useRef } from "react"
+import { MessageCircle, X, Send } from "lucide-react"
 
 export default function MainPage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
   const [hasResearchPlan, setHasResearchPlan] = useState(false)
   const [hasProductPlan, setHasProductPlan] = useState(false)
@@ -177,190 +179,270 @@ export default function MainPage() {
   )
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader />
-        <SidebarContent>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/main">Map</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#">Command Deck</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/health-check">Health Check</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/forecast">Forecast</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/reports">Reports</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/network">Network</a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter />
-      </Sidebar>
+    <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
+      {/* Hamburger Menu - Top Left */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        style={{
+          position: "fixed",
+          top: "20px",
+          left: "20px",
+          background: "#2a2a2a",
+          border: "1px solid #444",
+          fontSize: "24px",
+          cursor: "pointer",
+          zIndex: 1000,
+          color: "#e0e0e0",
+          width: "50px",
+          height: "50px",
+          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#3a3a3a"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#2a2a2a"
+        }}
+      >
+        ☰
+      </button>
 
-      <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
-        {/* Main Content - Center Grid */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: "100vh",
-            padding: "20px",
-          }}
-        >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "30px",
-              width: "500px",
-            }}
-          >
-            <GeometricButton onClick={handleResearchClick}>RESEARCH</GeometricButton>
-            <GeometricButton onClick={handleProductClick}>PRODUCT</GeometricButton>
-            <GeometricButton onClick={handleHomebaseClick}>HOMEBASE</GeometricButton>
-            <GeometricButton onClick={handleSalesClick}>SALES</GeometricButton>
+      {/* Sidebar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? 0 : "-300px",
+          width: "300px",
+          height: "100vh",
+          backgroundColor: "#2a2a2a",
+          transition: "left 0.3s ease",
+          zIndex: 999,
+          padding: "20px",
+          borderRight: "1px solid #444",
+        }}
+      >
+        {/* Top section - Settings and Profile icons */}
+        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
+            <button
+              style={{
+                background: "#1a1a1a",
+                border: "1px solid #444",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              }}
+            >
+              ⚙️
+            </button>
+            <button
+              style={{
+                background: "#1a1a1a",
+                border: "1px solid #444",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              }}
+            >
+              👤
+            </button>
           </div>
         </div>
 
-        {/* Chat Button - Bottom Right */}
-        <button
-          onClick={() => setChatOpen(!chatOpen)}
+        {/* Six vertically stacked buttons */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {[
+            { label: "Map", onClick: () => (window.location.href = "/main"), active: true },
+            { label: "Command Deck", onClick: () => {} },
+            { label: "Health Check", onClick: () => (window.location.href = "/health-check") },
+            { label: "Forecast", onClick: () => (window.location.href = "/forecast") },
+            { label: "Reports", onClick: () => (window.location.href = "/reports") },
+            { label: "Network", onClick: () => (window.location.href = "/network") },
+          ].map((item, index) => (
+            <button
+              key={index}
+              onClick={item.onClick}
+              style={{
+                padding: "18px",
+                fontSize: "16px",
+                cursor: "pointer",
+                border: "1px solid #444",
+                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
+                color: "#e0e0e0",
+                width: "100%",
+                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                letterSpacing: "0.05em",
+                fontWeight: "500",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#3a3a3a"
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#1a1a1a"
+                }
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content - Center Grid */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          padding: "20px",
+        }}
+      >
+        <div
           style={{
-            position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            width: "60px",
-            height: "60px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "1px solid #0056b3",
-            fontSize: "24px",
-            cursor: "pointer",
-            zIndex: 1000,
-            clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
-            transition: "all 0.3s ease",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#0056b3"
-            e.currentTarget.style.transform = "translateY(-2px)"
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#007bff"
-            e.currentTarget.style.transform = "translateY(0px)"
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "30px",
+            width: "500px",
           }}
         >
-          <MessageCircle size={24} />
-        </button>
+          <GeometricButton onClick={handleResearchClick}>RESEARCH</GeometricButton>
+          <GeometricButton onClick={handleProductClick}>PRODUCT</GeometricButton>
+          <GeometricButton onClick={handleHomebaseClick}>HOMEBASE</GeometricButton>
+          <GeometricButton onClick={handleSalesClick}>SALES</GeometricButton>
+        </div>
+      </div>
 
-        {/* Chat Window */}
-        {chatOpen && (
+      {/* Chat Button - Bottom Right */}
+      <button
+        onClick={() => setChatOpen(!chatOpen)}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          width: "60px",
+          height: "60px",
+          backgroundColor: "#007bff",
+          color: "white",
+          border: "1px solid #0056b3",
+          fontSize: "24px",
+          cursor: "pointer",
+          zIndex: 1000,
+          clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+          transition: "all 0.3s ease",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#0056b3"
+          e.currentTarget.style.transform = "translateY(-2px)"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#007bff"
+          e.currentTarget.style.transform = "translateY(0px)"
+        }}
+      >
+        <MessageCircle size={24} />
+      </button>
+
+      {/* Chat Window */}
+      {chatOpen && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "90px",
+            right: "20px",
+            width: "400px",
+            height: "500px",
+            backgroundColor: "#2a2a2a",
+            border: "1px solid #444",
+            clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+            zIndex: 1001,
+            display: "flex",
+            flexDirection: "column",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+          }}
+        >
+          {/* Chat Header */}
           <div
             style={{
-              position: "fixed",
-              bottom: "90px",
-              right: "20px",
-              width: "400px",
-              height: "500px",
-              backgroundColor: "#2a2a2a",
-              border: "1px solid #444",
-              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-              zIndex: 1001,
+              padding: "20px",
+              borderBottom: "1px solid #444",
               display: "flex",
-              flexDirection: "column",
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+              justifyContent: "space-between",
+              alignItems: "center",
+              backgroundColor: "#333",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% calc(100% - 5px), 0 100%)",
             }}
           >
-            {/* Chat Header */}
-            <div
+            <div>
+              <h3 style={{ margin: "0", fontSize: "18px", fontWeight: "600", color: "#e0e0e0" }}>
+                Nora AI-stronaut 🚀
+              </h3>
+              <p style={{ margin: "0", fontSize: "12px", color: "#999" }}>Your Startup Companion</p>
+            </div>
+            <button
+              onClick={() => setChatOpen(false)}
               style={{
-                padding: "20px",
-                borderBottom: "1px solid #444",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                backgroundColor: "#333",
-                clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% calc(100% - 5px), 0 100%)",
+                background: "transparent",
+                border: "none",
+                color: "#999",
+                cursor: "pointer",
+                padding: "5px",
+                transition: "color 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#fff"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#999"
               }}
             >
-              <div>
-                <h3 style={{ margin: "0", fontSize: "18px", fontWeight: "600", color: "#e0e0e0" }}>
-                  Nora AI-stronaut 🚀
-                </h3>
-                <p style={{ margin: "0", fontSize: "12px", color: "#999" }}>Your Startup Companion</p>
-              </div>
-              <button
-                onClick={() => setChatOpen(false)}
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Chat Messages */}
+          <div
+            ref={chatMessagesRef}
+            style={{
+              flex: 1,
+              padding: "20px",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "15px",
+            }}
+          >
+            {chatMessages.map((message, index) => (
+              <div
+                key={index}
                 style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "#999",
-                  cursor: "pointer",
-                  padding: "5px",
-                  transition: "color 0.3s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "#fff"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "#999"
+                  alignSelf: message.role === "user" ? "flex-end" : "flex-start",
+                  maxWidth: "80%",
                 }}
               >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Chat Messages */}
-            <div
-              ref={chatMessagesRef}
-              style={{
-                flex: 1,
-                padding: "20px",
-                overflowY: "auto",
-                display: "flex",
-                flexDirection: "column",
-                gap: "15px",
-              }}
-            >
-              {chatMessages.map((message, index) => (
                 <div
-                  key={index}
                   style={{
-                    alignSelf: message.role === "user" ? "flex-end" : "flex-start",
-                    maxWidth: "80%",
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: "12px 16px",
-                      backgroundColor: message.role === "user" ? "#007bff" : "#333",
-                      color: "#e0e0e0",
-                      fontSize: "14px",
-                      lineHeight: "1.4",
-                      clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                    padding: "12px 16px",
+                    backgroundColor: message.role === "user" ? "#007bff" : "#333",
+                    color: "#e0e0e0",
+                    fontSize: "14px",
+                    lineHeight: "1.4",
+                    clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
                     whiteSpace: "pre-wrap",
                   }}
                 >
@@ -449,6 +531,22 @@ export default function MainPage() {
         </div>
       )}
 
+      {/* Overlay for sidebar */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.6)",
+            zIndex: 998,
+          }}
+        />
+      )}
+
       {/* Subtle background pattern */}
       <div
         style={{
@@ -465,6 +563,6 @@ export default function MainPage() {
           zIndex: -1,
         }}
       />
-    </SidebarProvider>
+    </div>
   )
 }
