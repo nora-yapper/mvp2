@@ -3,10 +3,9 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { MessageCircle, X, Send } from "lucide-react"
+import { MessageCircle, X, Send } from 'lucide-react'
 
 export default function MainPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
   const [hasResearchPlan, setHasResearchPlan] = useState(false)
   const [hasProductPlan, setHasProductPlan] = useState(false)
@@ -180,124 +179,34 @@ export default function MainPage() {
 
   return (
     <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
-      {/* Hamburger Menu - Top Left */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        style={{
-          position: "fixed",
-          top: "20px",
-          left: "20px",
-          background: "#2a2a2a",
-          border: "1px solid #444",
-          fontSize: "24px",
-          cursor: "pointer",
-          zIndex: 1000,
-          color: "#e0e0e0",
-          width: "50px",
-          height: "50px",
-          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-          transition: "all 0.3s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#3a3a3a"
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "#2a2a2a"
-        }}
-      >
-        ☰
-      </button>
-
-      {/* Sidebar */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: sidebarOpen ? 0 : "-300px",
-          width: "300px",
-          height: "100vh",
-          backgroundColor: "#2a2a2a",
-          transition: "left 0.3s ease",
-          zIndex: 999,
-          padding: "20px",
-          borderRight: "1px solid #444",
-        }}
-      >
-        {/* Top section - Settings and Profile icons */}
-        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
-          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
-            <button
-              style={{
-                background: "#1a1a1a",
-                border: "1px solid #444",
-                fontSize: "24px",
-                cursor: "pointer",
-                color: "#e0e0e0",
-                width: "45px",
-                height: "45px",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-              }}
-            >
-              ⚙️
-            </button>
-            <button
-              style={{
-                background: "#1a1a1a",
-                border: "1px solid #444",
-                fontSize: "24px",
-                cursor: "pointer",
-                color: "#e0e0e0",
-                width: "45px",
-                height: "45px",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-              }}
-            >
-              👤
-            </button>
-          </div>
-        </div>
-
-        {/* Six vertically stacked buttons */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {[
-            { label: "Map", onClick: () => (window.location.href = "/main"), active: true },
-            { label: "Command Deck", onClick: () => {} },
-            { label: "Health Check", onClick: () => (window.location.href = "/health-check") },
-            { label: "Forecast", onClick: () => (window.location.href = "/forecast") },
-            { label: "Reports", onClick: () => (window.location.href = "/reports") },
-            { label: "Network", onClick: () => (window.location.href = "/network") },
-          ].map((item, index) => (
-            <button
-              key={index}
-              onClick={item.onClick}
-              style={{
-                padding: "18px",
-                fontSize: "16px",
-                cursor: "pointer",
-                border: "1px solid #444",
-                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
-                color: "#e0e0e0",
-                width: "100%",
-                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                letterSpacing: "0.05em",
-                fontWeight: "500",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                if (!item.active) {
-                  e.currentTarget.style.backgroundColor = "#3a3a3a"
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!item.active) {
-                  e.currentTarget.style.backgroundColor = "#1a1a1a"
-                }
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+      {/* Step Back Button */}
+      <div style={{ position: "fixed", top: "20px", left: "20px", display: "flex", gap: "10px", zIndex: 1000 }}>
+        <button
+          onClick={() => (window.location.href = "/main")}
+          style={{
+            background: "#2a2a2a",
+            border: "1px solid #444",
+            fontSize: "20px",
+            cursor: "pointer",
+            color: "#e0e0e0",
+            width: "50px",
+            height: "50px",
+            clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+            transition: "all 0.3s ease",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#3a3a3a"
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#2a2a2a"
+          }}
+          title="Back to Main"
+        >
+          ←
+        </button>
       </div>
 
       {/* Main Content - Center Grid */}
@@ -529,22 +438,6 @@ export default function MainPage() {
             </button>
           </div>
         </div>
-      )}
-
-      {/* Overlay for sidebar */}
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.6)",
-            zIndex: 998,
-          }}
-        />
       )}
 
       {/* Subtle background pattern */}
