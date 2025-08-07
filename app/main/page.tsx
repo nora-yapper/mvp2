@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { MessageCircle, X, Send } from "lucide-react"
+import { MessageCircle, X, Send } from 'lucide-react'
 
 export default function MainPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -261,7 +261,7 @@ export default function MainPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {[
             { label: "Map", onClick: () => (window.location.href = "/main"), active: true },
-            { label: "Command Deck", onClick: () => {} },
+            { label: "Command Deck", onClick: () => (window.location.href = "/homebase") },
             { label: "Health Check", onClick: () => (window.location.href = "/health-check") },
             { label: "Forecast", onClick: () => (window.location.href = "/forecast") },
             { label: "Reports", onClick: () => (window.location.href = "/reports") },
