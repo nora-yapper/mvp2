@@ -2,7 +2,15 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
   try {
-    const { suggestion } = await req.json()
+    const { suggestion, teamMembers } = await req.json()
+
+    // Create team context for AI
+    const teamContext =
+      teamMembers && teamMembers.length > 0
+        ? `\n\nTEAM MEMBERS AVAILABLE:\n${teamMembers
+            .map((member: any) => `- ${member.name} (${member.role}): ${member.skills.join(", ")}`)
+            .join("\n")}`
+        : ""
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -37,10 +45,17 @@ JSON FORMAT:
 [
   {
     "task": "Specific task description (startup-appropriate)",
-    "assignee": "Realistic role for small startup (CEO, Founder, Lead Developer, etc.)",
+    "assignee": "Specific person name from team (if provided) or realistic role",
     "deadline": "YYYY-MM-DD format - realistic startup timeline"
   }
 ]
+
+ASSIGNMENT GUIDELINES:
+${
+  teamMembers && teamMembers.length > 0
+    ? "- Assign tasks to specific team members based on their skills and expertise\n- Consider each person's current role and capabilities\n- Distribute workload appropriately across the team"
+    : "- Use realistic startup roles (Founder/CEO, Co-founder, Lead Developer, etc.)\n- Consider typical startup team structure"
+}
 
 STARTUP-SPECIFIC GUIDELINES:
 - Suggest free/low-cost tools and platforms
@@ -49,7 +64,7 @@ STARTUP-SPECIFIC GUIDELINES:
 - Emphasize personal founder involvement
 - Consider resource constraints in timing
 - Prioritize revenue-generating activities
-- Suggest scrappy, creative solutions over expensive ones`,
+- Suggest scrappy, creative solutions over expensive ones${teamContext}`,
           },
           {
             role: "user",

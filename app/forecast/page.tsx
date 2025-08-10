@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { ArrowUp, X, Edit2, Check, Clock, User } from "lucide-react"
+import { useState, useEffect } from "react"
+import { ArrowUp, X, Edit2, Check, Clock, User, ChevronDown } from "lucide-react"
+import { getTeamMembers, type TeamMember } from "@/lib/team-data"
 
 interface ActionStep {
   id: string
@@ -32,6 +33,13 @@ export default function ForecastPage() {
   const [editingStep, setEditingStep] = useState<string | null>(null)
   const [editText, setEditText] = useState("")
   const [showHistory, setShowHistory] = useState(false)
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [editingAssignee, setEditingAssignee] = useState<string | null>(null)
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState<string | null>(null)
+
+  useEffect(() => {
+    setTeamMembers(getTeamMembers())
+  }, [])
 
   const suggestions: Suggestion[] = [
     {
@@ -75,6 +83,7 @@ export default function ForecastPage() {
         },
         body: JSON.stringify({
           suggestion: suggestion,
+          teamMembers: teamMembers,
         }),
       })
 
@@ -114,28 +123,29 @@ export default function ForecastPage() {
         {
           id: "1",
           task: "Research TechCrunch Disrupt application requirements using free online resources",
-          assignee: "Founder/CEO",
+          assignee: teamMembers.find((m) => m.role.includes("CEO"))?.name || "Alex Chen",
           deadline: "2025-09-01",
           completed: false,
         },
         {
           id: "2",
           task: "Create 10-slide pitch deck using Canva or Google Slides template",
-          assignee: "Founder + Co-founder",
+          assignee: teamMembers.find((m) => m.skills.includes("Design"))?.name || "Marcus Johnson",
           deadline: "2025-09-05",
           completed: false,
         },
         {
           id: "3",
           task: "Record 3-minute product demo video using Loom or phone camera",
-          assignee: "Lead Developer",
+          assignee:
+            teamMembers.find((m) => m.role.includes("CTO") || m.skills.includes("Development"))?.name || "Sarah Kim",
           deadline: "2025-09-08",
           completed: false,
         },
         {
           id: "4",
           task: "Submit application and leverage personal network for introductions",
-          assignee: "Founder/CEO",
+          assignee: teamMembers.find((m) => m.role.includes("CEO"))?.name || "Alex Chen",
           deadline: "2025-09-12",
           completed: false,
         },
@@ -145,35 +155,35 @@ export default function ForecastPage() {
         {
           id: "1",
           task: "Create basic financial model in Google Sheets with 18-month projections",
-          assignee: "Founder/CEO",
+          assignee: teamMembers.find((m) => m.role.includes("CEO"))?.name || "Alex Chen",
           deadline: "2025-09-05",
           completed: false,
         },
         {
           id: "2",
           task: "Build fundraising deck using existing pitch deck + financial slides",
-          assignee: "Founder + Co-founder",
+          assignee: teamMembers.find((m) => m.skills.includes("Design"))?.name || "Marcus Johnson",
           deadline: "2025-09-10",
           completed: false,
         },
         {
           id: "3",
           task: "Research 15-20 relevant investors using AngelList and Crunchbase free tiers",
-          assignee: "Founder/CEO",
+          assignee: teamMembers.find((m) => m.skills.includes("Business Development"))?.name || "Alex Chen",
           deadline: "2025-09-08",
           completed: false,
         },
         {
           id: "4",
           task: "Reach out to warm connections for investor introductions",
-          assignee: "Founder/CEO",
+          assignee: teamMembers.find((m) => m.role.includes("CEO"))?.name || "Alex Chen",
           deadline: "2025-09-15",
           completed: false,
         },
         {
           id: "5",
           task: "Organize key documents in Google Drive for due diligence",
-          assignee: "Co-founder",
+          assignee: teamMembers.find((m) => m.role.includes("CTO"))?.name || "Sarah Kim",
           deadline: "2025-09-20",
           completed: false,
         },
@@ -183,35 +193,35 @@ export default function ForecastPage() {
         {
           id: "1",
           task: "Send anonymous Google Form survey to team about company direction",
-          assignee: "Founder/CEO",
+          assignee: teamMembers.find((m) => m.role.includes("CEO"))?.name || "Alex Chen",
           deadline: "2025-09-03",
           completed: false,
         },
         {
           id: "2",
           task: "Schedule 90-minute team meeting at office or co-working space",
-          assignee: "Founder/CEO",
+          assignee: teamMembers.find((m) => m.role.includes("CEO"))?.name || "Alex Chen",
           deadline: "2025-09-06",
           completed: false,
         },
         {
           id: "3",
           task: "Draft 1-page company mission and 2025 goals document",
-          assignee: "Founder + Co-founder",
+          assignee: teamMembers.find((m) => m.role.includes("CEO"))?.name || "Alex Chen",
           deadline: "2025-09-10",
           completed: false,
         },
         {
           id: "4",
           task: "Create simple roadmap visual using Miro free plan or whiteboard",
-          assignee: "Lead Developer + Designer",
+          assignee: teamMembers.find((m) => m.skills.includes("Design"))?.name || "Marcus Johnson",
           deadline: "2025-09-12",
           completed: false,
         },
         {
           id: "5",
           task: "Implement weekly 15-minute team standup meetings",
-          assignee: "Founder/CEO",
+          assignee: teamMembers.find((m) => m.role.includes("CEO"))?.name || "Alex Chen",
           deadline: "2025-09-15",
           completed: false,
         },
@@ -223,7 +233,7 @@ export default function ForecastPage() {
       {
         id: "1",
         task: `Define specific action items for: ${suggestion.title}`,
-        assignee: "Founder/CEO",
+        assignee: teamMembers.find((m) => m.role.includes("CEO"))?.name || "Alex Chen",
         deadline: "2025-09-01",
         completed: false,
       },
@@ -245,6 +255,11 @@ export default function ForecastPage() {
     setActionSteps((prev) => prev.map((step) => (step.id === stepId ? { ...step, task: editText } : step)))
     setEditingStep(null)
     setEditText("")
+  }
+
+  const handleAssigneeChange = (stepId: string, newAssignee: string) => {
+    setActionSteps((prev) => prev.map((step) => (step.id === stepId ? { ...step, assignee: newAssignee } : step)))
+    setShowAssigneeDropdown(null)
   }
 
   const handleConfirmImplementation = () => {
@@ -351,6 +366,7 @@ export default function ForecastPage() {
             { label: "Forecast", onClick: () => {}, active: true },
             { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
             { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
+            { label: "Team", onClick: () => (window.location.href = "/team"), active: false },
           ].map((item, index) => (
             <button
               key={index}
@@ -1145,9 +1161,87 @@ export default function ForecastPage() {
                             </div>
                           )}
                           <div style={{ display: "flex", gap: "20px", fontSize: "14px" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#999" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                color: "#999",
+                                position: "relative",
+                              }}
+                            >
                               <User size={14} />
-                              {step.assignee}
+                              <button
+                                onClick={() =>
+                                  setShowAssigneeDropdown(showAssigneeDropdown === step.id ? null : step.id)
+                                }
+                                style={{
+                                  background: "transparent",
+                                  border: "1px solid #444",
+                                  color: "#e0e0e0",
+                                  padding: "4px 8px",
+                                  fontSize: "14px",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  clipPath:
+                                    "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                                }}
+                              >
+                                {step.assignee}
+                                <ChevronDown size={12} />
+                              </button>
+
+                              {/* Assignee Dropdown */}
+                              {showAssigneeDropdown === step.id && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "100%",
+                                    left: "20px",
+                                    backgroundColor: "#2a2a2a",
+                                    border: "1px solid #444",
+                                    clipPath:
+                                      "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                                    zIndex: 1000,
+                                    minWidth: "200px",
+                                    maxHeight: "200px",
+                                    overflowY: "auto",
+                                  }}
+                                >
+                                  {teamMembers.map((member) => (
+                                    <button
+                                      key={member.id}
+                                      onClick={() => handleAssigneeChange(step.id, member.name)}
+                                      style={{
+                                        width: "100%",
+                                        padding: "8px 12px",
+                                        background: "transparent",
+                                        border: "none",
+                                        color: "#e0e0e0",
+                                        textAlign: "left",
+                                        cursor: "pointer",
+                                        fontSize: "14px",
+                                        borderBottom: "1px solid #333",
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = "#3a3a3a"
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = "transparent"
+                                      }}
+                                    >
+                                      <div style={{ fontWeight: "500" }}>{member.name}</div>
+                                      <div style={{ fontSize: "12px", color: "#999" }}>{member.role}</div>
+                                      <div style={{ fontSize: "11px", color: "#666" }}>
+                                        {member.skills.slice(0, 2).join(", ")}
+                                        {member.skills.length > 2 && "..."}
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#999" }}>
                               <Clock size={14} />
@@ -1213,6 +1307,21 @@ export default function ForecastPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Click outside to close dropdown */}
+      {showAssigneeDropdown && (
+        <div
+          onClick={() => setShowAssigneeDropdown(null)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            zIndex: 999,
+          }}
+        />
       )}
     </div>
   )
