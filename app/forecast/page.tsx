@@ -1,12 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowUp } from 'lucide-react'
+import { ArrowUp } from "lucide-react"
 
 export default function ForecastPage() {
   const [whatIfQuestion, setWhatIfQuestion] = useState("")
   // Hamburger Menu with Sidebar
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [dismissedNotifications, setDismissedNotifications] = useState<string[]>([])
+
+  const handleDismiss = (notificationId: string) => {
+    setDismissedNotifications((prev) => [...prev, notificationId])
+  }
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
@@ -344,123 +349,139 @@ export default function ForecastPage() {
           </div>
 
           {/* Product Row */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "200px 180px 180px 140px 1fr 100px",
-              gap: "20px",
-              padding: "25px 30px",
-              borderBottom: "1px solid #333",
-              fontSize: "14px",
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: "500", color: "#e0e0e0", marginBottom: "4px" }}>Product</div>
-              <div style={{ color: "#999", fontSize: "12px" }}>Beta Release</div>
+          {!dismissedNotifications.includes("product") && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "200px 180px 180px 140px 1fr 100px",
+                gap: "20px",
+                padding: "25px 30px",
+                borderBottom: "1px solid #333",
+                fontSize: "14px",
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: "500", color: "#e0e0e0", marginBottom: "4px" }}>Product</div>
+                <div style={{ color: "#999", fontSize: "12px" }}>Beta Release</div>
+              </div>
+              <div style={{ color: "#e0e0e0" }}>August 15, 2025</div>
+              <div style={{ color: "#e0e0e0" }}>August 18, 2025</div>
+              <div>
+                <div style={{ color: "#e0e0e0", fontWeight: "500" }}>+3 days</div>
+                <div style={{ color: "#999", fontSize: "12px" }}>2025-08-18</div>
+              </div>
+              <div></div>
+              <div>
+                <button
+                  onClick={() => handleDismiss("product")}
+                  style={{
+                    padding: "6px 12px",
+                    backgroundColor: "#2a2a2a",
+                    border: "1px solid #444",
+                    color: "#999",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  Dismiss
+                </button>
+              </div>
             </div>
-            <div style={{ color: "#e0e0e0" }}>August 15, 2025</div>
-            <div style={{ color: "#e0e0e0" }}>August 18, 2025</div>
-            <div>
-              <div style={{ color: "#e0e0e0", fontWeight: "500" }}>+3 days</div>
-              <div style={{ color: "#999", fontSize: "12px" }}>2025-08-18</div>
-            </div>
-            <div></div>
-            <div>
-              <button
-                style={{
-                  padding: "6px 12px",
-                  backgroundColor: "#2a2a2a",
-                  border: "1px solid #444",
-                  color: "#999",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                  transition: "all 0.3s ease",
-                }}
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
+          )}
 
           {/* Team Row */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "200px 180px 180px 140px 1fr 100px",
-              gap: "20px",
-              padding: "25px 30px",
-              borderBottom: "1px solid #333",
-              fontSize: "14px",
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: "500", color: "#e0e0e0", marginBottom: "4px" }}>Team</div>
-              <div style={{ color: "#999", fontSize: "12px" }}>Developer Hiring</div>
+          {!dismissedNotifications.includes("team") && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "200px 180px 180px 140px 1fr 100px",
+                gap: "20px",
+                padding: "25px 30px",
+                borderBottom: "1px solid #333",
+                fontSize: "14px",
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: "500", color: "#e0e0e0", marginBottom: "4px" }}>Team</div>
+                <div style={{ color: "#999", fontSize: "12px" }}>Developer Hiring</div>
+              </div>
+              <div style={{ color: "#e0e0e0" }}>2 hires by Q3</div>
+              <div style={{ color: "#e0e0e0" }}>3 hires completed</div>
+              <div>
+                <div style={{ color: "#22c55e", fontWeight: "500" }}>+1 hire</div>
+                <div style={{ color: "#999", fontSize: "12px" }}>2025-08-20</div>
+              </div>
+              <div></div>
+              <div>
+                <button
+                  onClick={() => handleDismiss("team")}
+                  style={{
+                    padding: "6px 12px",
+                    backgroundColor: "#2a2a2a",
+                    border: "1px solid #444",
+                    color: "#999",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  Dismiss
+                </button>
+              </div>
             </div>
-            <div style={{ color: "#e0e0e0" }}>2 hires by Q3</div>
-            <div style={{ color: "#e0e0e0" }}>3 hires completed</div>
-            <div>
-              <div style={{ color: "#22c55e", fontWeight: "500" }}>+1 hire</div>
-              <div style={{ color: "#999", fontSize: "12px" }}>2025-08-20</div>
-            </div>
-            <div></div>
-            <div>
-              <button
-                style={{
-                  padding: "6px 12px",
-                  backgroundColor: "#2a2a2a",
-                  border: "1px solid #444",
-                  color: "#999",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                  transition: "all 0.3s ease",
-                }}
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
+          )}
 
           {/* Finance Row */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "200px 180px 180px 140px 1fr 100px",
-              gap: "20px",
-              padding: "25px 30px",
-              fontSize: "14px",
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: "500", color: "#e0e0e0", marginBottom: "4px" }}>Finance</div>
-              <div style={{ color: "#999", fontSize: "12px" }}>Monthly Burn</div>
+          {!dismissedNotifications.includes("finance") && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "200px 180px 180px 140px 1fr 100px",
+                gap: "20px",
+                padding: "25px 30px",
+                fontSize: "14px",
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: "500", color: "#e0e0e0", marginBottom: "4px" }}>Finance</div>
+                <div style={{ color: "#999", fontSize: "12px" }}>Monthly Burn</div>
+              </div>
+              <div style={{ color: "#e0e0e0" }}>$45K/month</div>
+              <div style={{ color: "#e0e0e0" }}>$52K/month</div>
+              <div>
+                <div style={{ color: "#ef4444", fontWeight: "500" }}>+$7K/month</div>
+                <div style={{ color: "#999", fontSize: "12px" }}>2025-08-31</div>
+              </div>
+              <div></div>
+              <div>
+                <button
+                  onClick={() => handleDismiss("finance")}
+                  style={{
+                    padding: "6px 12px",
+                    backgroundColor: "#2a2a2a",
+                    border: "1px solid #444",
+                    color: "#999",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  Dismiss
+                </button>
+              </div>
             </div>
-            <div style={{ color: "#e0e0e0" }}>$45K/month</div>
-            <div style={{ color: "#e0e0e0" }}>$52K/month</div>
-            <div>
-              <div style={{ color: "#ef4444", fontWeight: "500" }}>+$7K/month</div>
-              <div style={{ color: "#999", fontSize: "12px" }}>2025-08-31</div>
+          )}
+
+          {/* Show message when all notifications are dismissed */}
+          {dismissedNotifications.length === 3 && (
+            <div style={{ padding: "40px", textAlign: "center", color: "#999" }}>
+              All notifications have been dismissed.
             </div>
-            <div></div>
-            <div>
-              <button
-                style={{
-                  padding: "6px 12px",
-                  backgroundColor: "#2a2a2a",
-                  border: "1px solid #444",
-                  color: "#999",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                  transition: "all 0.3s ease",
-                }}
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
