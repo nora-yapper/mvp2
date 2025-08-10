@@ -1168,6 +1168,7 @@ export default function ForecastPage() {
                                 gap: "6px",
                                 color: "#999",
                                 position: "relative",
+                                overflow: "visible",
                               }}
                             >
                               <User size={14} />
@@ -1197,18 +1198,21 @@ export default function ForecastPage() {
                               {showAssigneeDropdown === step.id && (
                                 <div
                                   style={{
-                                    position: "absolute",
-                                    top: "100%",
-                                    left: "20px",
+                                    position: "fixed",
+                                    top: "auto",
+                                    bottom: "auto",
+                                    left: "auto",
+                                    right: "auto",
                                     backgroundColor: "#2a2a2a",
                                     border: "1px solid #444",
                                     clipPath:
                                       "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                                    zIndex: 1002,
+                                    zIndex: 1003,
                                     minWidth: "200px",
                                     maxHeight: "200px",
                                     overflowY: "auto",
                                     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                                    transform: "translateY(100%)",
                                   }}
                                 >
                                   {teamMembers.map((member) => (
