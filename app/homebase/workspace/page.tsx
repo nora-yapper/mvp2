@@ -11,6 +11,7 @@ interface HomebaseComponent {
 export default function HomebaseWorkspacePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [components, setComponents] = useState<HomebaseComponent[]>([])
+  const [tasks, setTasks] = useState([])
 
   // Load components from session storage on mount
   useEffect(() => {
@@ -49,6 +50,25 @@ export default function HomebaseWorkspacePage() {
       sessionStorage.setItem("homebaseComponents", JSON.stringify(components))
     }
   }, [components])
+
+  useEffect(() => {
+    const loadTasks = () => {
+      const savedTasks = localStorage.getItem("commandDeckTasks")
+      if (savedTasks) {
+        setTasks(JSON.parse(savedTasks))
+      }
+    }
+
+    loadTasks()
+
+    // Listen for storage changes to update tasks in real-time
+    const handleStorageChange = () => {
+      loadTasks()
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    return () => window.removeEventListener("storage", handleStorageChange)
+  }, [])
 
   const addNewComponent = () => {
     const newComponent: HomebaseComponent = {
@@ -361,6 +381,57 @@ export default function HomebaseWorkspacePage() {
                 </div>
               </div>
             ))}
+
+            {/* Command Deck Tasks Component */}
+            <div
+              style={{
+                backgroundColor: "#2a2a2a",
+                border: "1px solid #444",
+                borderRadius: "8px",
+                padding: "20px",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                minHeight: "150px",
+                display: "flex",
+                flexDirection: "column",
+              }}
+              onClick={() => (window.location.href = "/homebase/tasks")}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#3a3a3a"
+                e.currentTarget.style.transform = "translateY(-2px)"
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#2a2a2a"
+                e.currentTarget.style.transform = "translateY(0px)"
+                e.currentTarget.style.boxShadow = "none"
+              }}
+            >
+              <h3 style={{ color: "#fff", fontSize: "18px", fontWeight: "bold", marginBottom: "15px" }}>
+                Command Deck Tasks
+              </h3>
+              <div style={{ color: "#ccc", fontSize: "14px", lineHeight: "1.5", flex: 1 }}>
+                {tasks.length > 0 ? (
+                  <div>
+                    <div>
+                      <strong>Active Tasks:</strong> {tasks.filter((t) => t.status === "pending").length}
+                    </div>
+                    <div>
+                      <strong>Total Tasks:</strong> {tasks.length}
+                    </div>
+                    <div style={{ marginTop: "10px", fontSize: "12px", color: "#888" }}>
+                      Recent:{" "}
+                      {tasks
+                        .slice(-2)
+                        .map((t) => t.title.substring(0, 30) + "...")
+                        .join(", ")}
+                    </div>
+                  </div>
+                ) : (
+                  "No tasks yet. Implement suggestions from Forecast to add tasks here."
+                )}
+              </div>
+            </div>
 
             {/* Add New Component Button */}
             <div

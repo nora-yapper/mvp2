@@ -1,87 +1,87 @@
 "use client"
 
-import { useState } from "react"
-import { User, Mail, Edit2, Plus, X, Check } from "lucide-react"
-import { defaultTeamMembers, type TeamMember } from "@/lib/team-data"
+import { useState, useEffect } from "react"
+import { Plus, Edit2, Trash2, Check, X } from "lucide-react"
+import { getTeamMembers, saveTeamMembers, type TeamMember } from "@/lib/team-data"
 
 export default function TeamPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(defaultTeamMembers)
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [editingMember, setEditingMember] = useState<string | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [editForm, setEditForm] = useState<Partial<TeamMember>>({})
-  const [newMemberForm, setNewMemberForm] = useState<Partial<TeamMember>>({
+  const [editForm, setEditForm] = useState({
     name: "",
     role: "",
-    skills: [],
     email: "",
+    skills: [] as string[],
   })
+  const [newSkill, setNewSkill] = useState("")
+
+  useEffect(() => {
+    setTeamMembers(getTeamMembers())
+  }, [])
+
+  const handleSaveTeam = (updatedMembers: TeamMember[]) => {
+    setTeamMembers(updatedMembers)
+    saveTeamMembers(updatedMembers)
+  }
 
   const handleEditMember = (member: TeamMember) => {
     setEditingMember(member.id)
     setEditForm({
       name: member.name,
       role: member.role,
-      skills: [...member.skills],
       email: member.email,
+      skills: [...member.skills],
     })
   }
 
   const handleSaveEdit = () => {
     if (!editingMember) return
 
-    setTeamMembers((prev) => prev.map((member) => (member.id === editingMember ? { ...member, ...editForm } : member)))
+    const updatedMembers = teamMembers.map((member) =>
+      member.id === editingMember ? { ...member, ...editForm } : member,
+    )
+
+    handleSaveTeam(updatedMembers)
     setEditingMember(null)
-    setEditForm({})
+    setEditForm({ name: "", role: "", email: "", skills: [] })
   }
 
   const handleAddMember = () => {
-    if (!newMemberForm.name || !newMemberForm.role) return
+    if (!editForm.name || !editForm.role) return
 
     const newMember: TeamMember = {
       id: Date.now().toString(),
-      name: newMemberForm.name,
-      role: newMemberForm.role,
-      skills: newMemberForm.skills || [],
-      email: newMemberForm.email,
-      avatar: "/placeholder-user.jpg",
+      ...editForm,
     }
 
-    setTeamMembers((prev) => [...prev, newMember])
-    setNewMemberForm({ name: "", role: "", skills: [], email: "" })
+    const updatedMembers = [...teamMembers, newMember]
+    handleSaveTeam(updatedMembers)
     setShowAddForm(false)
+    setEditForm({ name: "", role: "", email: "", skills: [] })
   }
 
   const handleRemoveMember = (id: string) => {
-    setTeamMembers((prev) => prev.filter((member) => member.id !== id))
+    const updatedMembers = teamMembers.filter((member) => member.id !== id)
+    handleSaveTeam(updatedMembers)
   }
 
-  const addSkill = (skill: string, isEdit = false) => {
-    if (isEdit) {
-      setEditForm((prev) => ({
-        ...prev,
-        skills: [...(prev.skills || []), skill],
-      }))
-    } else {
-      setNewMemberForm((prev) => ({
-        ...prev,
-        skills: [...(prev.skills || []), skill],
-      }))
+  const handleAddSkill = () => {
+    if (newSkill.trim() && !editForm.skills.includes(newSkill.trim())) {
+      setEditForm({
+        ...editForm,
+        skills: [...editForm.skills, newSkill.trim()],
+      })
+      setNewSkill("")
     }
   }
 
-  const removeSkill = (skillIndex: number, isEdit = false) => {
-    if (isEdit) {
-      setEditForm((prev) => ({
-        ...prev,
-        skills: prev.skills?.filter((_, index) => index !== skillIndex) || [],
-      }))
-    } else {
-      setNewMemberForm((prev) => ({
-        ...prev,
-        skills: prev.skills?.filter((_, index) => index !== skillIndex) || [],
-      }))
-    }
+  const handleRemoveSkill = (skillToRemove: string) => {
+    setEditForm({
+      ...editForm,
+      skills: editForm.skills.filter((skill) => skill !== skillToRemove),
+    })
   }
 
   return (
@@ -103,12 +103,6 @@ export default function TeamPage() {
           height: "50px",
           clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
           transition: "all 0.3s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#3a3a3a"
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "#2a2a2a"
         }}
       >
         ☰
@@ -188,16 +182,6 @@ export default function TeamPage() {
                 fontWeight: "500",
                 transition: "all 0.3s ease",
               }}
-              onMouseEnter={(e) => {
-                if (!item.active) {
-                  e.currentTarget.style.backgroundColor = "#3a3a3a"
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!item.active) {
-                  e.currentTarget.style.backgroundColor = "#1a1a1a"
-                }
-              }}
             >
               {item.label}
             </button>
@@ -229,8 +213,8 @@ export default function TeamPage() {
         </p>
       </div>
 
-      {/* Add Member Button */}
-      <div style={{ padding: "0 60px 30px", display: "flex", justifyContent: "flex-end" }}>
+      {/* Add Team Member Button */}
+      <div style={{ padding: "0 60px 40px", display: "flex", justifyContent: "flex-end" }}>
         <button
           onClick={() => setShowAddForm(true)}
           style={{
@@ -254,7 +238,7 @@ export default function TeamPage() {
 
       {/* Team Members Grid */}
       <div style={{ padding: "0 60px 60px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "24px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "20px" }}>
           {teamMembers.map((member) => (
             <div
               key={member.id}
@@ -268,108 +252,12 @@ export default function TeamPage() {
               {editingMember === member.id ? (
                 // Edit Form
                 <div>
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#999" }}>
-                      Name
-                    </label>
+                  <div style={{ marginBottom: "16px" }}>
+                    <label style={{ display: "block", marginBottom: "8px", color: "#ccc" }}>Name</label>
                     <input
                       type="text"
-                      value={editForm.name || ""}
-                      onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        backgroundColor: "#1a1a1a",
-                        border: "1px solid #444",
-                        color: "#e0e0e0",
-                        fontSize: "16px",
-                        outline: "none",
-                      }}
-                    />
-                  </div>
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#999" }}>
-                      Role
-                    </label>
-                    <input
-                      type="text"
-                      value={editForm.role || ""}
-                      onChange={(e) => setEditForm((prev) => ({ ...prev, role: e.target.value }))}
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        backgroundColor: "#1a1a1a",
-                        border: "1px solid #444",
-                        color: "#e0e0e0",
-                        fontSize: "16px",
-                        outline: "none",
-                      }}
-                    />
-                  </div>
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#999" }}>
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={editForm.email || ""}
-                      onChange={(e) => setEditForm((prev) => ({ ...prev, email: e.target.value }))}
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        backgroundColor: "#1a1a1a",
-                        border: "1px solid #444",
-                        color: "#e0e0e0",
-                        fontSize: "16px",
-                        outline: "none",
-                      }}
-                    />
-                  </div>
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#999" }}>
-                      Skills
-                    </label>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
-                      {editForm.skills?.map((skill, index) => (
-                        <span
-                          key={index}
-                          style={{
-                            padding: "4px 8px",
-                            backgroundColor: "#007bff",
-                            color: "white",
-                            fontSize: "12px",
-                            clipPath:
-                              "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                          }}
-                        >
-                          {skill}
-                          <button
-                            onClick={() => removeSkill(index, true)}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              color: "white",
-                              cursor: "pointer",
-                              padding: "0",
-                            }}
-                          >
-                            <X size={12} />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Add skill and press Enter"
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter" && e.currentTarget.value.trim()) {
-                          addSkill(e.currentTarget.value.trim(), true)
-                          e.currentTarget.value = ""
-                        }
-                      }}
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                       style={{
                         width: "100%",
                         padding: "8px 12px",
@@ -381,7 +269,107 @@ export default function TeamPage() {
                       }}
                     />
                   </div>
-                  <div style={{ display: "flex", gap: "12px" }}>
+                  <div style={{ marginBottom: "16px" }}>
+                    <label style={{ display: "block", marginBottom: "8px", color: "#ccc" }}>Role</label>
+                    <input
+                      type="text"
+                      value={editForm.role}
+                      onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        backgroundColor: "#1a1a1a",
+                        border: "1px solid #444",
+                        color: "#e0e0e0",
+                        fontSize: "14px",
+                        outline: "none",
+                      }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: "16px" }}>
+                    <label style={{ display: "block", marginBottom: "8px", color: "#ccc" }}>Email</label>
+                    <input
+                      type="email"
+                      value={editForm.email}
+                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        backgroundColor: "#1a1a1a",
+                        border: "1px solid #444",
+                        color: "#e0e0e0",
+                        fontSize: "14px",
+                        outline: "none",
+                      }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: "16px" }}>
+                    <label style={{ display: "block", marginBottom: "8px", color: "#ccc" }}>Skills</label>
+                    <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+                      <input
+                        type="text"
+                        value={newSkill}
+                        onChange={(e) => setNewSkill(e.target.value)}
+                        onKeyPress={(e) => e.key === "Enter" && handleAddSkill()}
+                        placeholder="Add a skill"
+                        style={{
+                          flex: 1,
+                          padding: "8px 12px",
+                          backgroundColor: "#1a1a1a",
+                          border: "1px solid #444",
+                          color: "#e0e0e0",
+                          fontSize: "14px",
+                          outline: "none",
+                        }}
+                      />
+                      <button
+                        onClick={handleAddSkill}
+                        style={{
+                          padding: "8px 12px",
+                          backgroundColor: "#007bff",
+                          border: "1px solid #0056b3",
+                          color: "white",
+                          fontSize: "14px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Add
+                      </button>
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                      {editForm.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          style={{
+                            padding: "4px 8px",
+                            backgroundColor: "#007bff",
+                            color: "white",
+                            fontSize: "12px",
+                            borderRadius: "4px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          {skill}
+                          <button
+                            onClick={() => handleRemoveSkill(skill)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: "white",
+                              cursor: "pointer",
+                              padding: "0",
+                              fontSize: "12px",
+                            }}
+                          >
+                            <X size={12} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: "8px" }}>
                     <button
                       onClick={handleSaveEdit}
                       style={{
@@ -402,7 +390,7 @@ export default function TeamPage() {
                     <button
                       onClick={() => {
                         setEditingMember(null)
-                        setEditForm({})
+                        setEditForm({ name: "", role: "", email: "", skills: [] })
                       }}
                       style={{
                         padding: "8px 16px",
@@ -428,26 +416,12 @@ export default function TeamPage() {
                       marginBottom: "16px",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <div
-                        style={{
-                          width: "48px",
-                          height: "48px",
-                          backgroundColor: "#444",
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <User size={24} color="#999" />
-                      </div>
-                      <div>
-                        <h3 style={{ fontSize: "18px", fontWeight: "600", margin: "0 0 4px 0", color: "#e0e0e0" }}>
-                          {member.name}
-                        </h3>
-                        <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>{member.role}</p>
-                      </div>
+                    <div>
+                      <h3 style={{ fontSize: "20px", fontWeight: "600", margin: "0 0 4px 0", color: "#e0e0e0" }}>
+                        {member.name}
+                      </h3>
+                      <p style={{ fontSize: "16px", color: "#007bff", margin: "0 0 8px 0" }}>{member.role}</p>
+                      <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>{member.email}</p>
                     </div>
                     <div style={{ display: "flex", gap: "8px" }}>
                       <button
@@ -476,33 +450,22 @@ export default function TeamPage() {
                             "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
                         }}
                       >
-                        <X size={16} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
-
-                  {member.email && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-                      <Mail size={16} color="#999" />
-                      <span style={{ fontSize: "14px", color: "#999" }}>{member.email}</span>
-                    </div>
-                  )}
-
                   <div>
-                    <h4 style={{ fontSize: "14px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
-                      Skills
-                    </h4>
+                    <h4 style={{ fontSize: "14px", fontWeight: "500", margin: "0 0 8px 0", color: "#ccc" }}>Skills</h4>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                      {member.skills.map((skill, index) => (
+                      {member.skills.map((skill) => (
                         <span
-                          key={index}
+                          key={skill}
                           style={{
-                            padding: "4px 8px",
+                            padding: "6px 12px",
                             backgroundColor: "#444",
                             color: "#e0e0e0",
                             fontSize: "12px",
-                            clipPath:
-                              "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                            borderRadius: "4px",
                           }}
                         >
                           {skill}
@@ -542,122 +505,21 @@ export default function TeamPage() {
               padding: "30px",
               maxWidth: "500px",
               width: "100%",
-              maxHeight: "80vh",
-              overflowY: "auto",
             }}
           >
-            <div
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}
-            >
-              <h3 style={{ fontSize: "24px", fontWeight: "600", margin: "0", color: "#e0e0e0" }}>Add Team Member</h3>
-              <button
-                onClick={() => setShowAddForm(false)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "#999",
-                  cursor: "pointer",
-                  fontSize: "24px",
-                  padding: "0",
-                }}
-              >
-                <X size={24} />
-              </button>
-            </div>
+            <h3 style={{ fontSize: "24px", fontWeight: "600", margin: "0 0 24px 0", color: "#e0e0e0" }}>
+              Add Team Member
+            </h3>
 
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#999" }}>Name</label>
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", marginBottom: "8px", color: "#ccc" }}>Name *</label>
               <input
                 type="text"
-                value={newMemberForm.name || ""}
-                onChange={(e) => setNewMemberForm((prev) => ({ ...prev, name: e.target.value }))}
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                 style={{
                   width: "100%",
                   padding: "12px",
-                  backgroundColor: "#1a1a1a",
-                  border: "1px solid #444",
-                  color: "#e0e0e0",
-                  fontSize: "16px",
-                  outline: "none",
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#999" }}>Role</label>
-              <input
-                type="text"
-                value={newMemberForm.role || ""}
-                onChange={(e) => setNewMemberForm((prev) => ({ ...prev, role: e.target.value }))}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  backgroundColor: "#1a1a1a",
-                  border: "1px solid #444",
-                  color: "#e0e0e0",
-                  fontSize: "16px",
-                  outline: "none",
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#999" }}>Email</label>
-              <input
-                type="email"
-                value={newMemberForm.email || ""}
-                onChange={(e) => setNewMemberForm((prev) => ({ ...prev, email: e.target.value }))}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  backgroundColor: "#1a1a1a",
-                  border: "1px solid #444",
-                  color: "#e0e0e0",
-                  fontSize: "16px",
-                  outline: "none",
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: "30px" }}>
-              <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#999" }}>Skills</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
-                {newMemberForm.skills?.map((skill, index) => (
-                  <span
-                    key={index}
-                    style={{
-                      padding: "4px 8px",
-                      backgroundColor: "#007bff",
-                      color: "white",
-                      fontSize: "12px",
-                      clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    {skill}
-                    <button
-                      onClick={() => removeSkill(index, false)}
-                      style={{ background: "none", border: "none", color: "white", cursor: "pointer", padding: "0" }}
-                    >
-                      <X size={12} />
-                    </button>
-                  </span>
-                ))}
-              </div>
-              <input
-                type="text"
-                placeholder="Add skill and press Enter"
-                onKeyPress={(e) => {
-                  if (e.key === "Enter" && e.currentTarget.value.trim()) {
-                    addSkill(e.currentTarget.value.trim(), false)
-                    e.currentTarget.value = ""
-                  }
-                }}
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
                   backgroundColor: "#1a1a1a",
                   border: "1px solid #444",
                   color: "#e0e0e0",
@@ -667,9 +529,116 @@ export default function TeamPage() {
               />
             </div>
 
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", marginBottom: "8px", color: "#ccc" }}>Role *</label>
+              <input
+                type="text"
+                value={editForm.role}
+                onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  backgroundColor: "#1a1a1a",
+                  border: "1px solid #444",
+                  color: "#e0e0e0",
+                  fontSize: "14px",
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", marginBottom: "8px", color: "#ccc" }}>Email</label>
+              <input
+                type="email"
+                value={editForm.email}
+                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  backgroundColor: "#1a1a1a",
+                  border: "1px solid #444",
+                  color: "#e0e0e0",
+                  fontSize: "14px",
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "24px" }}>
+              <label style={{ display: "block", marginBottom: "8px", color: "#ccc" }}>Skills</label>
+              <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+                <input
+                  type="text"
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleAddSkill()}
+                  placeholder="Add a skill"
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    backgroundColor: "#1a1a1a",
+                    border: "1px solid #444",
+                    color: "#e0e0e0",
+                    fontSize: "14px",
+                    outline: "none",
+                  }}
+                />
+                <button
+                  onClick={handleAddSkill}
+                  style={{
+                    padding: "12px 16px",
+                    backgroundColor: "#007bff",
+                    border: "1px solid #0056b3",
+                    color: "white",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Add
+                </button>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {editForm.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    style={{
+                      padding: "6px 12px",
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      fontSize: "12px",
+                      borderRadius: "4px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    {skill}
+                    <button
+                      onClick={() => handleRemoveSkill(skill)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "white",
+                        cursor: "pointer",
+                        padding: "0",
+                        fontSize: "12px",
+                      }}
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
             <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
               <button
-                onClick={() => setShowAddForm(false)}
+                onClick={() => {
+                  setShowAddForm(false)
+                  setEditForm({ name: "", role: "", email: "", skills: [] })
+                  setNewSkill("")
+                }}
                 style={{
                   padding: "12px 24px",
                   backgroundColor: "#6b7280",
@@ -678,22 +647,21 @@ export default function TeamPage() {
                   fontSize: "16px",
                   cursor: "pointer",
                   clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                  fontWeight: "500",
                 }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddMember}
+                disabled={!editForm.name || !editForm.role}
                 style={{
                   padding: "12px 24px",
-                  backgroundColor: "#22c55e",
-                  border: "1px solid #16a34a",
+                  backgroundColor: editForm.name && editForm.role ? "#22c55e" : "#444",
+                  border: `1px solid ${editForm.name && editForm.role ? "#16a34a" : "#333"}`,
                   color: "white",
                   fontSize: "16px",
-                  cursor: "pointer",
+                  cursor: editForm.name && editForm.role ? "pointer" : "not-allowed",
                   clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                  fontWeight: "500",
                 }}
               >
                 Add Member

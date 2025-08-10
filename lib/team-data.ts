@@ -2,63 +2,90 @@ export interface TeamMember {
   id: string
   name: string
   role: string
+  email: string
   skills: string[]
-  email?: string
-  avatar?: string
 }
 
-export const defaultTeamMembers: TeamMember[] = [
+const defaultTeamMembers: TeamMember[] = [
   {
     id: "1",
     name: "Alex Chen",
-    role: "Founder & CEO",
-    skills: ["Strategy", "Fundraising", "Business Development", "Product Vision", "Leadership"],
+    role: "CEO & Co-founder",
     email: "alex@startup.com",
-    avatar: "/placeholder-user.jpg",
+    skills: ["Leadership", "Strategy", "Business Development", "Fundraising", "Product Vision"],
   },
   {
     id: "2",
     name: "Sarah Kim",
-    role: "Co-founder & CTO",
-    skills: ["Full-stack Development", "System Architecture", "Technical Leadership", "DevOps", "AI/ML"],
+    role: "CTO & Co-founder",
     email: "sarah@startup.com",
-    avatar: "/placeholder-user.jpg",
+    skills: ["Development", "Architecture", "DevOps", "Technical Leadership", "AI/ML"],
   },
   {
     id: "3",
     name: "Marcus Johnson",
-    role: "Lead Designer",
-    skills: ["UI/UX Design", "Product Design", "Branding", "User Research", "Prototyping"],
+    role: "Head of Design",
     email: "marcus@startup.com",
-    avatar: "/placeholder-user.jpg",
+    skills: ["UI/UX Design", "Design", "Prototyping", "User Research", "Branding"],
   },
   {
     id: "4",
     name: "Emily Rodriguez",
-    role: "Marketing Lead",
-    skills: ["Digital Marketing", "Content Creation", "Social Media", "Analytics", "Growth Hacking"],
+    role: "Head of Marketing",
     email: "emily@startup.com",
-    avatar: "/placeholder-user.jpg",
+    skills: ["Marketing", "Content Creation", "Social Media", "SEO", "Analytics"],
   },
   {
     id: "5",
     name: "David Park",
-    role: "Backend Developer",
-    skills: ["Backend Development", "Database Design", "API Development", "Cloud Infrastructure", "Security"],
+    role: "Senior Developer",
     email: "david@startup.com",
-    avatar: "/placeholder-user.jpg",
+    skills: ["Development", "Frontend", "Backend", "Database", "Testing"],
   },
 ]
 
 export function getTeamMembers(): TeamMember[] {
-  // In a real app, this would fetch from a database or API
+  if (typeof window === "undefined") {
+    return defaultTeamMembers
+  }
+
+  const stored = localStorage.getItem("teamMembers")
+  if (stored) {
+    return JSON.parse(stored)
+  }
+
+  // Initialize with default data
+  localStorage.setItem("teamMembers", JSON.stringify(defaultTeamMembers))
   return defaultTeamMembers
 }
 
-export function getTeamMemberById(id: string): TeamMember | undefined {
-  return defaultTeamMembers.find((member) => member.id === id)
+export function saveTeamMembers(members: TeamMember[]): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("teamMembers", JSON.stringify(members))
+  }
 }
 
-export function getTeamMembersBySkill(skill: string): TeamMember[] {
-  return defaultTeamMembers.filter((member) => member.skills.some((s) => s.toLowerCase().includes(skill.toLowerCase())))
+export function addTeamMember(member: Omit<TeamMember, "id">): TeamMember {
+  const newMember: TeamMember = {
+    ...member,
+    id: Date.now().toString(),
+  }
+
+  const currentMembers = getTeamMembers()
+  const updatedMembers = [...currentMembers, newMember]
+  saveTeamMembers(updatedMembers)
+
+  return newMember
+}
+
+export function updateTeamMember(id: string, updates: Partial<TeamMember>): void {
+  const currentMembers = getTeamMembers()
+  const updatedMembers = currentMembers.map((member) => (member.id === id ? { ...member, ...updates } : member))
+  saveTeamMembers(updatedMembers)
+}
+
+export function removeTeamMember(id: string): void {
+  const currentMembers = getTeamMembers()
+  const updatedMembers = currentMembers.filter((member) => member.id !== id)
+  saveTeamMembers(updatedMembers)
 }

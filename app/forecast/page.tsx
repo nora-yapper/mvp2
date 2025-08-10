@@ -270,9 +270,30 @@ export default function ForecastPage() {
     setShowAssigneeDropdown(null)
   }
 
+  const addTasksToCommandDeck = (steps: ActionStep[]) => {
+    // Get existing tasks from localStorage
+    const existingTasks = JSON.parse(localStorage.getItem("commandDeckTasks") || "[]")
+
+    // Convert action steps to command deck task format
+    const newTasks = steps.map((step, index) => ({
+      id: `forecast-${Date.now()}-${index}`,
+      title: step.task,
+      assignee: step.assignee,
+      deadline: step.deadline,
+      status: "pending",
+      priority: "medium",
+      source: "forecast",
+      createdAt: new Date().toISOString(),
+    }))
+
+    // Combine and save
+    const allTasks = [...existingTasks, ...newTasks]
+    localStorage.setItem("commandDeckTasks", JSON.stringify(allTasks))
+  }
+
   const handleConfirmImplementation = () => {
-    // Add steps to Command Deck (in a real app, this would update a global state or database)
-    console.log("Adding to Command Deck:", actionSteps)
+    // Add steps to Command Deck
+    addTasksToCommandDeck(actionSteps)
 
     // Dismiss the suggestion since it's been implemented
     if (selectedSuggestion) {
@@ -284,8 +305,8 @@ export default function ForecastPage() {
     setSelectedSuggestion(null)
     setActionSteps([])
 
-    // Show success message (you could add a toast notification here)
-    alert("Action steps have been added to your Command Deck!")
+    // Show success message
+    alert(`${actionSteps.length} tasks have been added to your Command Deck!`)
   }
 
   return (
