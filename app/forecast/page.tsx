@@ -1204,10 +1204,11 @@ export default function ForecastPage() {
                                     border: "1px solid #444",
                                     clipPath:
                                       "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                                    zIndex: 1000,
+                                    zIndex: 1002,
                                     minWidth: "200px",
                                     maxHeight: "200px",
                                     overflowY: "auto",
+                                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
                                   }}
                                 >
                                   {teamMembers.map((member) => (
@@ -1216,7 +1217,7 @@ export default function ForecastPage() {
                                       onClick={() => handleAssigneeChange(step.id, member.name)}
                                       style={{
                                         width: "100%",
-                                        padding: "8px 12px",
+                                        padding: "12px 16px",
                                         background: "transparent",
                                         border: "none",
                                         color: "#e0e0e0",
@@ -1224,6 +1225,7 @@ export default function ForecastPage() {
                                         cursor: "pointer",
                                         fontSize: "14px",
                                         borderBottom: "1px solid #333",
+                                        transition: "background-color 0.2s ease",
                                       }}
                                       onMouseEnter={(e) => {
                                         e.currentTarget.style.backgroundColor = "#3a3a3a"
@@ -1233,8 +1235,10 @@ export default function ForecastPage() {
                                       }}
                                     >
                                       <div style={{ fontWeight: "500" }}>{member.name}</div>
-                                      <div style={{ fontSize: "12px", color: "#999" }}>{member.role}</div>
-                                      <div style={{ fontSize: "11px", color: "#666" }}>
+                                      <div style={{ fontSize: "12px", color: "#999", marginTop: "2px" }}>
+                                        {member.role}
+                                      </div>
+                                      <div style={{ fontSize: "11px", color: "#666", marginTop: "2px" }}>
                                         {member.skills.slice(0, 2).join(", ")}
                                         {member.skills.length > 2 && "..."}
                                       </div>
