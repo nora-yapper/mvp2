@@ -68,67 +68,31 @@ export default function ForecastPage() {
   const generateActionSteps = async (suggestion: Suggestion) => {
     setIsGenerating(true)
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch("/api/generate-implementation", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: [
-            {
-              role: "system",
-              content: `You are a startup advisor. Generate 3-5 specific, actionable steps to accomplish the given task. 
-            For each step, provide:
-            - A clear, specific task description
-            - Who should do it (specific role/person)
-            - A realistic deadline (use YYYY-MM-DD format)
-            
-            Respond with ONLY a JSON array in this exact format:
-            [
-              {
-                "task": "specific task description",
-                "assignee": "specific role or person",
-                "deadline": "YYYY-MM-DD"
-              }
-            ]
-            
-            Make each step unique and directly relevant to achieving the specific goal mentioned.`,
-            },
-            {
-              role: "user",
-              content: `Generate action steps for: "${suggestion.title}". 
-            Context: ${suggestion.description}
-            Type: ${suggestion.type}
-            ${suggestion.deadline ? `Deadline: ${suggestion.deadline}` : ""}
-            ${suggestion.priority ? `Priority: ${suggestion.priority}` : ""}`,
-            },
-          ],
+          suggestion: suggestion,
         }),
       })
 
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`)
+      }
+
       const data = await response.json()
 
-      // Try to parse the AI response as JSON
-      let parsedSteps = []
-      try {
-        // Extract JSON from the response if it's wrapped in text
-        const jsonMatch = data.message.match(/\[[\s\S]*\]/)
-        if (jsonMatch) {
-          parsedSteps = JSON.parse(jsonMatch[0])
-        } else {
-          parsedSteps = JSON.parse(data.message)
-        }
-      } catch (parseError) {
-        console.error("Failed to parse AI response:", parseError)
-        // Create fallback steps specific to the suggestion
-        parsedSteps = createFallbackSteps(suggestion)
+      if (data.error) {
+        throw new Error(data.error)
       }
 
       // Convert to our format with IDs
-      const steps = parsedSteps.map((step: any, index: number) => ({
+      const steps = data.steps.map((step: any, index: number) => ({
         id: (index + 1).toString(),
         task: step.task || `Complete action for: ${suggestion.title}`,
-        assignee: step.assignee || "Team Lead",
+        assignee: step.assignee || "Founder",
         deadline: step.deadline || "2025-09-15",
         completed: false,
       }))
@@ -149,29 +113,29 @@ export default function ForecastPage() {
       return [
         {
           id: "1",
-          task: "Research TechCrunch Disrupt 2025 application requirements and submission process",
-          assignee: "Marketing Lead",
+          task: "Research TechCrunch Disrupt application requirements using free online resources",
+          assignee: "Founder/CEO",
           deadline: "2025-09-01",
           completed: false,
         },
         {
           id: "2",
-          task: "Create compelling 3-minute pitch deck highlighting unique value proposition",
-          assignee: "CEO + Design Team",
+          task: "Create 10-slide pitch deck using Canva or Google Slides template",
+          assignee: "Founder + Co-founder",
           deadline: "2025-09-05",
           completed: false,
         },
         {
           id: "3",
-          task: "Develop live product demo showcasing key differentiators",
-          assignee: "Product Manager + Engineering",
+          task: "Record 3-minute product demo video using Loom or phone camera",
+          assignee: "Lead Developer",
           deadline: "2025-09-08",
           completed: false,
         },
         {
           id: "4",
-          task: "Submit complete TechCrunch Disrupt application with all materials",
-          assignee: "CEO",
+          task: "Submit application and leverage personal network for introductions",
+          assignee: "Founder/CEO",
           deadline: "2025-09-12",
           completed: false,
         },
@@ -180,36 +144,36 @@ export default function ForecastPage() {
       return [
         {
           id: "1",
-          task: "Prepare comprehensive financial projections and burn rate analysis",
-          assignee: "CFO/Finance Lead",
+          task: "Create basic financial model in Google Sheets with 18-month projections",
+          assignee: "Founder/CEO",
           deadline: "2025-09-05",
           completed: false,
         },
         {
           id: "2",
-          task: "Create Series A pitch deck with traction metrics and growth strategy",
-          assignee: "CEO + Marketing",
+          task: "Build fundraising deck using existing pitch deck + financial slides",
+          assignee: "Founder + Co-founder",
           deadline: "2025-09-10",
           completed: false,
         },
         {
           id: "3",
-          task: "Research and compile list of 20+ relevant Series A investors",
-          assignee: "Business Development",
+          task: "Research 15-20 relevant investors using AngelList and Crunchbase free tiers",
+          assignee: "Founder/CEO",
           deadline: "2025-09-08",
           completed: false,
         },
         {
           id: "4",
-          task: "Schedule initial meetings with top 5 target investors",
-          assignee: "CEO",
+          task: "Reach out to warm connections for investor introductions",
+          assignee: "Founder/CEO",
           deadline: "2025-09-15",
           completed: false,
         },
         {
           id: "5",
-          task: "Prepare due diligence materials and data room",
-          assignee: "Legal + Finance Team",
+          task: "Organize key documents in Google Drive for due diligence",
+          assignee: "Co-founder",
           deadline: "2025-09-20",
           completed: false,
         },
@@ -218,36 +182,36 @@ export default function ForecastPage() {
       return [
         {
           id: "1",
-          task: "Conduct anonymous team survey on vision clarity and alignment",
-          assignee: "HR/People Operations",
+          task: "Send anonymous Google Form survey to team about company direction",
+          assignee: "Founder/CEO",
           deadline: "2025-09-03",
           completed: false,
         },
         {
           id: "2",
-          task: "Schedule 2-hour all-hands strategy alignment workshop",
-          assignee: "CEO",
+          task: "Schedule 90-minute team meeting at office or co-working space",
+          assignee: "Founder/CEO",
           deadline: "2025-09-06",
           completed: false,
         },
         {
           id: "3",
-          task: "Revise and clarify company mission, vision, and 2025 goals",
-          assignee: "Leadership Team",
+          task: "Draft 1-page company mission and 2025 goals document",
+          assignee: "Founder + Co-founder",
           deadline: "2025-09-10",
           completed: false,
         },
         {
           id: "4",
-          task: "Create visual roadmap and share with entire team",
-          assignee: "Product + Design",
+          task: "Create simple roadmap visual using Miro free plan or whiteboard",
+          assignee: "Lead Developer + Designer",
           deadline: "2025-09-12",
           completed: false,
         },
         {
           id: "5",
-          task: "Implement weekly team check-ins to maintain alignment",
-          assignee: "Team Leads",
+          task: "Implement weekly 15-minute team standup meetings",
+          assignee: "Founder/CEO",
           deadline: "2025-09-15",
           completed: false,
         },
@@ -259,7 +223,7 @@ export default function ForecastPage() {
       {
         id: "1",
         task: `Define specific action items for: ${suggestion.title}`,
-        assignee: "Team Lead",
+        assignee: "Founder/CEO",
         deadline: "2025-09-01",
         completed: false,
       },
@@ -1052,8 +1016,8 @@ export default function ForecastPage() {
             {/* Loading State */}
             {isGenerating && (
               <div style={{ textAlign: "center", padding: "40px", color: "#999" }}>
-                <div style={{ fontSize: "16px", marginBottom: "12px" }}>Generating action steps...</div>
-                <div style={{ fontSize: "14px" }}>This may take a few seconds</div>
+                <div style={{ fontSize: "16px", marginBottom: "12px" }}>Generating startup-focused action steps...</div>
+                <div style={{ fontSize: "14px" }}>Tailoring recommendations for your team size and resources</div>
               </div>
             )}
 
