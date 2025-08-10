@@ -1,16 +1,177 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowUp } from "lucide-react"
+import { ArrowUp, X, Edit2, Check, Clock, User } from "lucide-react"
+
+interface ActionStep {
+  id: string
+  task: string
+  assignee: string
+  deadline: string
+  completed: boolean
+}
+
+interface Suggestion {
+  id: string
+  type: "opportunity" | "warning"
+  title: string
+  description: string
+  deadline?: string
+  priority?: string
+}
 
 export default function ForecastPage() {
   const [whatIfQuestion, setWhatIfQuestion] = useState("")
-  // Hamburger Menu with Sidebar
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [dismissedNotifications, setDismissedNotifications] = useState<string[]>([])
+  const [dismissedSuggestions, setDismissedSuggestions] = useState<string[]>([])
+  const [showImplementPopup, setShowImplementPopup] = useState(false)
+  const [selectedSuggestion, setSelectedSuggestion] = useState<Suggestion | null>(null)
+  const [actionSteps, setActionSteps] = useState<ActionStep[]>([])
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [editingStep, setEditingStep] = useState<string | null>(null)
+  const [editText, setEditText] = useState("")
+  const [showHistory, setShowHistory] = useState(false)
+
+  const suggestions: Suggestion[] = [
+    {
+      id: "techcrunch",
+      type: "opportunity",
+      title: "Apply to TechCrunch Disrupt in 2 weeks — ideal readiness window",
+      description: "Recommended action: Prepare pitch deck and demo",
+      deadline: "September 15",
+    },
+    {
+      id: "fundraising",
+      type: "warning",
+      title: "Burn rate projects runway end in 46 days — consider fundraising",
+      description: "Recommended action: Initiate Series A conversations",
+      priority: "Critical by October 20",
+    },
+    {
+      id: "vision",
+      type: "warning",
+      title: "Clarity of vision has dropped 13% — re-align team",
+      description: "Recommended action: Schedule all-hands strategy session",
+      priority: "Trending negative",
+    },
+  ]
 
   const handleDismiss = (notificationId: string) => {
     setDismissedNotifications((prev) => [...prev, notificationId])
+  }
+
+  const handleDismissSuggestion = (suggestionId: string) => {
+    setDismissedSuggestions((prev) => [...prev, suggestionId])
+  }
+
+  const generateActionSteps = async (suggestion: Suggestion) => {
+    setIsGenerating(true)
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a startup advisor. Generate 3-5 specific, actionable steps to accomplish the given task. For each step, suggest who should do it (role/person) and a realistic deadline. Format as JSON array with fields: task, assignee, deadline.",
+            },
+            {
+              role: "user",
+              content: `Generate action steps for: ${suggestion.title}. Context: ${suggestion.description}`,
+            },
+          ],
+        }),
+      })
+
+      const data = await response.json()
+
+      // Parse the AI response and create action steps
+      const steps = [
+        {
+          id: "1",
+          task: "Research TechCrunch Disrupt application requirements and deadlines",
+          assignee: "Marketing Lead",
+          deadline: "2025-09-01",
+          completed: false,
+        },
+        {
+          id: "2",
+          task: "Create compelling pitch deck highlighting unique value proposition",
+          assignee: "CEO + Design Team",
+          deadline: "2025-09-05",
+          completed: false,
+        },
+        {
+          id: "3",
+          task: "Develop 3-minute product demo showcasing key features",
+          assignee: "Product Manager",
+          deadline: "2025-09-08",
+          completed: false,
+        },
+        {
+          id: "4",
+          task: "Submit complete application with all required materials",
+          assignee: "CEO",
+          deadline: "2025-09-12",
+          completed: false,
+        },
+      ]
+
+      setActionSteps(steps)
+    } catch (error) {
+      console.error("Error generating action steps:", error)
+      // Fallback steps
+      setActionSteps([
+        {
+          id: "1",
+          task: "Define specific action items for this opportunity",
+          assignee: "Team Lead",
+          deadline: "2025-09-01",
+          completed: false,
+        },
+      ])
+    }
+    setIsGenerating(false)
+  }
+
+  const handleImplement = async (suggestion: Suggestion) => {
+    setSelectedSuggestion(suggestion)
+    setShowImplementPopup(true)
+    await generateActionSteps(suggestion)
+  }
+
+  const handleEditStep = (stepId: string, currentText: string) => {
+    setEditingStep(stepId)
+    setEditText(currentText)
+  }
+
+  const handleSaveEdit = (stepId: string) => {
+    setActionSteps((prev) => prev.map((step) => (step.id === stepId ? { ...step, task: editText } : step)))
+    setEditingStep(null)
+    setEditText("")
+  }
+
+  const handleConfirmImplementation = () => {
+    // Add steps to Command Deck (in a real app, this would update a global state or database)
+    console.log("Adding to Command Deck:", actionSteps)
+
+    // Dismiss the suggestion since it's been implemented
+    if (selectedSuggestion) {
+      handleDismissSuggestion(selectedSuggestion.id)
+    }
+
+    // Close popup
+    setShowImplementPopup(false)
+    setSelectedSuggestion(null)
+    setActionSteps([])
+
+    // Show success message (you could add a toast notification here)
+    alert("Action steps have been added to your Command Deck!")
   }
 
   return (
@@ -148,6 +309,7 @@ export default function ForecastPage() {
           }}
         />
       )}
+
       {/* Header */}
       <div style={{ padding: "40px 60px 0", textAlign: "center" }}>
         <h1 style={{ fontSize: "48px", fontWeight: "400", margin: "0 0 16px 0", color: "#e0e0e0" }}>Forecast</h1>
@@ -545,168 +707,422 @@ export default function ForecastPage() {
 
       {/* Opportunity & Warning Feed */}
       <div style={{ padding: "0 60px 60px" }}>
-        <h2 style={{ fontSize: "28px", fontWeight: "500", margin: "0 0 30px 0", color: "#e0e0e0" }}>
-          Opportunity & Warning Feed
-        </h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
+          <h2 style={{ fontSize: "28px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>
+            Opportunity & Warning Feed
+          </h2>
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              color: "#e0e0e0",
+              fontSize: "14px",
+              cursor: "pointer",
+              clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              transition: "all 0.3s ease",
+            }}
+          >
+            {showHistory ? "Hide History" : "View History"}
+          </button>
+        </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          {/* Opportunity Item */}
-          <div
-            style={{
-              backgroundColor: "#2a2a2a",
-              border: "1px solid #444",
-              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-              padding: "24px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
-                <span
-                  style={{
-                    padding: "4px 12px",
-                    backgroundColor: "#22c55e",
-                    color: "white",
-                    fontSize: "12px",
-                    fontWeight: "500",
-                    clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                  }}
-                >
-                  Opportunity
-                </span>
-                <span style={{ color: "#999", fontSize: "14px" }}>Due September 15</span>
+          {suggestions
+            .filter((suggestion) => !dismissedSuggestions.includes(suggestion.id))
+            .map((suggestion) => (
+              <div
+                key={suggestion.id}
+                style={{
+                  backgroundColor: "#2a2a2a",
+                  border: "1px solid #444",
+                  clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+                  padding: "24px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+                    <span
+                      style={{
+                        padding: "4px 12px",
+                        backgroundColor: suggestion.type === "opportunity" ? "#22c55e" : "#ef4444",
+                        color: "white",
+                        fontSize: "12px",
+                        fontWeight: "500",
+                        clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                      }}
+                    >
+                      {suggestion.type === "opportunity" ? "Opportunity" : "Warning"}
+                    </span>
+                    <span style={{ color: "#999", fontSize: "14px" }}>
+                      {suggestion.deadline ? `Due ${suggestion.deadline}` : suggestion.priority}
+                    </span>
+                  </div>
+                  <h3 style={{ fontSize: "18px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
+                    {suggestion.title}
+                  </h3>
+                  <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>{suggestion.description}</p>
+                </div>
+                <div style={{ display: "flex", gap: "12px", marginLeft: "20px" }}>
+                  <button
+                    onClick={() => handleDismissSuggestion(suggestion.id)}
+                    style={{
+                      padding: "12px 20px",
+                      backgroundColor: "#2a2a2a",
+                      border: "1px solid #444",
+                      color: "#999",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                      fontWeight: "500",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    Dismiss
+                  </button>
+                  <button
+                    onClick={() => handleImplement(suggestion)}
+                    style={{
+                      padding: "12px 24px",
+                      backgroundColor: "#007bff",
+                      border: "1px solid #0056b3",
+                      color: "white",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                      fontWeight: "500",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    Implement
+                  </button>
+                </div>
               </div>
-              <h3 style={{ fontSize: "18px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
-                Apply to TechCrunch Disrupt in 2 weeks — ideal readiness window
-              </h3>
-              <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>
-                Recommended action: Prepare pitch deck and demo
-              </p>
-            </div>
-            <button
-              style={{
-                padding: "12px 24px",
-                backgroundColor: "#007bff",
-                border: "1px solid #0056b3",
-                color: "white",
-                fontSize: "14px",
-                cursor: "pointer",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-                fontWeight: "500",
-                marginLeft: "20px",
-              }}
-            >
-              Implement
-            </button>
-          </div>
+            ))}
 
-          {/* Warning Item 1 */}
-          <div
-            style={{
-              backgroundColor: "#2a2a2a",
-              border: "1px solid #444",
-              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-              padding: "24px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
-                <span
-                  style={{
-                    padding: "4px 12px",
-                    backgroundColor: "#ef4444",
-                    color: "white",
-                    fontSize: "12px",
-                    fontWeight: "500",
-                    clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                  }}
-                >
-                  Warning
-                </span>
-                <span style={{ color: "#999", fontSize: "14px" }}>Critical by October 20</span>
-              </div>
-              <h3 style={{ fontSize: "18px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
-                Burn rate projects runway end in 46 days — consider fundraising
-              </h3>
-              <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>
-                Recommended action: Initiate Series A conversations
-              </p>
+          {/* Show message when all suggestions are dismissed */}
+          {dismissedSuggestions.length === suggestions.length && (
+            <div style={{ padding: "40px", textAlign: "center", color: "#999" }}>
+              All suggestions have been dismissed or implemented.
             </div>
-            <button
-              style={{
-                padding: "12px 24px",
-                backgroundColor: "#007bff",
-                border: "1px solid #0056b3",
-                color: "white",
-                fontSize: "14px",
-                cursor: "pointer",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-                fontWeight: "500",
-                marginLeft: "20px",
-              }}
-            >
-              Implement
-            </button>
-          </div>
+          )}
 
-          {/* Warning Item 2 */}
-          <div
-            style={{
-              backgroundColor: "#2a2a2a",
-              border: "1px solid #444",
-              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-              padding: "24px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
-                <span
-                  style={{
-                    padding: "4px 12px",
-                    backgroundColor: "#ef4444",
-                    color: "white",
-                    fontSize: "12px",
-                    fontWeight: "500",
-                    clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                  }}
-                >
-                  Warning
-                </span>
-                <span style={{ color: "#999", fontSize: "14px" }}>Trending negative</span>
-              </div>
-              <h3 style={{ fontSize: "18px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>
-                Clarity of vision has dropped 13% — re-align team
+          {/* History Section */}
+          {showHistory && dismissedSuggestions.length > 0 && (
+            <div style={{ marginTop: "30px" }}>
+              <h3 style={{ fontSize: "20px", fontWeight: "500", margin: "0 0 20px 0", color: "#e0e0e0" }}>
+                Dismissed History
               </h3>
-              <p style={{ fontSize: "14px", color: "#999", margin: "0" }}>
-                Recommended action: Schedule all-hands strategy session
-              </p>
+              {suggestions
+                .filter((suggestion) => dismissedSuggestions.includes(suggestion.id))
+                .map((suggestion) => (
+                  <div
+                    key={suggestion.id}
+                    style={{
+                      backgroundColor: "#1a1a1a",
+                      border: "1px solid #333",
+                      clipPath:
+                        "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+                      padding: "20px",
+                      marginBottom: "12px",
+                      opacity: 0.6,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+                      <span
+                        style={{
+                          padding: "4px 12px",
+                          backgroundColor: suggestion.type === "opportunity" ? "#22c55e" : "#ef4444",
+                          color: "white",
+                          fontSize: "12px",
+                          fontWeight: "500",
+                          clipPath:
+                            "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                        }}
+                      >
+                        {suggestion.type === "opportunity" ? "Opportunity" : "Warning"}
+                      </span>
+                      <span style={{ color: "#666", fontSize: "12px" }}>DISMISSED</span>
+                    </div>
+                    <h4 style={{ fontSize: "16px", fontWeight: "500", margin: "0 0 4px 0", color: "#ccc" }}>
+                      {suggestion.title}
+                    </h4>
+                    <p style={{ fontSize: "14px", color: "#666", margin: "0" }}>{suggestion.description}</p>
+                  </div>
+                ))}
             </div>
-            <button
-              style={{
-                padding: "12px 24px",
-                backgroundColor: "#007bff",
-                border: "1px solid #0056b3",
-                color: "white",
-                fontSize: "14px",
-                cursor: "pointer",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-                fontWeight: "500",
-                marginLeft: "20px",
-              }}
-            >
-              Implement
-            </button>
-          </div>
+          )}
         </div>
       </div>
+
+      {/* Implementation Popup */}
+      {showImplementPopup && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.8)",
+            zIndex: 1001,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
+              padding: "30px",
+              maxWidth: "800px",
+              width: "100%",
+              maxHeight: "80vh",
+              overflowY: "auto",
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "24px",
+              }}
+            >
+              <div>
+                <h3 style={{ fontSize: "24px", fontWeight: "600", margin: "0 0 8px 0", color: "#e0e0e0" }}>
+                  Implementation Plan
+                </h3>
+                <p style={{ fontSize: "16px", color: "#999", margin: "0" }}>{selectedSuggestion?.title}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowImplementPopup(false)
+                  setSelectedSuggestion(null)
+                  setActionSteps([])
+                }}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#999",
+                  cursor: "pointer",
+                  fontSize: "24px",
+                  padding: "0",
+                }}
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Loading State */}
+            {isGenerating && (
+              <div style={{ textAlign: "center", padding: "40px", color: "#999" }}>
+                <div style={{ fontSize: "16px", marginBottom: "12px" }}>Generating action steps...</div>
+                <div style={{ fontSize: "14px" }}>This may take a few seconds</div>
+              </div>
+            )}
+
+            {/* Action Steps */}
+            {!isGenerating && actionSteps.length > 0 && (
+              <div style={{ marginBottom: "30px" }}>
+                <h4 style={{ fontSize: "18px", fontWeight: "500", margin: "0 0 20px 0", color: "#e0e0e0" }}>
+                  Action Steps
+                </h4>
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {actionSteps.map((step, index) => (
+                    <div
+                      key={step.id}
+                      style={{
+                        backgroundColor: "#1a1a1a",
+                        border: "1px solid #333",
+                        clipPath:
+                          "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))",
+                        padding: "20px",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
+                        <div
+                          style={{
+                            backgroundColor: "#007bff",
+                            color: "white",
+                            width: "24px",
+                            height: "24px",
+                            borderRadius: "50%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "12px",
+                            fontWeight: "600",
+                            flexShrink: 0,
+                            marginTop: "2px",
+                          }}
+                        >
+                          {index + 1}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          {editingStep === step.id ? (
+                            <div style={{ marginBottom: "12px" }}>
+                              <textarea
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                style={{
+                                  width: "100%",
+                                  minHeight: "60px",
+                                  padding: "12px",
+                                  backgroundColor: "#2a2a2a",
+                                  border: "1px solid #444",
+                                  color: "#e0e0e0",
+                                  fontSize: "14px",
+                                  resize: "vertical",
+                                  outline: "none",
+                                }}
+                              />
+                              <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                                <button
+                                  onClick={() => handleSaveEdit(step.id)}
+                                  style={{
+                                    padding: "6px 12px",
+                                    backgroundColor: "#22c55e",
+                                    border: "1px solid #16a34a",
+                                    color: "white",
+                                    fontSize: "12px",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                  }}
+                                >
+                                  <Check size={14} />
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingStep(null)
+                                    setEditText("")
+                                  }}
+                                  style={{
+                                    padding: "6px 12px",
+                                    backgroundColor: "#6b7280",
+                                    border: "1px solid #4b5563",
+                                    color: "white",
+                                    fontSize: "12px",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ marginBottom: "12px" }}>
+                              <div
+                                style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}
+                              >
+                                <p
+                                  style={{
+                                    fontSize: "16px",
+                                    color: "#e0e0e0",
+                                    margin: "0",
+                                    lineHeight: "1.4",
+                                    flex: 1,
+                                  }}
+                                >
+                                  {step.task}
+                                </p>
+                                <button
+                                  onClick={() => handleEditStep(step.id, step.task)}
+                                  style={{
+                                    background: "transparent",
+                                    border: "none",
+                                    color: "#999",
+                                    cursor: "pointer",
+                                    padding: "4px",
+                                    marginLeft: "12px",
+                                  }}
+                                >
+                                  <Edit2 size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                          <div style={{ display: "flex", gap: "20px", fontSize: "14px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#999" }}>
+                              <User size={14} />
+                              {step.assignee}
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#999" }}>
+                              <Clock size={14} />
+                              {step.deadline}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Footer Actions */}
+            {!isGenerating && actionSteps.length > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "12px",
+                  paddingTop: "20px",
+                  borderTop: "1px solid #444",
+                }}
+              >
+                <button
+                  onClick={() => {
+                    setShowImplementPopup(false)
+                    setSelectedSuggestion(null)
+                    setActionSteps([])
+                  }}
+                  style={{
+                    padding: "12px 24px",
+                    backgroundColor: "#6b7280",
+                    border: "1px solid #4b5563",
+                    color: "white",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                    fontWeight: "500",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmImplementation}
+                  style={{
+                    padding: "12px 24px",
+                    backgroundColor: "#22c55e",
+                    border: "1px solid #16a34a",
+                    color: "white",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                    fontWeight: "500",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  Confirm Implementation
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
