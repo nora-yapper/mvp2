@@ -93,40 +93,6 @@ export default function MainPage() {
         ☰
       </button>
 
-      {/* Chat Button - Top Right */}
-      <button
-        onClick={() => setChatOpen(!chatOpen)}
-        style={{
-          position: "fixed",
-          top: "20px",
-          right: "20px",
-          background: "#007bff",
-          border: "1px solid #0056b3",
-          fontSize: "20px",
-          cursor: "pointer",
-          zIndex: 1000,
-          color: "white",
-          width: "60px",
-          height: "60px",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "all 0.3s ease",
-          boxShadow: "0 4px 12px rgba(0, 123, 255, 0.3)",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#0056b3"
-          e.currentTarget.style.transform = "scale(1.05)"
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "#007bff"
-          e.currentTarget.style.transform = "scale(1)"
-        }}
-      >
-        <MessageCircle size={24} />
-      </button>
-
       {/* Sidebar */}
       <div
         style={{
@@ -224,7 +190,7 @@ export default function MainPage() {
         <div
           style={{
             position: "fixed",
-            top: "100px",
+            bottom: "20px",
             right: "20px",
             width: "400px",
             height: "500px",
@@ -384,9 +350,9 @@ export default function MainPage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
+            gridTemplateColumns: "repeat(2, 1fr)",
             gap: "30px",
-            maxWidth: "900px",
+            maxWidth: "600px",
             margin: "0 auto",
           }}
         >
@@ -444,9 +410,9 @@ export default function MainPage() {
             PRODUCT
           </button>
 
-          {/* Sales Button */}
+          {/* Homebase Button */}
           <button
-            onClick={() => (window.location.href = "/sales")}
+            onClick={() => (window.location.href = "/homebase")}
             style={{
               background: "#2a2a2a",
               border: "1px solid #444",
@@ -468,10 +434,71 @@ export default function MainPage() {
               e.currentTarget.style.transform = "translateY(0)"
             }}
           >
+            HOMEBASE
+          </button>
+
+          {/* Sales Button */}
+          <button
+            onClick={() => (window.location.href = "/sales")}
+            style={{
+              background: "#2a2a2a",
+              border: "1px solid #444",
+              color: "#e0e0e0",
+              padding: "40px 20px",
+              fontSize: "18px",
+              fontWeight: "500",
+              cursor: "pointer",
+              clipPath: "polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)",
+              transition: "all 0.3s ease",
+              letterSpacing: "0.05em",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#007bff"
+              e.currentTarget.style.transform = "translateY(-5px)"
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#2a2a2a"
+              e.currentTarget.style.transform = "translateY(0)"
+            }}
+          >
             SALES
           </button>
         </div>
       </div>
+
+      {/* Chat Button - Bottom Right */}
+      <button
+        onClick={() => setChatOpen(!chatOpen)}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          background: "#007bff",
+          border: "1px solid #0056b3",
+          fontSize: "20px",
+          cursor: "pointer",
+          zIndex: 1000,
+          color: "white",
+          width: "60px",
+          height: "60px",
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.3s ease",
+          boxShadow: "0 4px 12px rgba(0, 123, 255, 0.3)",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#0056b3"
+          e.currentTarget.style.transform = "scale(1.05)"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#007bff"
+          e.currentTarget.style.transform = "scale(1)"
+        }}
+      >
+        <MessageCircle size={24} />
+      </button>
 
       {/* Overlay for sidebar */}
       {sidebarOpen && (

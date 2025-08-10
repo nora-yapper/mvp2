@@ -77,12 +77,30 @@ export default function ForecastPage() {
           messages: [
             {
               role: "system",
-              content:
-                "You are a startup advisor. Generate 3-5 specific, actionable steps to accomplish the given task. For each step, suggest who should do it (role/person) and a realistic deadline. Format as JSON array with fields: task, assignee, deadline.",
+              content: `You are a startup advisor. Generate 3-5 specific, actionable steps to accomplish the given task. 
+            For each step, provide:
+            - A clear, specific task description
+            - Who should do it (specific role/person)
+            - A realistic deadline (use YYYY-MM-DD format)
+            
+            Respond with ONLY a JSON array in this exact format:
+            [
+              {
+                "task": "specific task description",
+                "assignee": "specific role or person",
+                "deadline": "YYYY-MM-DD"
+              }
+            ]
+            
+            Make each step unique and directly relevant to achieving the specific goal mentioned.`,
             },
             {
               role: "user",
-              content: `Generate action steps for: ${suggestion.title}. Context: ${suggestion.description}`,
+              content: `Generate action steps for: "${suggestion.title}". 
+            Context: ${suggestion.description}
+            Type: ${suggestion.type}
+            ${suggestion.deadline ? `Deadline: ${suggestion.deadline}` : ""}
+            ${suggestion.priority ? `Priority: ${suggestion.priority}` : ""}`,
             },
           ],
         }),
@@ -90,53 +108,162 @@ export default function ForecastPage() {
 
       const data = await response.json()
 
-      // Parse the AI response and create action steps
-      const steps = [
+      // Try to parse the AI response as JSON
+      let parsedSteps = []
+      try {
+        // Extract JSON from the response if it's wrapped in text
+        const jsonMatch = data.message.match(/\[[\s\S]*\]/)
+        if (jsonMatch) {
+          parsedSteps = JSON.parse(jsonMatch[0])
+        } else {
+          parsedSteps = JSON.parse(data.message)
+        }
+      } catch (parseError) {
+        console.error("Failed to parse AI response:", parseError)
+        // Create fallback steps specific to the suggestion
+        parsedSteps = createFallbackSteps(suggestion)
+      }
+
+      // Convert to our format with IDs
+      const steps = parsedSteps.map((step: any, index: number) => ({
+        id: (index + 1).toString(),
+        task: step.task || `Complete action for: ${suggestion.title}`,
+        assignee: step.assignee || "Team Lead",
+        deadline: step.deadline || "2025-09-15",
+        completed: false,
+      }))
+
+      setActionSteps(steps)
+    } catch (error) {
+      console.error("Error generating action steps:", error)
+      // Create fallback steps specific to the suggestion
+      const fallbackSteps = createFallbackSteps(suggestion)
+      setActionSteps(fallbackSteps)
+    }
+    setIsGenerating(false)
+  }
+
+  const createFallbackSteps = (suggestion: Suggestion) => {
+    // Create unique fallback steps based on the suggestion type and content
+    if (suggestion.id === "techcrunch") {
+      return [
         {
           id: "1",
-          task: "Research TechCrunch Disrupt application requirements and deadlines",
+          task: "Research TechCrunch Disrupt 2025 application requirements and submission process",
           assignee: "Marketing Lead",
           deadline: "2025-09-01",
           completed: false,
         },
         {
           id: "2",
-          task: "Create compelling pitch deck highlighting unique value proposition",
+          task: "Create compelling 3-minute pitch deck highlighting unique value proposition",
           assignee: "CEO + Design Team",
           deadline: "2025-09-05",
           completed: false,
         },
         {
           id: "3",
-          task: "Develop 3-minute product demo showcasing key features",
-          assignee: "Product Manager",
+          task: "Develop live product demo showcasing key differentiators",
+          assignee: "Product Manager + Engineering",
           deadline: "2025-09-08",
           completed: false,
         },
         {
           id: "4",
-          task: "Submit complete application with all required materials",
+          task: "Submit complete TechCrunch Disrupt application with all materials",
           assignee: "CEO",
           deadline: "2025-09-12",
           completed: false,
         },
       ]
-
-      setActionSteps(steps)
-    } catch (error) {
-      console.error("Error generating action steps:", error)
-      // Fallback steps
-      setActionSteps([
+    } else if (suggestion.id === "fundraising") {
+      return [
         {
           id: "1",
-          task: "Define specific action items for this opportunity",
-          assignee: "Team Lead",
-          deadline: "2025-09-01",
+          task: "Prepare comprehensive financial projections and burn rate analysis",
+          assignee: "CFO/Finance Lead",
+          deadline: "2025-09-05",
           completed: false,
         },
-      ])
+        {
+          id: "2",
+          task: "Create Series A pitch deck with traction metrics and growth strategy",
+          assignee: "CEO + Marketing",
+          deadline: "2025-09-10",
+          completed: false,
+        },
+        {
+          id: "3",
+          task: "Research and compile list of 20+ relevant Series A investors",
+          assignee: "Business Development",
+          deadline: "2025-09-08",
+          completed: false,
+        },
+        {
+          id: "4",
+          task: "Schedule initial meetings with top 5 target investors",
+          assignee: "CEO",
+          deadline: "2025-09-15",
+          completed: false,
+        },
+        {
+          id: "5",
+          task: "Prepare due diligence materials and data room",
+          assignee: "Legal + Finance Team",
+          deadline: "2025-09-20",
+          completed: false,
+        },
+      ]
+    } else if (suggestion.id === "vision") {
+      return [
+        {
+          id: "1",
+          task: "Conduct anonymous team survey on vision clarity and alignment",
+          assignee: "HR/People Operations",
+          deadline: "2025-09-03",
+          completed: false,
+        },
+        {
+          id: "2",
+          task: "Schedule 2-hour all-hands strategy alignment workshop",
+          assignee: "CEO",
+          deadline: "2025-09-06",
+          completed: false,
+        },
+        {
+          id: "3",
+          task: "Revise and clarify company mission, vision, and 2025 goals",
+          assignee: "Leadership Team",
+          deadline: "2025-09-10",
+          completed: false,
+        },
+        {
+          id: "4",
+          task: "Create visual roadmap and share with entire team",
+          assignee: "Product + Design",
+          deadline: "2025-09-12",
+          completed: false,
+        },
+        {
+          id: "5",
+          task: "Implement weekly team check-ins to maintain alignment",
+          assignee: "Team Leads",
+          deadline: "2025-09-15",
+          completed: false,
+        },
+      ]
     }
-    setIsGenerating(false)
+
+    // Generic fallback
+    return [
+      {
+        id: "1",
+        task: `Define specific action items for: ${suggestion.title}`,
+        assignee: "Team Lead",
+        deadline: "2025-09-01",
+        completed: false,
+      },
+    ]
   }
 
   const handleImplement = async (suggestion: Suggestion) => {
