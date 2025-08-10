@@ -1,11 +1,42 @@
 "use client"
 
-import { useState } from "react"
-import { Plus, Clock } from "lucide-react"
+import { useState, useEffect } from "react"
 
 export default function CommandDeckPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [missionText, setMissionText] = useState("")
+
+  interface Task {
+    id: string
+    title: string
+    assignee: string
+    deadline: string
+    status: "pending" | "completed"
+    priority: "low" | "medium" | "high"
+    source: string
+    createdAt: string
+  }
+
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  useEffect(() => {
+    const loadTasks = () => {
+      const savedTasks = localStorage.getItem("commandDeckTasks")
+      if (savedTasks) {
+        setTasks(JSON.parse(savedTasks))
+      }
+    }
+
+    loadTasks()
+
+    // Listen for storage changes
+    const handleStorageChange = () => {
+      loadTasks()
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    return () => window.removeEventListener("storage", handleStorageChange)
+  }, [])
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
@@ -239,137 +270,196 @@ export default function CommandDeckPage() {
               borderBottom: "1px solid #444",
             }}
           >
-            <h3 style={{ fontSize: "20px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>Plan Views</h3>
+            <h3 style={{ fontSize: "20px", fontWeight: "500", margin: "0", color: "#e0e0e0" }}>Active Tasks</h3>
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-              <button
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "8px 16px",
-                  backgroundColor: "#1a1a1a",
-                  border: "1px solid #444",
-                  color: "#e0e0e0",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-                  transition: "all 0.3s ease",
-                }}
-              >
-                <Plus size={16} />
-                Add Task
-              </button>
-              <button
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "8px 16px",
-                  backgroundColor: "#1a1a1a",
-                  border: "1px solid #444",
-                  color: "#e0e0e0",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-                  transition: "all 0.3s ease",
-                }}
-              >
-                <Clock size={16} />
-                Task History
-              </button>
-              <div style={{ display: "flex", gap: "4px" }}>
-                <button
-                  style={{
-                    padding: "8px 16px",
-                    backgroundColor: "#007bff",
-                    border: "1px solid #0056b3",
-                    color: "white",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-                    fontWeight: "500",
-                  }}
-                >
-                  Timeline
-                </button>
-                <button
-                  style={{
-                    padding: "8px 16px",
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #444",
-                    color: "#e0e0e0",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-                  }}
-                >
-                  Kanban
-                </button>
-                <button
-                  style={{
-                    padding: "8px 16px",
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #444",
-                    color: "#e0e0e0",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-                  }}
-                >
-                  Table
-                </button>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#999", fontSize: "14px" }}>
+                <span>{tasks.filter((t) => t.status === "pending").length} pending</span>
+                <span>•</span>
+                <span>{tasks.filter((t) => t.status === "completed").length} completed</span>
               </div>
+              <button
+                onClick={() => (window.location.href = "/homebase/tasks")}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#007bff",
+                  border: "1px solid #0056b3",
+                  color: "white",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                  fontWeight: "500",
+                }}
+              >
+                View All Tasks
+              </button>
             </div>
           </div>
 
-          {/* Timeline View */}
-          <div style={{ display: "grid", gridTemplateColumns: "300px 1fr 1fr", minHeight: "300px" }}>
-            {/* Tasks Column */}
-            <div style={{ padding: "24px", borderRight: "1px solid #333" }}>
-              <h4 style={{ fontSize: "18px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>Tasks</h4>
-              <p style={{ fontSize: "14px", color: "#999", margin: "0 0 20px 0" }}>0 records</p>
-              <p style={{ fontSize: "14px", color: "#666", textAlign: "center", lineHeight: "1.5" }}>
-                No tasks currently. Generate and implement a plan to see tasks here.
-              </p>
-            </div>
-
-            {/* August 2025 Column */}
-            <div style={{ padding: "24px", borderRight: "1px solid #333" }}>
-              <h4 style={{ fontSize: "18px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>August</h4>
-              <p style={{ fontSize: "14px", color: "#999", margin: "0 0 20px 0" }}>2025</p>
-              <div
-                style={{
-                  backgroundColor: "#1a1a1a",
-                  border: "1px solid #333",
-                  clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                  padding: "40px 20px",
-                  textAlign: "center",
-                  color: "#666",
-                  fontSize: "14px",
-                }}
-              >
-                Timeline will appear when tasks are added
+          {/* Tasks List */}
+          <div style={{ padding: "24px 30px" }}>
+            {tasks.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "40px 20px", color: "#666" }}>
+                <h4 style={{ fontSize: "18px", marginBottom: "12px", color: "#666" }}>No Active Tasks</h4>
+                <p style={{ fontSize: "14px", marginBottom: "20px", color: "#999" }}>
+                  Generate a plan or implement suggestions from Forecast to see tasks here.
+                </p>
+                <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+                  <button
+                    onClick={() => (window.location.href = "/forecast")}
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: "#1a1a1a",
+                      border: "1px solid #444",
+                      color: "#e0e0e0",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                    }}
+                  >
+                    Go to Forecast
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {/* Show pending tasks first */}
+                {tasks
+                  .filter((task) => task.status === "pending")
+                  .slice(0, 5) // Show only first 5 pending tasks
+                  .map((task, index) => (
+                    <div
+                      key={task.id}
+                      style={{
+                        backgroundColor: "#1a1a1a",
+                        border: "1px solid #333",
+                        clipPath:
+                          "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))",
+                        padding: "20px",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
+                        <div
+                          style={{
+                            backgroundColor:
+                              task.priority === "high" ? "#ef4444" : task.priority === "medium" ? "#eab308" : "#6b7280",
+                            color: "white",
+                            width: "24px",
+                            height: "24px",
+                            borderRadius: "50%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "12px",
+                            fontWeight: "600",
+                            flexShrink: 0,
+                            marginTop: "2px",
+                          }}
+                        >
+                          {index + 1}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <p
+                            style={{
+                              fontSize: "16px",
+                              color: "#e0e0e0",
+                              margin: "0 0 12px 0",
+                              lineHeight: "1.4",
+                            }}
+                          >
+                            {task.title}
+                          </p>
+                          <div style={{ display: "flex", gap: "20px", fontSize: "14px", color: "#999" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                              <span>👤</span>
+                              {task.assignee}
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                              <span>📅</span>
+                              {task.deadline}
+                            </div>
+                            <div style={{ fontSize: "12px", color: "#666" }}>From: {task.source}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
 
-            {/* September 2025 Column */}
-            <div style={{ padding: "24px" }}>
-              <h4 style={{ fontSize: "18px", fontWeight: "500", margin: "0 0 8px 0", color: "#e0e0e0" }}>September</h4>
-              <p style={{ fontSize: "14px", color: "#999", margin: "0 0 20px 0" }}>2025</p>
-              <div
-                style={{
-                  backgroundColor: "#1a1a1a",
-                  border: "1px solid #333",
-                  clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                  padding: "40px 20px",
-                  textAlign: "center",
-                  color: "#666",
-                  fontSize: "14px",
-                }}
-              >
-                Timeline will appear when tasks are added
+                {/* Show recently completed tasks */}
+                {tasks.filter((task) => task.status === "completed").length > 0 && (
+                  <div style={{ marginTop: "20px" }}>
+                    <h4 style={{ fontSize: "16px", color: "#999", marginBottom: "12px" }}>Recently Completed</h4>
+                    {tasks
+                      .filter((task) => task.status === "completed")
+                      .slice(0, 3) // Show only 3 most recent completed tasks
+                      .map((task) => (
+                        <div
+                          key={task.id}
+                          style={{
+                            backgroundColor: "#0f1419",
+                            border: "1px solid #2a2a2a",
+                            clipPath:
+                              "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                            padding: "16px",
+                            marginBottom: "8px",
+                            opacity: 0.7,
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <div
+                              style={{
+                                backgroundColor: "#22c55e",
+                                color: "white",
+                                width: "20px",
+                                height: "20px",
+                                borderRadius: "50%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "12px",
+                                flexShrink: 0,
+                              }}
+                            >
+                              ✓
+                            </div>
+                            <p
+                              style={{
+                                fontSize: "14px",
+                                color: "#999",
+                                margin: "0",
+                                textDecoration: "line-through",
+                                flex: 1,
+                              }}
+                            >
+                              {task.title}
+                            </p>
+                            <span style={{ fontSize: "12px", color: "#666" }}>{task.assignee}</span>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+                {/* Show more tasks indicator */}
+                {tasks.filter((task) => task.status === "pending").length > 5 && (
+                  <div style={{ textAlign: "center", marginTop: "20px" }}>
+                    <button
+                      onClick={() => (window.location.href = "/homebase/tasks")}
+                      style={{
+                        padding: "12px 24px",
+                        backgroundColor: "#2a2a2a",
+                        border: "1px solid #444",
+                        color: "#e0e0e0",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                        clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                      }}
+                    >
+                      View {tasks.filter((task) => task.status === "pending").length - 5} More Tasks
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
