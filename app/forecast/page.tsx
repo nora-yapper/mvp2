@@ -36,6 +36,8 @@ export default function ForecastPage() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [editingAssignee, setEditingAssignee] = useState<string | null>(null)
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState<string | null>(null)
+  const [editingAssigneeName, setEditingAssigneeName] = useState<string | null>(null)
+  const [editAssigneeText, setEditAssigneeText] = useState("")
 
   useEffect(() => {
     setTeamMembers(getTeamMembers())
@@ -255,6 +257,12 @@ export default function ForecastPage() {
     setActionSteps((prev) => prev.map((step) => (step.id === stepId ? { ...step, task: editText } : step)))
     setEditingStep(null)
     setEditText("")
+  }
+
+  const handleSaveAssigneeEdit = (stepId: string) => {
+    setActionSteps((prev) => prev.map((step) => (step.id === stepId ? { ...step, assignee: editAssigneeText } : step)))
+    setEditingAssigneeName(null)
+    setEditAssigneeText("")
   }
 
   const handleAssigneeChange = (stepId: string, newAssignee: string) => {
@@ -1172,27 +1180,94 @@ export default function ForecastPage() {
                               }}
                             >
                               <User size={14} />
-                              <button
-                                onClick={() =>
-                                  setShowAssigneeDropdown(showAssigneeDropdown === step.id ? null : step.id)
-                                }
-                                style={{
-                                  background: "transparent",
-                                  border: "1px solid #444",
-                                  color: "#e0e0e0",
-                                  padding: "4px 8px",
-                                  fontSize: "14px",
-                                  cursor: "pointer",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "4px",
-                                  clipPath:
-                                    "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
-                                }}
-                              >
-                                {step.assignee}
-                                <ChevronDown size={12} />
-                              </button>
+                              {editingAssigneeName === step.id ? (
+                                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                  <input
+                                    value={editAssigneeText}
+                                    onChange={(e) => setEditAssigneeText(e.target.value)}
+                                    style={{
+                                      padding: "4px 8px",
+                                      backgroundColor: "#2a2a2a",
+                                      border: "1px solid #444",
+                                      color: "#e0e0e0",
+                                      fontSize: "14px",
+                                      minWidth: "120px",
+                                      outline: "none",
+                                    }}
+                                  />
+                                  <button
+                                    onClick={() => handleSaveAssigneeEdit(step.id)}
+                                    style={{
+                                      padding: "4px 8px",
+                                      backgroundColor: "#22c55e",
+                                      border: "1px solid #16a34a",
+                                      color: "white",
+                                      fontSize: "12px",
+                                      cursor: "pointer",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "4px",
+                                    }}
+                                  >
+                                    <Check size={12} />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setEditingAssigneeName(null)
+                                      setEditAssigneeText("")
+                                    }}
+                                    style={{
+                                      padding: "4px 8px",
+                                      backgroundColor: "#6b7280",
+                                      border: "1px solid #4b5563",
+                                      color: "white",
+                                      fontSize: "12px",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                  <button
+                                    onClick={() =>
+                                      setShowAssigneeDropdown(showAssigneeDropdown === step.id ? null : step.id)
+                                    }
+                                    style={{
+                                      background: "transparent",
+                                      border: "1px solid #444",
+                                      color: "#e0e0e0",
+                                      padding: "4px 8px",
+                                      fontSize: "14px",
+                                      cursor: "pointer",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "4px",
+                                      clipPath:
+                                        "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                                    }}
+                                  >
+                                    {step.assignee}
+                                    <ChevronDown size={12} />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setEditingAssigneeName(step.id)
+                                      setEditAssigneeText(step.assignee)
+                                    }}
+                                    style={{
+                                      background: "transparent",
+                                      border: "none",
+                                      color: "#999",
+                                      cursor: "pointer",
+                                      padding: "4px",
+                                    }}
+                                  >
+                                    <Edit2 size={12} />
+                                  </button>
+                                </div>
+                              )}
 
                               {/* Assignee Dropdown */}
                               {showAssigneeDropdown === step.id && (
