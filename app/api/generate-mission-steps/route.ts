@@ -1,30 +1,50 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
 
 export async function POST(request: NextRequest) {
   try {
-    const { mission, teamMembers, timeframe, resources } = await request.json()
+    const { mission, teamMembers } = await request.json()
 
-    if (!mission) {
-      return NextResponse.json({ error: "Mission is required" }, { status: 400 })
+    if (!mission || typeof mission !== "string") {
+      return NextResponse.json({ error: "Mission is required and must be a string" }, { status: 400 })
+    }
+
+    const openaiApiKey = process.env.OPENAI_API_KEY
+
+    if (!openaiApiKey) {
+      return NextResponse.json({ error: "OpenAI API key not configured" }, { status: 500 })
     }
 
     // Validate that the mission is startup/business related
-    const validationPrompt = `
-      Analyze this mission statement and determine if it's related to startups, business, entrepreneurship, or professional goals:
-      "${mission}"
-      
-      Respond with only "VALID" if it's business/startup related, or "INVALID" if it's not.
-    `
-
-    const validationResult = await generateText({
-      model: openai("gpt-4o"),
-      prompt: validationPrompt,
-      maxTokens: 10,
+    const validationResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openaiApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "user",
+            content: `Analyze this mission statement and determine if it's related to startups, business, entrepreneurship, or professional goals:
+            "${mission}"
+            
+            Respond with only "VALID" if it's business/startup related, or "INVALID" if it's not.`,
+          },
+        ],
+        max_tokens: 10,
+        temperature: 0,
+      }),
     })
 
-    if (validationResult.text.trim() !== "VALID") {
+    if (!validationResponse.ok) {
+      throw new Error(`OpenAI API error: ${validationResponse.status}`)
+    }
+
+    const validationData = await validationResponse.json()
+    const validationResult = validationData.choices[0]?.message?.content?.trim()
+
+    if (validationResult !== "VALID") {
       return NextResponse.json(
         { error: "Please provide a startup or business-related mission statement." },
         { status: 400 },
@@ -36,8 +56,6 @@ export async function POST(request: NextRequest) {
       You are a startup advisor helping to break down a mission into actionable steps.
       
       Mission: "${mission}"
-      ${timeframe ? `Timeframe: ${timeframe}` : ""}
-      ${resources ? `Available Resources: ${resources}` : ""}
       
       Available team members:
       ${teamMembers.map((member: any) => `- ${member.name} (${member.role})`).join("\n")}
@@ -48,11 +66,6 @@ export async function POST(request: NextRequest) {
       3. Be assigned to an appropriate team member based on their role
       4. Have a clear priority level
       5. Include a relevant category
-      6. Specify required resources
-      7. Define success criteria and milestones
-      8. Identify potential obstacles and solutions
-      9. Outline dependencies between steps
-      10. Provide key performance indicators
       
       Return ONLY a JSON array with this exact structure:
       [
@@ -62,28 +75,43 @@ export async function POST(request: NextRequest) {
           "assignee": "Team member name from the list above",
           "deadline": "YYYY-MM-DD format",
           "priority": "High" | "Medium" | "Low",
-          "category": "Category name",
-          "resources": "Required resources for the step",
-          "successCriteria": "Success criteria and milestones",
-          "obstacles": "Potential obstacles and solutions",
-          "dependencies": "Dependencies between steps",
-          "kpi": "Key performance indicators"
+          "category": "Category name"
         }
       ]
       
       Make sure deadlines are realistic and spread over the next 2-8 weeks.
     `
 
-    const result = await generateText({
-      model: openai("gpt-4o"),
-      prompt,
-      maxTokens: 2000,
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openaiApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        max_tokens: 2000,
+        temperature: 0.7,
+      }),
     })
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const aiResponse = data.choices[0]?.message?.content || ""
 
     let steps
     try {
       // Clean the response text to remove any markdown formatting
-      let cleanedText = result.text.trim()
+      let cleanedText = aiResponse.trim()
 
       // Remove markdown code blocks if present
       if (cleanedText.startsWith("```json")) {
@@ -97,7 +125,7 @@ export async function POST(request: NextRequest) {
       console.error("JSON parsing failed, trying to extract array:", parseError)
 
       // Try to extract JSON array using regex as fallback
-      const jsonMatch = result.text.match(/\[[\s\S]*\]/)
+      const jsonMatch = aiResponse.match(/\[[\s\S]*\]/)
       if (jsonMatch) {
         try {
           steps = JSON.parse(jsonMatch[0])

@@ -1,35 +1,55 @@
-import { openai } from "@ai-sdk/openai"
-import { generateText } from "ai"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const { area, description } = await request.json()
+    const { area } = await request.json()
 
-    if (!area || !description) {
-      return NextResponse.json({ error: "Area and description are required" }, { status: 400 })
+    if (!area || typeof area !== "string") {
+      return NextResponse.json({ error: "Area is required and must be a string" }, { status: 400 })
     }
 
-    const { text } = await generateText({
-      model: openai("gpt-4o"),
-      prompt: `Analyze this startup area and provide detailed insights:
+    const openaiApiKey = process.env.OPENAI_API_KEY
 
-Area: ${area}
-Description: ${description}
+    if (!openaiApiKey) {
+      return NextResponse.json({ error: "OpenAI API key not configured" }, { status: 500 })
+    }
 
-Please provide:
-1. Market analysis and opportunities
-2. Key challenges and risks
-3. Competitive landscape
-4. Required resources and skills
-5. Potential business models
-6. Success metrics to track
-7. Next steps and recommendations
-
-Format your response in a clear, structured way with actionable insights.`,
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openaiApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert startup advisor and analyst. You provide concise, actionable analysis of specific startup areas. Your responses should be:
+            - 2-3 sentences maximum
+            - Focused on the specific area mentioned
+            - Include both current assessment and actionable recommendations
+            - Professional but encouraging tone
+            - Specific and practical advice`,
+          },
+          {
+            role: "user",
+            content: `Analyze the "${area}" aspect of a startup. Provide a brief assessment covering current state and key recommendations for improvement in this specific area.`,
+          },
+        ],
+        max_tokens: 200,
+        temperature: 0.7,
+      }),
     })
 
-    return NextResponse.json({ analysis: text })
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const analysis = data.choices[0]?.message?.content || "Unable to generate analysis"
+
+    return NextResponse.json({ analysis })
   } catch (error) {
     console.error("Error analyzing startup area:", error)
     return NextResponse.json({ error: "Failed to analyze startup area" }, { status: 500 })
