@@ -174,11 +174,11 @@ export default function MainPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {[
             { label: "Map", onClick: () => (window.location.href = "/main"), active: true },
-            { label: "Command Deck", onClick: () => {} },
-            { label: "Health Analysis", onClick: () => {} },
-            { label: "Forecast", onClick: () => {} },
-            { label: "Reports", onClick: () => {} },
-            { label: "Network", onClick: () => {} },
+            { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: false },
+            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
+            { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
+            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
+            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
           ].map((item, index) => (
             <button
               key={index}

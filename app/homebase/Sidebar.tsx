@@ -1,16 +1,12 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 interface SidebarItem {
   title: string
   url: string
-  icon: string | React.ComponentType
-  items: SidebarItem[]
+  icon: string
+  items: any[]
 }
 
 interface SidebarProps {
@@ -18,93 +14,145 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ items }: SidebarProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <>
-      {/* Hamburger Menu Button */}
+      {/* Hamburger Menu - Top Left */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          "fixed top-5 left-5 z-50 w-12 h-12 bg-gray-800 border border-gray-600 text-gray-200",
-          "hover:bg-gray-700 transition-colors duration-200",
-          "clip-path-[polygon(0_0,calc(100%-8px)_0,100%_8px,100%_100%,8px_100%,0_calc(100%-8px))]",
-        )}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
         style={{
+          position: "fixed",
+          top: "20px",
+          left: "20px",
+          background: "#2a2a2a",
+          border: "1px solid #444",
+          fontSize: "24px",
+          cursor: "pointer",
+          zIndex: 1000,
+          color: "#e0e0e0",
+          width: "50px",
+          height: "50px",
           clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#3a3a3a"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#2a2a2a"
         }}
       >
         ☰
       </button>
 
-      {/* Overlay */}
-      {isOpen && <div onClick={() => setIsOpen(false)} className="fixed inset-0 bg-black/60 z-40" />}
-
       {/* Sidebar */}
       <div
-        className={cn(
-          "fixed top-0 left-0 h-full w-80 bg-gray-900 border-r border-gray-700 z-40 transition-transform duration-300",
-          isOpen ? "translate-x-0" : "-translate-x-full",
-        )}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? 0 : "-300px",
+          width: "300px",
+          height: "100vh",
+          backgroundColor: "#2a2a2a",
+          transition: "left 0.3s ease",
+          zIndex: 999,
+          padding: "20px",
+          borderRight: "1px solid #444",
+        }}
       >
-        <div className="p-6 space-y-4">
-          {/* Top section - Settings and Profile icons */}
-          <div className="flex justify-end gap-4 mb-8">
-            <Button
-              variant="outline"
-              size="icon"
-              className="bg-gray-800 border-gray-600 text-gray-200 hover:bg-gray-700"
+        {/* Top section - Settings and Profile icons */}
+        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
+            <button
               style={{
+                background: "#1a1a1a",
+                border: "1px solid #444",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
                 clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
               }}
             >
               ⚙️
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="bg-gray-800 border-gray-600 text-gray-200 hover:bg-gray-700"
+            </button>
+            <button
               style={{
+                background: "#1a1a1a",
+                border: "1px solid #444",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
                 clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
               }}
             >
               👤
-            </Button>
-          </div>
-
-          {/* Navigation Items */}
-          <div className="space-y-3">
-            {[
-              { label: "Map", href: "/main", active: false },
-              { label: "Command Deck", href: "/homebase", active: true },
-              { label: "Health Analysis", href: "/health-check", active: false },
-              { label: "Forecast", href: "/forecast", active: false },
-              { label: "Reports", href: "/reports", active: false },
-              { label: "Network", href: "/network", active: false },
-            ].map((item, index) => (
-              <Button
-                key={index}
-                variant={item.active ? "default" : "ghost"}
-                className={cn(
-                  "w-full justify-start text-left p-4 h-auto",
-                  item.active
-                    ? "bg-blue-600 hover:bg-blue-700 text-white"
-                    : "bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-600",
-                )}
-                style={{
-                  clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                }}
-                onClick={() => {
-                  window.location.href = item.href
-                  setIsOpen(false)
-                }}
-              >
-                {item.label}
-              </Button>
-            ))}
+            </button>
           </div>
         </div>
+
+        {/* Six vertically stacked buttons */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {[
+            { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
+            { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: true },
+            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
+            { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
+            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
+            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
+          ].map((item, index) => (
+            <button
+              key={index}
+              onClick={item.onClick}
+              style={{
+                padding: "18px",
+                fontSize: "16px",
+                cursor: "pointer",
+                border: "1px solid #444",
+                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
+                color: "#e0e0e0",
+                width: "100%",
+                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                letterSpacing: "0.05em",
+                fontWeight: "500",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#3a3a3a"
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#1a1a1a"
+                }
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Overlay for sidebar */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.6)",
+            zIndex: 998,
+          }}
+        />
+      )}
     </>
   )
 }
