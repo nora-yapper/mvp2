@@ -151,6 +151,7 @@ export default function MainPage() {
             { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
             { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
             { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
+            { label: "Team", onClick: () => (window.location.href = "/team"), active: false },
           ].map((item, index) => (
             <button
               key={index}
@@ -339,7 +340,6 @@ export default function MainPage() {
 
       {/* Main Content */}
       <div style={{ padding: "270px 60px 60px", textAlign: "center" }}>
-
         {/* Geometric Button Grid */}
         <div
           style={{

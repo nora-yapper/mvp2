@@ -199,6 +199,7 @@ export default function ReportsPage() {
               { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
               { label: "Reports", onClick: () => {}, active: true },
               { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
+              { label: "Team", onClick: () => (window.location.href = "/team"), active: false },
             ].map((item, index) => (
               <button
                 key={index}
