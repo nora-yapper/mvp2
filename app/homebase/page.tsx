@@ -2,470 +2,357 @@
 
 import { useState, useEffect } from "react"
 import { v4 as uuidv4 } from "uuid"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { BarChart3, Users, TrendingUp, Activity, Plus, X, RefreshCw } from "lucide-react"
 
-interface HomebaseComponent {
+interface DashboardWidget {
   id: string
+  type: "metric" | "chart" | "activity" | "team"
   title: string
-  content: string
-  createdAt: string
+  value?: string | number
+  change?: string
+  status?: "up" | "down" | "stable"
+  createdAt: Date
 }
 
-const HomebasePage = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [components, setComponents] = useState<HomebaseComponent[]>([])
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [newComponentTitle, setNewComponentTitle] = useState("")
+export default function HomebasePage() {
+  const [widgets, setWidgets] = useState<DashboardWidget[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
+  // Load widgets from session storage on mount
   useEffect(() => {
-    // Load components from session storage
-    const storedComponents = sessionStorage.getItem("homebaseComponents")
-    if (storedComponents) {
-      setComponents(JSON.parse(storedComponents))
+    const savedWidgets = sessionStorage.getItem("homebase-widgets")
+    if (savedWidgets) {
+      try {
+        const parsed = JSON.parse(savedWidgets)
+        setWidgets(
+          parsed.map((w: any) => ({
+            ...w,
+            createdAt: new Date(w.createdAt),
+          })),
+        )
+      } catch (error) {
+        console.error("Failed to load widgets:", error)
+        initializeDefaultWidgets()
+      }
     } else {
-      // Initialize with default components using uuid
-      const defaultComponents: HomebaseComponent[] = [
-        {
-          id: uuidv4(),
-          title: "Company Overview",
-          content: "Add your company description, mission, and vision here.",
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: uuidv4(),
-          title: "Team Information",
-          content: "Describe your team members, roles, and expertise.",
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: uuidv4(),
-          title: "Product Details",
-          content: "Outline your product features, benefits, and roadmap.",
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: uuidv4(),
-          title: "Market Analysis",
-          content: "Include market research, target audience, and competitive analysis.",
-          createdAt: new Date().toISOString(),
-        },
-      ]
-      setComponents(defaultComponents)
-      sessionStorage.setItem("homebaseComponents", JSON.stringify(defaultComponents))
+      initializeDefaultWidgets()
     }
   }, [])
 
-  const addNewComponent = () => {
-    if (newComponentTitle.trim()) {
-      const newComponent: HomebaseComponent = {
+  // Save widgets to session storage whenever widgets change
+  useEffect(() => {
+    if (widgets.length > 0) {
+      sessionStorage.setItem("homebase-widgets", JSON.stringify(widgets))
+    }
+  }, [widgets])
+
+  const initializeDefaultWidgets = () => {
+    const defaultWidgets: DashboardWidget[] = [
+      {
         id: uuidv4(),
-        title: newComponentTitle,
-        content: "Click to edit this component and add your content.",
-        createdAt: new Date().toISOString(),
-      }
+        type: "metric",
+        title: "Total Revenue",
+        value: "$125,430",
+        change: "+12.5%",
+        status: "up",
+        createdAt: new Date(),
+      },
+      {
+        id: uuidv4(),
+        type: "metric",
+        title: "Active Users",
+        value: "15,234",
+        change: "+8.2%",
+        status: "up",
+        createdAt: new Date(),
+      },
+      {
+        id: uuidv4(),
+        type: "metric",
+        title: "Conversion Rate",
+        value: "3.4%",
+        change: "-0.3%",
+        status: "down",
+        createdAt: new Date(),
+      },
+      {
+        id: uuidv4(),
+        type: "activity",
+        title: "Recent Activity",
+        value: "23 new events",
+        createdAt: new Date(),
+      },
+    ]
+    setWidgets(defaultWidgets)
+  }
 
-      const updatedComponents = [...components, newComponent]
-      setComponents(updatedComponents)
-      sessionStorage.setItem("homebaseComponents", JSON.stringify(updatedComponents))
+  const addWidget = (type: DashboardWidget["type"]) => {
+    const newWidget: DashboardWidget = {
+      id: uuidv4(),
+      type,
+      title: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+      value: type === "metric" ? Math.floor(Math.random() * 10000) : "Sample data",
+      change: type === "metric" ? `+${(Math.random() * 20).toFixed(1)}%` : undefined,
+      status: type === "metric" ? (Math.random() > 0.5 ? "up" : "down") : undefined,
+      createdAt: new Date(),
+    }
+    setWidgets([...widgets, newWidget])
+  }
 
-      setNewComponentTitle("")
-      setShowAddModal(false)
+  const removeWidget = (id: string) => {
+    setWidgets(widgets.filter((widget) => widget.id !== id))
+  }
+
+  const refreshData = async () => {
+    setIsLoading(true)
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    // Update widgets with new random data
+    const updatedWidgets = widgets.map((widget) => ({
+      ...widget,
+      value: widget.type === "metric" ? `$${Math.floor(Math.random() * 200000).toLocaleString()}` : widget.value,
+      change:
+        widget.type === "metric"
+          ? `${Math.random() > 0.5 ? "+" : "-"}${(Math.random() * 20).toFixed(1)}%`
+          : widget.change,
+      status: widget.type === "metric" ? ((Math.random() > 0.5 ? "up" : "down") as "up" | "down") : widget.status,
+    }))
+
+    setWidgets(updatedWidgets)
+    setIsLoading(false)
+  }
+
+  const getWidgetIcon = (type: DashboardWidget["type"]) => {
+    switch (type) {
+      case "metric":
+        return <BarChart3 className="h-4 w-4" />
+      case "chart":
+        return <TrendingUp className="h-4 w-4" />
+      case "activity":
+        return <Activity className="h-4 w-4" />
+      case "team":
+        return <Users className="h-4 w-4" />
+      default:
+        return <BarChart3 className="h-4 w-4" />
     }
   }
 
-  const deleteComponent = (id: string) => {
-    const updatedComponents = components.filter((comp) => comp.id !== id)
-    setComponents(updatedComponents)
-    sessionStorage.setItem("homebaseComponents", JSON.stringify(updatedComponents))
+  const getStatusColor = (status?: "up" | "down" | "stable") => {
+    switch (status) {
+      case "up":
+        return "text-green-600"
+      case "down":
+        return "text-red-600"
+      case "stable":
+        return "text-gray-600"
+      default:
+        return "text-gray-600"
+    }
   }
 
   return (
-    <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
-      {/* Top Bar */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "60px",
-          backgroundColor: "white",
-          borderBottom: "1px solid #ccc",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
-          zIndex: 1000,
-        }}
-      >
-        {/* Sidebar Toggle */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{
-            background: "none",
-            border: "none",
-            fontSize: "24px",
-            cursor: "pointer",
-            marginRight: "15px",
-          }}
-        >
-          ☰
-        </button>
-
-        {/* Title */}
-        <h2 style={{ marginLeft: "20px", fontSize: "18px", color: "#333" }}>Homebase</h2>
-
-        {/* Add Component Button */}
-        <button
-          onClick={() => setShowAddModal(true)}
-          style={{
-            marginLeft: "auto",
-            padding: "8px 16px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            fontSize: "14px",
-            cursor: "pointer",
-          }}
-        >
-          + Add Component
-        </button>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Homebase Dashboard</h1>
+          <p className="text-muted-foreground">Your central command center with UUID-managed components</p>
+        </div>
+        <div className="flex space-x-2">
+          <Button onClick={refreshData} disabled={isLoading} variant="outline">
+            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            {isLoading ? "Refreshing..." : "Refresh"}
+          </Button>
+        </div>
       </div>
 
-      {/* Sidebar */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: sidebarOpen ? 0 : "-300px",
-          width: "300px",
-          height: "100vh",
-          backgroundColor: "#f0f0f0",
-          transition: "left 0.3s ease",
-          zIndex: 999,
-          padding: "20px",
-        }}
-      >
-        {/* Top section - Settings and Profile icons */}
-        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
-          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                fontSize: "24px",
-                cursor: "pointer",
-              }}
-            >
-              ⚙️
-            </button>
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                fontSize: "24px",
-                cursor: "pointer",
-              }}
-            >
-              👤
-            </button>
+      <div className="flex flex-wrap gap-2 mb-4">
+        <Button size="sm" onClick={() => addWidget("metric")}>
+          <Plus className="mr-1 h-3 w-3" />
+          Add Metric
+        </Button>
+        <Button size="sm" onClick={() => addWidget("chart")}>
+          <Plus className="mr-1 h-3 w-3" />
+          Add Chart
+        </Button>
+        <Button size="sm" onClick={() => addWidget("activity")}>
+          <Plus className="mr-1 h-3 w-3" />
+          Add Activity
+        </Button>
+        <Button size="sm" onClick={() => addWidget("team")}>
+          <Plus className="mr-1 h-3 w-3" />
+          Add Team Widget
+        </Button>
+      </div>
+
+      <Tabs defaultValue="dashboard" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="dashboard" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {widgets.map((widget) => (
+              <Card key={widget.id} className="relative hover:shadow-md transition-shadow">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="absolute top-2 right-2 h-6 w-6 p-0"
+                  onClick={() => removeWidget(widget.id)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+
+                <CardHeader className="pb-2">
+                  <div className="flex items-center space-x-2">
+                    {getWidgetIcon(widget.type)}
+                    <CardTitle className="text-sm font-medium">{widget.title}</CardTitle>
+                  </div>
+                </CardHeader>
+
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="text-2xl font-bold">{widget.value}</div>
+
+                    {widget.change && <div className={`text-sm ${getStatusColor(widget.status)}`}>{widget.change}</div>}
+
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="text-xs">
+                        {widget.type}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">ID: {widget.id.slice(0, 8)}...</span>
+                    </div>
+
+                    <div className="text-xs text-muted-foreground">
+                      Created: {widget.createdAt.toLocaleTimeString()}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </div>
 
-        {/* Navigation buttons */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <button
-            onClick={() => (window.location.href = "/main")}
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Map
-          </button>
-          <button
-            onClick={() => (window.location.href = "/homebase")}
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "#007bff",
-              color: "white",
-              width: "100%",
-            }}
-          >
-            Command Deck
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Health Analysis
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Forecast
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Reports
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Network
-          </button>
-        </div>
-      </div>
+          {widgets.length === 0 && (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <BarChart3 className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">No widgets yet</h3>
+                <p className="text-muted-foreground text-center mb-4">
+                  Add some widgets to get started with your dashboard
+                </p>
+                <Button onClick={() => addWidget("metric")}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Your First Widget
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
-      {/* Main Content */}
-      <div
-        style={{
-          marginTop: "60px",
-          padding: "40px 20px",
-          color: "#e0e0e0",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "3rem",
-            color: "#666",
-            fontWeight: "bold",
-            marginBottom: "40px",
-            textAlign: "center",
-            letterSpacing: "0.1em",
-          }}
-        >
-          HOMEBASE
-        </h1>
+        <TabsContent value="analytics" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Widget Analytics</CardTitle>
+                <CardDescription>Statistics about your dashboard widgets</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span>Total Widgets</span>
+                    <Badge>{widgets.length}</Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Metric Widgets</span>
+                    <Badge variant="outline">{widgets.filter((w) => w.type === "metric").length}</Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Chart Widgets</span>
+                    <Badge variant="outline">{widgets.filter((w) => w.type === "chart").length}</Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Activity Widgets</span>
+                    <Badge variant="outline">{widgets.filter((w) => w.type === "activity").length}</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Components Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "30px",
-            maxWidth: "1200px",
-            margin: "0 auto",
-          }}
-        >
-          {components.map((component) => (
-            <div
-              key={component.id}
-              style={{
-                backgroundColor: "#2a2a2a",
-                borderRadius: "8px",
-                padding: "30px",
-                border: "1px solid #444",
-                position: "relative",
-                cursor: "pointer",
-                transition: "transform 0.2s ease",
-              }}
-              onClick={() => {
-                window.location.href = `/homebase/task?component=${component.id}`
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-5px)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)"
-              }}
-            >
-              {/* Delete button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  deleteComponent(component.id)
-                }}
-                style={{
-                  position: "absolute",
-                  top: "10px",
-                  right: "10px",
-                  background: "none",
-                  border: "none",
-                  color: "#dc3545",
-                  fontSize: "18px",
-                  cursor: "pointer",
-                  padding: "5px",
-                }}
-              >
-                ×
-              </button>
+            <Card>
+              <CardHeader>
+                <CardTitle>UUID Management</CardTitle>
+                <CardDescription>Unique identifier information</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Each widget has a unique UUID for identification and state management.
+                  </p>
+                  <div className="text-xs font-mono bg-gray-100 p-2 rounded">
+                    Latest UUID: {widgets.length > 0 ? widgets[widgets.length - 1].id : "None"}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    UUIDs ensure no conflicts when adding, removing, or updating widgets.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
-              <h3
-                style={{
-                  fontSize: "20px",
-                  color: "#fff",
-                  marginBottom: "15px",
-                  paddingRight: "30px",
-                }}
-              >
-                {component.title}
-              </h3>
-              <p
-                style={{
-                  color: "#ccc",
-                  lineHeight: "1.6",
-                  marginBottom: "15px",
-                }}
-              >
-                {component.content}
-              </p>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#888",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <span>ID: {component.id.slice(0, 8)}...</span>
-                <span>{new Date(component.createdAt).toLocaleDateString()}</span>
+        <TabsContent value="settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Dashboard Settings</CardTitle>
+              <CardDescription>Configure your dashboard preferences</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Auto-refresh</h4>
+                  <p className="text-sm text-muted-foreground">Automatically refresh widget data</p>
+                </div>
+                <Button variant="outline" size="sm">
+                  Configure
+                </Button>
               </div>
-            </div>
-          ))}
-        </div>
 
-        {components.length === 0 && (
-          <div style={{ textAlign: "center", marginTop: "60px" }}>
-            <p style={{ fontSize: "18px", color: "#666", marginBottom: "20px" }}>
-              No components yet. Add your first component to get started!
-            </p>
-          </div>
-        )}
-      </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Reset Dashboard</h4>
+                  <p className="text-sm text-muted-foreground">Clear all widgets and start fresh</p>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    setWidgets([])
+                    sessionStorage.removeItem("homebase-widgets")
+                  }}
+                >
+                  Reset
+                </Button>
+              </div>
 
-      {/* Add Component Modal */}
-      {showAddModal && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.8)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 2000,
-          }}
-          onClick={() => setShowAddModal(false)}
-        >
-          <div
-            style={{
-              backgroundColor: "#2a2a2a",
-              color: "#e0e0e0",
-              padding: "40px",
-              borderRadius: "8px",
-              maxWidth: "500px",
-              width: "90%",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 style={{ fontSize: "24px", color: "#fff", marginBottom: "20px" }}>Add New Component</h3>
-            <input
-              type="text"
-              value={newComponentTitle}
-              onChange={(e) => setNewComponentTitle(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && addNewComponent()}
-              placeholder="Enter component title..."
-              style={{
-                width: "100%",
-                padding: "15px",
-                backgroundColor: "#1a1a1a",
-                color: "#e0e0e0",
-                border: "1px solid #444",
-                borderRadius: "4px",
-                fontSize: "16px",
-                marginBottom: "20px",
-              }}
-            />
-            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-              <button
-                onClick={() => setShowAddModal(false)}
-                style={{
-                  padding: "12px 24px",
-                  backgroundColor: "#6c757d",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "16px",
-                  cursor: "pointer",
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={addNewComponent}
-                style={{
-                  padding: "12px 24px",
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "16px",
-                  cursor: "pointer",
-                }}
-              >
-                Add Component
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Overlay for sidebar */}
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.3)",
-            zIndex: 998,
-          }}
-        />
-      )}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Export Data</h4>
+                  <p className="text-sm text-muted-foreground">Download dashboard configuration</p>
+                </div>
+                <Button variant="outline" size="sm">
+                  Export
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
-
-export default HomebasePage

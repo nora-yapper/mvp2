@@ -1,377 +1,415 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { v4 as uuidv4 } from "uuid"
-
-interface Report {
-  id: string
-  title: string
-  type: "financial" | "performance" | "analytics" | "compliance"
-  status: "draft" | "completed" | "scheduled" | "failed"
-  createdDate: string
-  lastModified: string
-  size: string
-  description: string
-  author: string
-}
+import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  FileText,
+  Download,
+  Search,
+  Plus,
+  Calendar,
+  User,
+  BarChart3,
+  DollarSign,
+  TrendingUp,
+  Eye,
+  Edit,
+  Trash2,
+} from "lucide-react"
+import { mockReports, type Report } from "@/lib/team-data"
 
 export default function ReportsPage() {
-  const [activeTab, setActiveTab] = useState<"all" | "financial" | "performance" | "analytics">("all")
-  const [reports, setReports] = useState<Report[]>([])
+  const [reports] = useState(mockReports)
   const [searchTerm, setSearchTerm] = useState("")
-  const [isGenerating, setIsGenerating] = useState(false)
-
-  useEffect(() => {
-    // Initialize with mock reports
-    setReports([
-      {
-        id: uuidv4(),
-        title: "Monthly Financial Summary - January 2024",
-        type: "financial",
-        status: "completed",
-        createdDate: "2024-02-01",
-        lastModified: "2024-02-01",
-        size: "2.4 MB",
-        description: "Comprehensive financial overview including revenue, expenses, and profit analysis",
-        author: "Sarah Johnson",
-      },
-      {
-        id: uuidv4(),
-        title: "Team Performance Report Q1 2024",
-        type: "performance",
-        status: "completed",
-        createdDate: "2024-01-28",
-        lastModified: "2024-01-30",
-        size: "1.8 MB",
-        description: "Detailed analysis of team productivity, task completion rates, and efficiency metrics",
-        author: "Mike Chen",
-      },
-      {
-        id: uuidv4(),
-        title: "User Analytics Dashboard Export",
-        type: "analytics",
-        status: "completed",
-        createdDate: "2024-01-25",
-        lastModified: "2024-01-25",
-        size: "3.2 MB",
-        description: "User behavior analysis, engagement metrics, and conversion funnel data",
-        author: "Emily Rodriguez",
-      },
-      {
-        id: uuidv4(),
-        title: "Compliance Audit Report 2024",
-        type: "compliance",
-        status: "draft",
-        createdDate: "2024-01-20",
-        lastModified: "2024-01-22",
-        size: "1.1 MB",
-        description: "Annual compliance review covering regulatory requirements and internal policies",
-        author: "David Kim",
-      },
-      {
-        id: uuidv4(),
-        title: "Revenue Forecast Analysis",
-        type: "financial",
-        status: "scheduled",
-        createdDate: "2024-01-15",
-        lastModified: "2024-01-15",
-        size: "0.9 MB",
-        description: "Projected revenue analysis for next quarter with scenario planning",
-        author: "Sarah Johnson",
-      },
-      {
-        id: uuidv4(),
-        title: "System Performance Metrics",
-        type: "performance",
-        status: "failed",
-        createdDate: "2024-01-10",
-        lastModified: "2024-01-10",
-        size: "0.0 MB",
-        description: "Infrastructure performance analysis and optimization recommendations",
-        author: "David Kim",
-      },
-    ])
-  }, [])
+  const [typeFilter, setTypeFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
 
   const filteredReports = reports.filter((report) => {
-    const matchesSearch =
-      report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesTab = activeTab === "all" || report.type === activeTab
-    return matchesSearch && matchesTab
+    const matchesSearch = report.title.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesType = typeFilter === "all" || report.type === typeFilter
+    const matchesStatus = statusFilter === "all" || report.status === statusFilter
+
+    return matchesSearch && matchesType && matchesStatus
   })
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: Report["status"]) => {
     switch (status) {
-      case "completed":
-        return "#10b981"
+      case "published":
+        return "bg-green-100 text-green-800"
+      case "approved":
+        return "bg-blue-100 text-blue-800"
+      case "review":
+        return "bg-yellow-100 text-yellow-800"
       case "draft":
-        return "#f59e0b"
-      case "scheduled":
-        return "#3b82f6"
-      case "failed":
-        return "#ef4444"
+        return "bg-gray-100 text-gray-800"
       default:
-        return "#6b7280"
+        return "bg-gray-100 text-gray-800"
     }
   }
 
-  const getTypeColor = (type: string) => {
+  const getTypeIcon = (type: Report["type"]) => {
     switch (type) {
       case "financial":
-        return "#059669"
+        return <DollarSign className="h-4 w-4" />
       case "performance":
-        return "#7c3aed"
+        return <TrendingUp className="h-4 w-4" />
       case "analytics":
-        return "#dc2626"
+        return <BarChart3 className="h-4 w-4" />
       case "compliance":
-        return "#ea580c"
+        return <FileText className="h-4 w-4" />
       default:
-        return "#6b7280"
+        return <FileText className="h-4 w-4" />
     }
   }
 
-  const generateNewReport = async () => {
-    setIsGenerating(true)
-    // Simulate report generation
-    await new Promise((resolve) => setTimeout(resolve, 3000))
-
-    const newReport: Report = {
-      id: uuidv4(),
-      title: `Generated Report - ${new Date().toLocaleDateString()}`,
-      type: "analytics",
-      status: "completed",
-      createdDate: new Date().toISOString().split("T")[0],
-      lastModified: new Date().toISOString().split("T")[0],
-      size: "2.1 MB",
-      description: "Auto-generated comprehensive business report with latest metrics and insights",
-      author: "System Generated",
-    }
-
-    setReports((prev) => [newReport, ...prev])
-    setIsGenerating(false)
+  const reportsByType = {
+    financial: reports.filter((r) => r.type === "financial").length,
+    performance: reports.filter((r) => r.type === "performance").length,
+    analytics: reports.filter((r) => r.type === "analytics").length,
+    compliance: reports.filter((r) => r.type === "compliance").length,
   }
 
-  const downloadReport = (reportId: string) => {
-    // Simulate download
-    const report = reports.find((r) => r.id === reportId)
-    if (report) {
-      alert(`Downloading: ${report.title}`)
-    }
-  }
-
-  const deleteReport = (reportId: string) => {
-    setReports((prev) => prev.filter((r) => r.id !== reportId))
+  const reportsByStatus = {
+    published: reports.filter((r) => r.status === "published").length,
+    approved: reports.filter((r) => r.status === "approved").length,
+    review: reports.filter((r) => r.status === "review").length,
+    draft: reports.filter((r) => r.status === "draft").length,
   }
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f8fafc", padding: "20px" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-          <div>
-            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#1f2937", marginBottom: "8px" }}>
-              Reports & Analytics
-            </h1>
-            <p style={{ color: "#6b7280", fontSize: "16px" }}>Generate, manage, and download business reports</p>
-          </div>
-          <button
-            onClick={generateNewReport}
-            disabled={isGenerating}
-            style={{
-              padding: "12px 24px",
-              backgroundColor: "#3b82f6",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "16px",
-              cursor: isGenerating ? "not-allowed" : "pointer",
-              opacity: isGenerating ? 0.6 : 1,
-            }}
-          >
-            {isGenerating ? "Generating..." : "+ Generate Report"}
-          </button>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Reports</h1>
+          <p className="text-muted-foreground">Generate, manage, and share business reports</p>
         </div>
-
-        {/* Search and Stats */}
-        <div style={{ display: "flex", gap: "20px", marginBottom: "30px", alignItems: "center" }}>
-          <input
-            type="text"
-            placeholder="Search reports..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              flex: 1,
-              maxWidth: "400px",
-              padding: "12px 16px",
-              border: "1px solid #d1d5db",
-              borderRadius: "8px",
-              fontSize: "16px",
-              backgroundColor: "white",
-            }}
-          />
-          <div style={{ display: "flex", gap: "20px" }}>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "24px", fontWeight: "bold", color: "#1f2937" }}>{reports.length}</div>
-              <div style={{ fontSize: "12px", color: "#6b7280" }}>Total Reports</div>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "24px", fontWeight: "bold", color: "#10b981" }}>
-                {reports.filter((r) => r.status === "completed").length}
-              </div>
-              <div style={{ fontSize: "12px", color: "#6b7280" }}>Completed</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div style={{ marginBottom: "30px" }}>
-          <div
-            style={{
-              display: "flex",
-              gap: "4px",
-              backgroundColor: "#f1f5f9",
-              padding: "4px",
-              borderRadius: "8px",
-              width: "fit-content",
-            }}
-          >
-            {(["all", "financial", "performance", "analytics"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "6px",
-                  border: "none",
-                  backgroundColor: activeTab === tab ? "white" : "transparent",
-                  color: activeTab === tab ? "#1f2937" : "#6b7280",
-                  fontWeight: activeTab === tab ? "600" : "400",
-                  cursor: "pointer",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Reports Grid */}
-        <div style={{ display: "grid", gap: "16px" }}>
-          {filteredReports.map((report) => (
-            <div
-              key={report.id}
-              style={{
-                backgroundColor: "white",
-                borderRadius: "12px",
-                padding: "24px",
-                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e5e7eb",
-              }}
-            >
-              <div
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "16px" }}
-              >
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-                    <h3 style={{ fontSize: "18px", fontWeight: "600", color: "#1f2937", margin: 0 }}>{report.title}</h3>
-                    <span
-                      style={{
-                        backgroundColor: getTypeColor(report.type),
-                        color: "white",
-                        padding: "2px 8px",
-                        borderRadius: "12px",
-                        fontSize: "12px",
-                        fontWeight: "500",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {report.type}
-                    </span>
-                    <span
-                      style={{
-                        backgroundColor: getStatusColor(report.status),
-                        color: "white",
-                        padding: "2px 8px",
-                        borderRadius: "12px",
-                        fontSize: "12px",
-                        fontWeight: "500",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {report.status}
-                    </span>
-                  </div>
-                  <p style={{ color: "#6b7280", fontSize: "14px", margin: "0 0 12px 0" }}>{report.description}</p>
-                  <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "#6b7280" }}>
-                    <span>By {report.author}</span>
-                    <span>Created: {new Date(report.createdDate).toLocaleDateString()}</span>
-                    <span>Size: {report.size}</span>
-                  </div>
-                </div>
-                <div style={{ display: "flex", gap: "8px", marginLeft: "16px" }}>
-                  {report.status === "completed" && (
-                    <button
-                      onClick={() => downloadReport(report.id)}
-                      style={{
-                        padding: "6px 12px",
-                        backgroundColor: "#10b981",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "6px",
-                        fontSize: "12px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Download
-                    </button>
-                  )}
-                  <button
-                    onClick={() => deleteReport(report.id)}
-                    style={{
-                      padding: "6px 12px",
-                      backgroundColor: "#ef4444",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "6px",
-                      fontSize: "12px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredReports.length === 0 && (
-          <div style={{ textAlign: "center", marginTop: "60px" }}>
-            <p style={{ fontSize: "18px", color: "#6b7280", marginBottom: "20px" }}>
-              No reports found matching your criteria
-            </p>
-            <button
-              onClick={() => {
-                setSearchTerm("")
-                setActiveTab("all")
-              }}
-              style={{
-                padding: "8px 16px",
-                backgroundColor: "#f3f4f6",
-                color: "#374151",
-                border: "none",
-                borderRadius: "6px",
-                fontSize: "14px",
-                cursor: "pointer",
-              }}
-            >
-              Clear Filters
-            </button>
-          </div>
-        )}
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Report
+        </Button>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Reports</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{reports.length}</div>
+            <p className="text-xs text-muted-foreground">+3 this month</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Published</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{reportsByStatus.published}</div>
+            <p className="text-xs text-muted-foreground">Available to stakeholders</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">In Review</CardTitle>
+            <Edit className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{reportsByStatus.review}</div>
+            <p className="text-xs text-muted-foreground">Pending approval</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Drafts</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{reportsByStatus.draft}</div>
+            <p className="text-xs text-muted-foreground">Work in progress</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="all-reports" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="all-reports">All Reports</TabsTrigger>
+          <TabsTrigger value="templates">Templates</TabsTrigger>
+          <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all-reports" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Report Library</CardTitle>
+              <CardDescription>Browse and manage all your reports</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search reports..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="financial">Financial</SelectItem>
+                    <SelectItem value="performance">Performance</SelectItem>
+                    <SelectItem value="analytics">Analytics</SelectItem>
+                    <SelectItem value="compliance">Compliance</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="review">In Review</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-4">
+                {filteredReports.map((report) => (
+                  <Card key={report.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start space-x-4 flex-1">
+                          <div className="p-2 bg-gray-100 rounded-lg">{getTypeIcon(report.type)}</div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-lg mb-1">{report.title}</h3>
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-2">
+                              <div className="flex items-center space-x-1">
+                                <User className="h-3 w-3" />
+                                <span>{report.createdBy}</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Calendar className="h-3 w-3" />
+                                <span>{new Date(report.createdDate).toLocaleDateString()}</span>
+                              </div>
+                              <span>{report.size}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Badge className={getStatusColor(report.status)}>
+                                {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+                              </Badge>
+                              <Badge variant="outline">
+                                {report.type.charAt(0).toUpperCase() + report.type.slice(1)}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+
+                {filteredReports.length === 0 && (
+                  <div className="text-center py-8">
+                    <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No reports found</h3>
+                    <p className="text-muted-foreground">Try adjusting your search or filters</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="templates" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <DollarSign className="h-5 w-5 text-green-600" />
+                  <CardTitle className="text-base">Financial Report</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Comprehensive financial analysis with revenue, expenses, and profitability metrics.
+                </p>
+                <Button size="sm" className="w-full">
+                  Use Template
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5 text-blue-600" />
+                  <CardTitle className="text-base">Performance Report</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Team and project performance analysis with KPIs and growth metrics.
+                </p>
+                <Button size="sm" className="w-full">
+                  Use Template
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <BarChart3 className="h-5 w-5 text-purple-600" />
+                  <CardTitle className="text-base">Analytics Report</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Data-driven insights with user behavior, conversion rates, and trends.
+                </p>
+                <Button size="sm" className="w-full">
+                  Use Template
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="scheduled" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Scheduled Reports</CardTitle>
+              <CardDescription>Automatically generated reports on a schedule</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <DollarSign className="h-5 w-5 text-green-600" />
+                    <div>
+                      <h4 className="font-medium">Monthly Financial Summary</h4>
+                      <p className="text-sm text-muted-foreground">Every 1st of the month at 9:00 AM</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="default">Active</Badge>
+                    <Button size="sm" variant="outline">
+                      Edit
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <TrendingUp className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <h4 className="font-medium">Weekly Performance Report</h4>
+                      <p className="text-sm text-muted-foreground">Every Monday at 8:00 AM</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="default">Active</Badge>
+                    <Button size="sm" variant="outline">
+                      Edit
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Report Usage</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span>Financial Reports</span>
+                    <span className="font-bold">{reportsByType.financial}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Performance Reports</span>
+                    <span className="font-bold">{reportsByType.performance}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Analytics Reports</span>
+                    <span className="font-bold">{reportsByType.analytics}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Compliance Reports</span>
+                    <span className="font-bold">{reportsByType.compliance}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Report Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span>Published</span>
+                    <Badge className="bg-green-100 text-green-800">{reportsByStatus.published}</Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Approved</span>
+                    <Badge className="bg-blue-100 text-blue-800">{reportsByStatus.approved}</Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>In Review</span>
+                    <Badge className="bg-yellow-100 text-yellow-800">{reportsByStatus.review}</Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Draft</span>
+                    <Badge className="bg-gray-100 text-gray-800">{reportsByStatus.draft}</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

@@ -1,589 +1,408 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { v4 as uuidv4 } from "uuid"
-
-interface ForecastData {
-  id: string
-  period: string
-  revenue: number
-  expenses: number
-  profit: number
-  growth: number
-}
-
-interface Scenario {
-  id: string
-  name: string
-  description: string
-  probability: number
-  impact: "low" | "medium" | "high"
-  revenue_multiplier: number
-  expense_multiplier: number
-}
+import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Users,
+  BarChart3,
+  Calendar,
+  Target,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+} from "lucide-react"
+import { mockForecastData } from "@/lib/team-data"
 
 export default function ForecastPage() {
-  const [activeTab, setActiveTab] = useState<"revenue" | "scenarios" | "analysis">("revenue")
-  const [forecastData, setForecastData] = useState<ForecastData[]>([])
-  const [scenarios, setScenarios] = useState<Scenario[]>([])
-  const [selectedScenario, setSelectedScenario] = useState<string>("base")
-  const [timeframe, setTimeframe] = useState<"monthly" | "quarterly" | "yearly">("monthly")
+  const [selectedTimeframe, setSelectedTimeframe] = useState("quarter")
+  const [selectedMetric, setSelectedMetric] = useState("all")
+  const [forecasts] = useState(mockForecastData)
 
-  useEffect(() => {
-    // Initialize with mock forecast data
-    const baseForecast: ForecastData[] = [
-      {
-        id: uuidv4(),
-        period: "2024-01",
-        revenue: 125000,
-        expenses: 85000,
-        profit: 40000,
-        growth: 8.5,
-      },
-      {
-        id: uuidv4(),
-        period: "2024-02",
-        revenue: 135000,
-        expenses: 88000,
-        profit: 47000,
-        growth: 8.0,
-      },
-      {
-        id: uuidv4(),
-        period: "2024-03",
-        revenue: 142000,
-        expenses: 91000,
-        profit: 51000,
-        growth: 5.2,
-      },
-      {
-        id: uuidv4(),
-        period: "2024-04",
-        revenue: 155000,
-        expenses: 95000,
-        profit: 60000,
-        growth: 9.2,
-      },
-      {
-        id: uuidv4(),
-        period: "2024-05",
-        revenue: 168000,
-        expenses: 98000,
-        profit: 70000,
-        growth: 8.4,
-      },
-      {
-        id: uuidv4(),
-        period: "2024-06",
-        revenue: 175000,
-        expenses: 102000,
-        profit: 73000,
-        growth: 4.2,
-      },
-    ]
-
-    setForecastData(baseForecast)
-
-    setScenarios([
-      {
-        id: "optimistic",
-        name: "Optimistic Scenario",
-        description: "Best case scenario with strong market conditions and successful product launches",
-        probability: 25,
-        impact: "high",
-        revenue_multiplier: 1.3,
-        expense_multiplier: 1.1,
-      },
-      {
-        id: "base",
-        name: "Base Case",
-        description: "Most likely scenario based on current trends and market conditions",
-        probability: 50,
-        impact: "medium",
-        revenue_multiplier: 1.0,
-        expense_multiplier: 1.0,
-      },
-      {
-        id: "pessimistic",
-        name: "Pessimistic Scenario",
-        description: "Conservative scenario accounting for market downturns and challenges",
-        probability: 25,
-        impact: "high",
-        revenue_multiplier: 0.7,
-        expense_multiplier: 0.95,
-      },
-    ])
-  }, [])
-
-  const getAdjustedForecast = (scenario: string) => {
-    const scenarioData = scenarios.find((s) => s.id === scenario)
-    if (!scenarioData) return forecastData
-
-    return forecastData.map((data) => ({
-      ...data,
-      revenue: Math.round(data.revenue * scenarioData.revenue_multiplier),
-      expenses: Math.round(data.expenses * scenarioData.expense_multiplier),
-      profit: Math.round(
-        data.revenue * scenarioData.revenue_multiplier - data.expenses * scenarioData.expense_multiplier,
-      ),
-    }))
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 80) return "text-green-600 bg-green-50"
+    if (confidence >= 60) return "text-yellow-600 bg-yellow-50"
+    return "text-red-600 bg-red-50"
   }
 
-  const getImpactColor = (impact: string) => {
-    switch (impact) {
-      case "high":
-        return "#dc2626"
-      case "medium":
-        return "#d97706"
-      case "low":
-        return "#65a30d"
-      default:
-        return "#6b7280"
-    }
+  const getConfidenceIcon = (confidence: number) => {
+    if (confidence >= 80) return <CheckCircle className="h-4 w-4 text-green-500" />
+    if (confidence >= 60) return <Clock className="h-4 w-4 text-yellow-500" />
+    return <AlertCircle className="h-4 w-4 text-red-500" />
   }
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 0,
-    }).format(amount)
+      maximumFractionDigits: 0,
+    }).format(value)
   }
 
-  const formatPeriod = (period: string) => {
-    const date = new Date(period + "-01")
-    return date.toLocaleDateString("en-US", { year: "numeric", month: "long" })
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat("en-US").format(value)
   }
 
-  const adjustedData = getAdjustedForecast(selectedScenario)
-  const totalRevenue = adjustedData.reduce((sum, data) => sum + data.revenue, 0)
-  const totalExpenses = adjustedData.reduce((sum, data) => sum + data.expenses, 0)
-  const totalProfit = totalRevenue - totalExpenses
-  const avgGrowth = adjustedData.reduce((sum, data) => sum + data.growth, 0) / adjustedData.length
+  const calculateGrowth = (current: number, projected: number) => {
+    return ((projected - current) / current) * 100
+  }
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f8fafc", padding: "20px" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        {/* Header */}
-        <div style={{ marginBottom: "30px" }}>
-          <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#1f2937", marginBottom: "8px" }}>
-            Business Forecast
-          </h1>
-          <p style={{ color: "#6b7280", fontSize: "16px" }}>
-            Revenue projections, scenario planning, and business analytics
-          </p>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Business Forecast</h1>
+          <p className="text-muted-foreground">Predict future performance and plan accordingly</p>
         </div>
-
-        {/* Summary Cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "20px",
-            marginBottom: "30px",
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "white",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#6b7280", margin: "0 0 8px 0" }}>
-              Total Revenue
-            </h3>
-            <div style={{ fontSize: "24px", fontWeight: "bold", color: "#10b981" }}>{formatCurrency(totalRevenue)}</div>
-          </div>
-          <div
-            style={{
-              backgroundColor: "white",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#6b7280", margin: "0 0 8px 0" }}>
-              Total Expenses
-            </h3>
-            <div style={{ fontSize: "24px", fontWeight: "bold", color: "#ef4444" }}>
-              {formatCurrency(totalExpenses)}
-            </div>
-          </div>
-          <div
-            style={{
-              backgroundColor: "white",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#6b7280", margin: "0 0 8px 0" }}>Net Profit</h3>
-            <div style={{ fontSize: "24px", fontWeight: "bold", color: totalProfit > 0 ? "#10b981" : "#ef4444" }}>
-              {formatCurrency(totalProfit)}
-            </div>
-          </div>
-          <div
-            style={{
-              backgroundColor: "white",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#6b7280", margin: "0 0 8px 0" }}>Avg Growth</h3>
-            <div style={{ fontSize: "24px", fontWeight: "bold", color: "#3b82f6" }}>{avgGrowth.toFixed(1)}%</div>
-          </div>
-        </div>
-
-        {/* Controls */}
-        <div style={{ display: "flex", gap: "20px", marginBottom: "30px", alignItems: "center" }}>
-          <div>
-            <label
-              style={{ fontSize: "14px", fontWeight: "500", color: "#374151", marginBottom: "8px", display: "block" }}
-            >
-              Scenario:
-            </label>
-            <select
-              value={selectedScenario}
-              onChange={(e) => setSelectedScenario(e.target.value)}
-              style={{
-                padding: "8px 12px",
-                border: "1px solid #d1d5db",
-                borderRadius: "6px",
-                fontSize: "14px",
-                backgroundColor: "white",
-              }}
-            >
-              {scenarios.map((scenario) => (
-                <option key={scenario.id} value={scenario.id}>
-                  {scenario.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label
-              style={{ fontSize: "14px", fontWeight: "500", color: "#374151", marginBottom: "8px", display: "block" }}
-            >
-              Timeframe:
-            </label>
-            <select
-              value={timeframe}
-              onChange={(e) => setTimeframe(e.target.value as "monthly" | "quarterly" | "yearly")}
-              style={{
-                padding: "8px 12px",
-                border: "1px solid #d1d5db",
-                borderRadius: "6px",
-                fontSize: "14px",
-                backgroundColor: "white",
-              }}
-            >
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="yearly">Yearly</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div style={{ marginBottom: "30px" }}>
-          <div
-            style={{
-              display: "flex",
-              gap: "4px",
-              backgroundColor: "#f1f5f9",
-              padding: "4px",
-              borderRadius: "8px",
-              width: "fit-content",
-            }}
-          >
-            {(["revenue", "scenarios", "analysis"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "6px",
-                  border: "none",
-                  backgroundColor: activeTab === tab ? "white" : "transparent",
-                  color: activeTab === tab ? "#1f2937" : "#6b7280",
-                  fontWeight: activeTab === tab ? "600" : "400",
-                  cursor: "pointer",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Content */}
-        {activeTab === "revenue" && (
-          <div
-            style={{
-              backgroundColor: "white",
-              borderRadius: "12px",
-              padding: "24px",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <h3 style={{ fontSize: "18px", fontWeight: "600", color: "#1f2937", marginBottom: "20px" }}>
-              Revenue Forecast - {scenarios.find((s) => s.id === selectedScenario)?.name}
-            </h3>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr style={{ borderBottom: "2px solid #e5e7eb" }}>
-                    <th
-                      style={{
-                        padding: "12px",
-                        textAlign: "left",
-                        fontSize: "14px",
-                        fontWeight: "600",
-                        color: "#374151",
-                      }}
-                    >
-                      Period
-                    </th>
-                    <th
-                      style={{
-                        padding: "12px",
-                        textAlign: "right",
-                        fontSize: "14px",
-                        fontWeight: "600",
-                        color: "#374151",
-                      }}
-                    >
-                      Revenue
-                    </th>
-                    <th
-                      style={{
-                        padding: "12px",
-                        textAlign: "right",
-                        fontSize: "14px",
-                        fontWeight: "600",
-                        color: "#374151",
-                      }}
-                    >
-                      Expenses
-                    </th>
-                    <th
-                      style={{
-                        padding: "12px",
-                        textAlign: "right",
-                        fontSize: "14px",
-                        fontWeight: "600",
-                        color: "#374151",
-                      }}
-                    >
-                      Profit
-                    </th>
-                    <th
-                      style={{
-                        padding: "12px",
-                        textAlign: "right",
-                        fontSize: "14px",
-                        fontWeight: "600",
-                        color: "#374151",
-                      }}
-                    >
-                      Growth
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {adjustedData.map((data, index) => (
-                    <tr key={data.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
-                      <td style={{ padding: "12px", fontSize: "14px", color: "#1f2937" }}>
-                        {formatPeriod(data.period)}
-                      </td>
-                      <td
-                        style={{
-                          padding: "12px",
-                          textAlign: "right",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          color: "#10b981",
-                        }}
-                      >
-                        {formatCurrency(data.revenue)}
-                      </td>
-                      <td
-                        style={{
-                          padding: "12px",
-                          textAlign: "right",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          color: "#ef4444",
-                        }}
-                      >
-                        {formatCurrency(data.expenses)}
-                      </td>
-                      <td
-                        style={{
-                          padding: "12px",
-                          textAlign: "right",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          color: data.profit > 0 ? "#10b981" : "#ef4444",
-                        }}
-                      >
-                        {formatCurrency(data.profit)}
-                      </td>
-                      <td
-                        style={{
-                          padding: "12px",
-                          textAlign: "right",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          color: "#3b82f6",
-                        }}
-                      >
-                        {data.growth.toFixed(1)}%
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "scenarios" && (
-          <div style={{ display: "grid", gap: "20px" }}>
-            {scenarios.map((scenario) => (
-              <div
-                key={scenario.id}
-                style={{
-                  backgroundColor: "white",
-                  borderRadius: "12px",
-                  padding: "24px",
-                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                  border: selectedScenario === scenario.id ? "2px solid #3b82f6" : "1px solid #e5e7eb",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "start",
-                    marginBottom: "16px",
-                  }}
-                >
-                  <div>
-                    <h3 style={{ fontSize: "20px", fontWeight: "600", color: "#1f2937", margin: "0 0 8px 0" }}>
-                      {scenario.name}
-                    </h3>
-                    <p style={{ color: "#6b7280", fontSize: "14px", margin: 0 }}>{scenario.description}</p>
-                  </div>
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <span
-                      style={{
-                        backgroundColor: getImpactColor(scenario.impact),
-                        color: "white",
-                        padding: "4px 8px",
-                        borderRadius: "12px",
-                        fontSize: "12px",
-                        fontWeight: "500",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {scenario.impact} Impact
-                    </span>
-                    <button
-                      onClick={() => setSelectedScenario(scenario.id)}
-                      style={{
-                        padding: "6px 12px",
-                        backgroundColor: selectedScenario === scenario.id ? "#3b82f6" : "#f3f4f6",
-                        color: selectedScenario === scenario.id ? "white" : "#374151",
-                        border: "none",
-                        borderRadius: "6px",
-                        fontSize: "12px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {selectedScenario === scenario.id ? "Selected" : "Select"}
-                    </button>
-                  </div>
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", textAlign: "center" }}>
-                  <div>
-                    <div style={{ fontSize: "20px", fontWeight: "bold", color: "#1f2937" }}>
-                      {scenario.probability}%
-                    </div>
-                    <div style={{ fontSize: "12px", color: "#6b7280" }}>Probability</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: "20px", fontWeight: "bold", color: "#1f2937" }}>
-                      {((scenario.revenue_multiplier - 1) * 100).toFixed(0)}%
-                    </div>
-                    <div style={{ fontSize: "12px", color: "#6b7280" }}>Revenue Impact</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: "20px", fontWeight: "bold", color: "#1f2937" }}>
-                      {((scenario.expense_multiplier - 1) * 100).toFixed(0)}%
-                    </div>
-                    <div style={{ fontSize: "12px", color: "#6b7280" }}>Expense Impact</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeTab === "analysis" && (
-          <div style={{ display: "grid", gap: "20px" }}>
-            <div
-              style={{
-                backgroundColor: "white",
-                borderRadius: "12px",
-                padding: "24px",
-                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <h3 style={{ fontSize: "18px", fontWeight: "600", color: "#1f2937", marginBottom: "16px" }}>
-                Forecast Analysis
-              </h3>
-              <div style={{ display: "grid", gap: "16px" }}>
-                <div style={{ padding: "16px", backgroundColor: "#f8fafc", borderRadius: "8px" }}>
-                  <h4 style={{ fontSize: "16px", fontWeight: "600", color: "#1f2937", margin: "0 0 8px 0" }}>
-                    Revenue Trends
-                  </h4>
-                  <p style={{ color: "#6b7280", fontSize: "14px", margin: 0 }}>
-                    Based on the current forecast, revenue shows a positive growth trend with an average monthly growth
-                    rate of {avgGrowth.toFixed(1)}%. The strongest growth is projected for April with{" "}
-                    {Math.max(...adjustedData.map((d) => d.growth)).toFixed(1)}% growth.
-                  </p>
-                </div>
-                <div style={{ padding: "16px", backgroundColor: "#f8fafc", borderRadius: "8px" }}>
-                  <h4 style={{ fontSize: "16px", fontWeight: "600", color: "#1f2937", margin: "0 0 8px 0" }}>
-                    Profitability Analysis
-                  </h4>
-                  <p style={{ color: "#6b7280", fontSize: "14px", margin: 0 }}>
-                    The profit margin is expected to improve over time, with total projected profit of{" "}
-                    {formatCurrency(totalProfit)}
-                    representing a {((totalProfit / totalRevenue) * 100).toFixed(1)}% profit margin across the forecast
-                    period.
-                  </p>
-                </div>
-                <div style={{ padding: "16px", backgroundColor: "#f8fafc", borderRadius: "8px" }}>
-                  <h4 style={{ fontSize: "16px", fontWeight: "600", color: "#1f2937", margin: "0 0 8px 0" }}>
-                    Risk Assessment
-                  </h4>
-                  <p style={{ color: "#6b7280", fontSize: "14px", margin: 0 }}>
-                    The forecast shows moderate risk with scenario planning indicating potential variations of -30% to
-                    +30% in revenue. Key risk factors include market volatility and competitive pressures.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <Button>
+          <BarChart3 className="mr-2 h-4 w-4" />
+          Generate Report
+        </Button>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Revenue Growth</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">+16%</div>
+            <p className="text-xs text-muted-foreground">Projected next quarter</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">User Growth</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">+47%</div>
+            <p className="text-xs text-muted-foreground">Projected 6 months</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg Confidence</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {Math.round(forecasts.reduce((acc, f) => acc + f.confidence, 0) / forecasts.length)}%
+            </div>
+            <p className="text-xs text-muted-foreground">Across all forecasts</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Forecasts</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{forecasts.length}</div>
+            <p className="text-xs text-muted-foreground">Currently tracking</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
+          <TabsTrigger value="models">Models</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <Select value={selectedTimeframe} onValueChange={setSelectedTimeframe}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Timeframe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="month">Next Month</SelectItem>
+                <SelectItem value="quarter">Next Quarter</SelectItem>
+                <SelectItem value="year">Next Year</SelectItem>
+                <SelectItem value="custom">Custom Range</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedMetric} onValueChange={setSelectedMetric}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Metric" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Metrics</SelectItem>
+                <SelectItem value="revenue">Revenue</SelectItem>
+                <SelectItem value="users">Users</SelectItem>
+                <SelectItem value="growth">Growth</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {forecasts.map((forecast) => {
+              const growth = calculateGrowth(forecast.currentValue, forecast.projectedValue)
+              const isRevenue = forecast.metric.toLowerCase().includes("revenue")
+
+              return (
+                <Card key={forecast.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{forecast.metric}</CardTitle>
+                      {getConfidenceIcon(forecast.confidence)}
+                    </div>
+                    <CardDescription>{forecast.timeframe}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Current</p>
+                        <p className="text-2xl font-bold">
+                          {isRevenue ? formatCurrency(forecast.currentValue) : formatNumber(forecast.currentValue)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Projected</p>
+                        <p className="text-2xl font-bold text-blue-600">
+                          {isRevenue ? formatCurrency(forecast.projectedValue) : formatNumber(forecast.projectedValue)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        {growth > 0 ? (
+                          <TrendingUp className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <TrendingDown className="h-4 w-4 text-red-500" />
+                        )}
+                        <span className={`font-medium ${growth > 0 ? "text-green-600" : "text-red-600"}`}>
+                          {growth > 0 ? "+" : ""}
+                          {growth.toFixed(1)}%
+                        </span>
+                      </div>
+
+                      <Badge className={getConfidenceColor(forecast.confidence)}>
+                        {forecast.confidence}% confidence
+                      </Badge>
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-medium mb-2">Key Factors:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {forecast.factors.map((factor, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {factor}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="scenarios" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Scenario Planning</CardTitle>
+              <CardDescription>Explore different business scenarios and their potential outcomes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="border-green-200 bg-green-50">
+                  <CardHeader>
+                    <CardTitle className="text-green-800">Best Case</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Revenue Growth</span>
+                        <span className="font-bold text-green-600">+25%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>User Growth</span>
+                        <span className="font-bold text-green-600">+60%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Probability</span>
+                        <span className="font-bold">20%</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-blue-200 bg-blue-50">
+                  <CardHeader>
+                    <CardTitle className="text-blue-800">Most Likely</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Revenue Growth</span>
+                        <span className="font-bold text-blue-600">+16%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>User Growth</span>
+                        <span className="font-bold text-blue-600">+47%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Probability</span>
+                        <span className="font-bold">60%</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-red-200 bg-red-50">
+                  <CardHeader>
+                    <CardTitle className="text-red-800">Worst Case</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Revenue Growth</span>
+                        <span className="font-bold text-red-600">+5%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>User Growth</span>
+                        <span className="font-bold text-red-600">+20%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Probability</span>
+                        <span className="font-bold">20%</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="models" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Forecasting Models</CardTitle>
+              <CardDescription>Configure and manage your forecasting models</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Linear Regression</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span>Accuracy</span>
+                          <Badge>85%</Badge>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Status</span>
+                          <Badge variant="default">Active</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">Best for stable, predictable trends</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Time Series</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span>Accuracy</span>
+                          <Badge>78%</Badge>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Status</span>
+                          <Badge variant="secondary">Testing</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">Accounts for seasonal patterns</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Forecast Settings</CardTitle>
+              <CardDescription>Configure your forecasting preferences</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="update-frequency">Update Frequency</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select frequency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confidence-threshold">Confidence Threshold</Label>
+                  <Input type="number" placeholder="80" min="0" max="100" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="forecast-horizon">Forecast Horizon</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select horizon" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="3months">3 Months</SelectItem>
+                      <SelectItem value="6months">6 Months</SelectItem>
+                      <SelectItem value="1year">1 Year</SelectItem>
+                      <SelectItem value="2years">2 Years</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="alert-threshold">Alert Threshold</Label>
+                  <Input type="number" placeholder="10" min="0" max="100" />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline">Reset</Button>
+                <Button>Save Settings</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

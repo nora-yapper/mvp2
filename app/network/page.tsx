@@ -1,433 +1,442 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { v4 as uuidv4 } from "uuid"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
-import { UserPlus, Mail, Phone, MapPin, Search } from "lucide-react"
-
-interface Contact {
-  id: string
-  name: string
-  title: string
-  company: string
-  email: string
-  phone: string
-  category: "investor" | "mentor" | "partner" | "customer" | "vendor" | "other"
-  status: "active" | "inactive" | "pending"
-  lastContact: string
-  notes: string
-  tags: string[]
-  linkedinUrl?: string
-}
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Users,
+  Search,
+  Plus,
+  Mail,
+  Phone,
+  Building,
+  Calendar,
+  MessageCircle,
+  UserPlus,
+  TrendingUp,
+  Heart,
+  Briefcase,
+} from "lucide-react"
+import { mockNetworkContacts, type NetworkContact } from "@/lib/team-data"
 
 export default function NetworkPage() {
-  const [activeTab, setActiveTab] = useState<"all" | "investor" | "mentor" | "partner">("all")
-  const [contacts, setContacts] = useState<Contact[]>([])
+  const [contacts] = useState(mockNetworkContacts)
   const [searchTerm, setSearchTerm] = useState("")
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [newContact, setNewContact] = useState<Partial<Contact>>({})
-
-  useEffect(() => {
-    // Initialize with mock contacts
-    setContacts([
-      {
-        id: uuidv4(),
-        name: "Alex Thompson",
-        title: "Senior Partner",
-        company: "Venture Capital Partners",
-        email: "alex@vcpartners.com",
-        phone: "+1 (555) 123-4567",
-        category: "investor",
-        status: "active",
-        lastContact: "2024-01-28",
-        notes: "Interested in Series A funding. Follow up on term sheet discussion.",
-        tags: ["Series A", "SaaS", "Enterprise"],
-        linkedinUrl: "https://linkedin.com/in/alexthompson",
-      },
-      {
-        id: uuidv4(),
-        name: "Maria Rodriguez",
-        title: "Former CEO",
-        company: "TechStart Inc",
-        email: "maria@techstart.com",
-        phone: "+1 (555) 234-5678",
-        category: "mentor",
-        status: "active",
-        lastContact: "2024-01-25",
-        notes: "Providing guidance on scaling operations and team building.",
-        tags: ["Operations", "Leadership", "Scaling"],
-        linkedinUrl: "https://linkedin.com/in/mariarodriguez",
-      },
-      {
-        id: uuidv4(),
-        name: "David Chen",
-        title: "CTO",
-        company: "Integration Solutions",
-        email: "david@intsolutions.com",
-        phone: "+1 (555) 345-6789",
-        category: "partner",
-        status: "active",
-        lastContact: "2024-01-22",
-        notes: "Discussing API integration partnership for Q2 launch.",
-        tags: ["API", "Integration", "Partnership"],
-        linkedinUrl: "https://linkedin.com/in/davidchen",
-      },
-      {
-        id: uuidv4(),
-        name: "Sarah Kim",
-        title: "VP of Sales",
-        company: "Enterprise Corp",
-        email: "sarah@enterprise.com",
-        phone: "+1 (555) 456-7890",
-        category: "customer",
-        status: "pending",
-        lastContact: "2024-01-20",
-        notes: "Evaluating our platform for enterprise deployment.",
-        tags: ["Enterprise", "Sales", "Evaluation"],
-      },
-      {
-        id: uuidv4(),
-        name: "Michael Brown",
-        title: "Founder",
-        company: "Cloud Services Ltd",
-        email: "michael@cloudservices.com",
-        phone: "+1 (555) 567-8901",
-        category: "vendor",
-        status: "active",
-        lastContact: "2024-01-18",
-        notes: "Providing cloud infrastructure services. Negotiating new contract.",
-        tags: ["Cloud", "Infrastructure", "Contract"],
-      },
-      {
-        id: uuidv4(),
-        name: "Jennifer Wilson",
-        title: "Product Manager",
-        company: "Innovation Labs",
-        email: "jennifer@innovationlabs.com",
-        phone: "+1 (555) 678-9012",
-        category: "other",
-        status: "inactive",
-        lastContact: "2023-12-15",
-        notes: "Former colleague. Potential collaboration opportunities.",
-        tags: ["Product", "Collaboration", "Former Colleague"],
-      },
-    ])
-  }, [])
+  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [relationshipFilter, setRelationshipFilter] = useState("all")
 
   const filteredContacts = contacts.filter((contact) => {
     const matchesSearch =
       contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contact.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.title.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesTab = activeTab === "all" || contact.category === activeTab
-    return matchesSearch && matchesTab
+      contact.position.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = categoryFilter === "all" || contact.category === categoryFilter
+    const matchesRelationship = relationshipFilter === "all" || contact.relationship === relationshipFilter
+
+    return matchesSearch && matchesCategory && matchesRelationship
   })
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = (category: NetworkContact["category"]) => {
     switch (category) {
       case "investor":
-        return "#dc2626"
+        return "bg-green-100 text-green-800"
       case "mentor":
-        return "#7c3aed"
+        return "bg-blue-100 text-blue-800"
       case "partner":
-        return "#059669"
+        return "bg-purple-100 text-purple-800"
       case "customer":
-        return "#ea580c"
+        return "bg-orange-100 text-orange-800"
       case "vendor":
-        return "#0891b2"
+        return "bg-gray-100 text-gray-800"
+      case "advisor":
+        return "bg-yellow-100 text-yellow-800"
       default:
-        return "#6b7280"
+        return "bg-gray-100 text-gray-800"
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "#10b981"
-      case "pending":
-        return "#f59e0b"
-      case "inactive":
-        return "#6b7280"
+  const getRelationshipIcon = (relationship: NetworkContact["relationship"]) => {
+    switch (relationship) {
+      case "strong":
+        return <Heart className="h-4 w-4 text-red-500" />
+      case "medium":
+        return <TrendingUp className="h-4 w-4 text-yellow-500" />
+      case "weak":
+        return <Users className="h-4 w-4 text-gray-500" />
+    }
+  }
+
+  const getCategoryIcon = (category: NetworkContact["category"]) => {
+    switch (category) {
+      case "investor":
+        return <TrendingUp className="h-4 w-4" />
+      case "mentor":
+        return <Users className="h-4 w-4" />
+      case "partner":
+        return <Briefcase className="h-4 w-4" />
+      case "customer":
+        return <Heart className="h-4 w-4" />
+      case "vendor":
+        return <Building className="h-4 w-4" />
+      case "advisor":
+        return <UserPlus className="h-4 w-4" />
       default:
-        return "#6b7280"
+        return <Users className="h-4 w-4" />
     }
   }
 
-  const addNewContact = () => {
-    if (newContact.name && newContact.email) {
-      const contact: Contact = {
-        id: uuidv4(),
-        name: newContact.name || "",
-        title: newContact.title || "",
-        company: newContact.company || "",
-        email: newContact.email || "",
-        phone: newContact.phone || "",
-        category: newContact.category || "other",
-        status: "active",
-        lastContact: new Date().toISOString().split("T")[0],
-        notes: newContact.notes || "",
-        tags: [],
-        linkedinUrl: newContact.linkedinUrl,
-      }
-
-      setContacts((prev) => [contact, ...prev])
-      setNewContact({})
-      setShowAddModal(false)
-    }
+  const contactsByCategory = {
+    investor: contacts.filter((c) => c.category === "investor").length,
+    mentor: contacts.filter((c) => c.category === "mentor").length,
+    partner: contacts.filter((c) => c.category === "partner").length,
+    customer: contacts.filter((c) => c.category === "customer").length,
+    vendor: contacts.filter((c) => c.category === "vendor").length,
+    advisor: contacts.filter((c) => c.category === "advisor").length,
   }
 
-  const deleteContact = (contactId: string) => {
-    setContacts((prev) => prev.filter((c) => c.id !== contactId))
+  const contactsByRelationship = {
+    strong: contacts.filter((c) => c.relationship === "strong").length,
+    medium: contacts.filter((c) => c.relationship === "medium").length,
+    weak: contacts.filter((c) => c.relationship === "weak").length,
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Professional Network</h1>
-              <p className="text-gray-600 mt-2">Manage your professional contacts and relationships</p>
-            </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 bg-blue-500 text-white rounded px-4 py-2"
-            >
-              <UserPlus className="h-4 w-4" />
-              Add Contact
-            </button>
-          </div>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Professional Network</h1>
+          <p className="text-muted-foreground">Manage your professional contacts and relationships</p>
         </div>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Contact
+        </Button>
+      </div>
 
-        {/* Search and Stats */}
-        <div className="mb-8">
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Search contacts..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Contacts</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{contacts.length}</div>
+            <p className="text-xs text-muted-foreground">+5 this month</p>
+          </CardContent>
+        </Card>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{contacts.length}</div>
-                  <p className="text-sm text-gray-600">Total Contacts</p>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Strong Relationships</CardTitle>
+            <Heart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{contactsByRelationship.strong}</div>
+            <p className="text-xs text-muted-foreground">Key connections</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Investors</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{contactsByCategory.investor}</div>
+            <p className="text-xs text-muted-foreground">Funding opportunities</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">12</div>
+            <p className="text-xs text-muted-foreground">Interactions this week</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="contacts" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="contacts">All Contacts</TabsTrigger>
+          <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsTrigger value="insights">Insights</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="contacts" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Directory</CardTitle>
+              <CardDescription>Browse and manage your professional network</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search contacts..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-500">
-                    {contacts.filter((c) => c.status === "active").length}
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="investor">Investor</SelectItem>
+                    <SelectItem value="mentor">Mentor</SelectItem>
+                    <SelectItem value="partner">Partner</SelectItem>
+                    <SelectItem value="customer">Customer</SelectItem>
+                    <SelectItem value="vendor">Vendor</SelectItem>
+                    <SelectItem value="advisor">Advisor</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={relationshipFilter} onValueChange={setRelationshipFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Relationship" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Relationships</SelectItem>
+                    <SelectItem value="strong">Strong</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="weak">Weak</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredContacts.map((contact) => (
+                  <Card key={contact.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center space-x-3">
+                        <Avatar>
+                          <AvatarImage src="/placeholder-user.jpg" alt={contact.name} />
+                          <AvatarFallback>
+                            {contact.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold truncate">{contact.name}</h3>
+                          <p className="text-sm text-muted-foreground truncate">{contact.position}</p>
+                          <p className="text-sm text-muted-foreground truncate">{contact.company}</p>
+                        </div>
+                        {getRelationshipIcon(contact.relationship)}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Badge className={getCategoryColor(contact.category)}>
+                          {contact.category.charAt(0).toUpperCase() + contact.category.slice(1)}
+                        </Badge>
+                        <Badge variant="outline">
+                          {contact.relationship.charAt(0).toUpperCase() + contact.relationship.slice(1)}
+                        </Badge>
+                      </div>
+
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <Mail className="h-3 w-3" />
+                          <span className="truncate">{contact.email}</span>
+                        </div>
+                        {contact.phone && (
+                          <div className="flex items-center space-x-2">
+                            <Phone className="h-3 w-3" />
+                            <span>{contact.phone}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center space-x-2">
+                          <Calendar className="h-3 w-3" />
+                          <span>Last contact: {new Date(contact.lastContact).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+
+                      {contact.notes && (
+                        <div className="text-sm bg-gray-50 p-2 rounded">
+                          <p className="text-muted-foreground line-clamp-2">{contact.notes}</p>
+                        </div>
+                      )}
+
+                      <div className="flex space-x-2 pt-2">
+                        <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                          <Mail className="h-3 w-3 mr-1" />
+                          Email
+                        </Button>
+                        <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                          <MessageCircle className="h-3 w-3 mr-1" />
+                          Message
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {filteredContacts.length === 0 && (
+                <div className="text-center py-8">
+                  <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No contacts found</h3>
+                  <p className="text-muted-foreground">Try adjusting your search or filters</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="categories" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(contactsByCategory).map(([category, count]) => (
+              <Card key={category} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex items-center space-x-2">
+                    {getCategoryIcon(category as NetworkContact["category"])}
+                    <CardTitle className="text-base capitalize">{category}</CardTitle>
                   </div>
-                  <p className="text-sm text-gray-600">Active</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="mb-8">
-          <div className="flex gap-4 bg-gray-100 p-2 rounded">
-            {(["all", "investor", "mentor", "partner"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded ${activeTab === tab ? "bg-white text-gray-900 font-semibold" : "bg-gray-100 text-gray-600"}`}
-              >
-                {tab}
-              </button>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold mb-2">{count}</div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {category === "investor" && "Funding and investment opportunities"}
+                    {category === "mentor" && "Guidance and strategic advice"}
+                    {category === "partner" && "Business partnerships and collaborations"}
+                    {category === "customer" && "Client relationships and feedback"}
+                    {category === "vendor" && "Service providers and suppliers"}
+                    {category === "advisor" && "Expert advice and consultation"}
+                  </p>
+                  <Button size="sm" variant="outline" className="w-full bg-transparent">
+                    View {category}s
+                  </Button>
+                </CardContent>
+              </Card>
             ))}
           </div>
-        </div>
+        </TabsContent>
 
-        {/* Contacts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredContacts.map((contact) => (
-            <Card key={contact.id} className="hover:shadow-lg transition-shadow relative">
-              <button onClick={() => deleteContact(contact.id)} className="absolute top-4 right-4 text-red-500">
-                ×
-              </button>
-
-              <CardHeader className="pb-4">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={contact.avatar || "/placeholder.svg"} alt={contact.name} />
-                    <AvatarFallback>
-                      {contact.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
+        <TabsContent value="activity" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>Your latest interactions and network updates</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3 p-3 border rounded-lg">
+                  <Mail className="h-5 w-5 text-blue-500 mt-0.5" />
                   <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{contact.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      {contact.title} at {contact.company}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge className={`bg-${getCategoryColor(contact.category).replace("#", "")} text-white`}>
-                        {contact.category}
-                      </Badge>
-                      {contact.tags.slice(0, 2).map((tag) => (
-                        <Badge key={tag} className="bg-gray-100 text-gray-800 text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
+                    <h4 className="font-medium">Email sent to David Kim</h4>
+                    <p className="text-sm text-muted-foreground">Follow-up on Series A funding discussion</p>
+                    <p className="text-xs text-muted-foreground mt-1">2 hours ago</p>
                   </div>
                 </div>
+
+                <div className="flex items-start space-x-3 p-3 border rounded-lg">
+                  <Calendar className="h-5 w-5 text-green-500 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="font-medium">Meeting scheduled with Lisa Wang</h4>
+                    <p className="text-sm text-muted-foreground">Monthly mentorship session</p>
+                    <p className="text-xs text-muted-foreground mt-1">1 day ago</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3 p-3 border rounded-lg">
+                  <UserPlus className="h-5 w-5 text-purple-500 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="font-medium">New contact added</h4>
+                    <p className="text-sm text-muted-foreground">Connected with Sarah Johnson from TechCorp</p>
+                    <p className="text-xs text-muted-foreground mt-1">3 days ago</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="insights" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Network Health</CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-3">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Mail className="h-4 w-4 mr-2" />
-                    {contact.email}
-                  </div>
-                  {contact.phone && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Phone className="h-4 w-4 mr-2" />
-                      {contact.phone}
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span>Strong Relationships</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-20 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-green-500 h-2 rounded-full"
+                          style={{ width: `${(contactsByRelationship.strong / contacts.length) * 100}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm font-medium">{contactsByRelationship.strong}</span>
                     </div>
-                  )}
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    {contact.lastContact}
                   </div>
-                </div>
-                {contact.notes && (
-                  <div className="mt-4">
-                    <p className="text-sm italic text-gray-600">{contact.notes}</p>
+                  <div className="flex justify-between items-center">
+                    <span>Medium Relationships</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-20 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-yellow-500 h-2 rounded-full"
+                          style={{ width: `${(contactsByRelationship.medium / contacts.length) * 100}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm font-medium">{contactsByRelationship.medium}</span>
+                    </div>
                   </div>
-                )}
-                <div className="flex gap-2 mt-4">
-                  <Button variant="outline" size="sm" className="flex-1 bg-transparent">
-                    <Mail className="h-4 w-4 mr-1" />
-                    Email
-                  </Button>
-                  {contact.linkedinUrl && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 bg-blue-500 text-white"
-                      onClick={() => window.open(contact.linkedinUrl, "_blank")}
-                    >
-                      LinkedIn
-                    </Button>
-                  )}
+                  <div className="flex justify-between items-center">
+                    <span>Weak Relationships</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-20 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-gray-500 h-2 rounded-full"
+                          style={{ width: `${(contactsByRelationship.weak / contacts.length) * 100}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm font-medium">{contactsByRelationship.weak}</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
 
-        {filteredContacts.length === 0 && (
-          <div className="text-center mt-6">
-            <p className="text-lg text-gray-600 mb-4">No contacts found matching your criteria</p>
-            <Button
-              onClick={() => {
-                setSearchTerm("")
-                setActiveTab("all")
-              }}
-              className="bg-gray-100 text-gray-800 rounded px-4 py-2"
-            >
-              Clear Filters
-            </Button>
+            <Card>
+              <CardHeader>
+                <CardTitle>Networking Goals</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <h4 className="font-medium text-blue-800">Connect with 5 new investors</h4>
+                    <p className="text-sm text-blue-600">Progress: 2/5 completed</p>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <h4 className="font-medium text-green-800">Schedule monthly mentor meetings</h4>
+                    <p className="text-sm text-green-600">On track for this month</p>
+                  </div>
+                  <div className="p-3 bg-yellow-50 rounded-lg">
+                    <h4 className="font-medium text-yellow-800">Strengthen weak relationships</h4>
+                    <p className="text-sm text-yellow-600">3 contacts need follow-up</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        )}
-
-        {/* Add Contact Modal */}
-        {showAddModal && (
-          <div
-            className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-80 flex items-center justify-center z-50"
-            onClick={() => setShowAddModal(false)}
-          >
-            <div
-              className="bg-white p-8 rounded max-w-md w-full max-h-screen overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-2xl font-bold text-gray-900 mb-8">Add New Contact</h3>
-
-              <div className="space-y-4">
-                <Input
-                  placeholder="Full Name *"
-                  value={newContact.name || ""}
-                  onChange={(e) => setNewContact((prev) => ({ ...prev, name: e.target.value }))}
-                  className="border border-gray-300 rounded px-4 py-2"
-                />
-                <Input
-                  placeholder="Job Title"
-                  value={newContact.title || ""}
-                  onChange={(e) => setNewContact((prev) => ({ ...prev, title: e.target.value }))}
-                  className="border border-gray-300 rounded px-4 py-2"
-                />
-                <Input
-                  placeholder="Company"
-                  value={newContact.company || ""}
-                  onChange={(e) => setNewContact((prev) => ({ ...prev, company: e.target.value }))}
-                  className="border border-gray-300 rounded px-4 py-2"
-                />
-                <Input
-                  type="email"
-                  placeholder="Email Address *"
-                  value={newContact.email || ""}
-                  onChange={(e) => setNewContact((prev) => ({ ...prev, email: e.target.value }))}
-                  className="border border-gray-300 rounded px-4 py-2"
-                />
-                <Input
-                  type="tel"
-                  placeholder="Phone Number"
-                  value={newContact.phone || ""}
-                  onChange={(e) => setNewContact((prev) => ({ ...prev, phone: e.target.value }))}
-                  className="border border-gray-300 rounded px-4 py-2"
-                />
-                <select
-                  value={newContact.category || "other"}
-                  onChange={(e) =>
-                    setNewContact((prev) => ({ ...prev, category: e.target.value as Contact["category"] }))
-                  }
-                  className="border border-gray-300 rounded px-4 py-2"
-                >
-                  <option value="investor">Investor</option>
-                  <option value="mentor">Mentor</option>
-                  <option value="partner">Partner</option>
-                  <option value="customer">Customer</option>
-                  <option value="vendor">Vendor</option>
-                  <option value="other">Other</option>
-                </select>
-                <textarea
-                  placeholder="Notes"
-                  value={newContact.notes || ""}
-                  onChange={(e) => setNewContact((prev) => ({ ...prev, notes: e.target.value }))}
-                  rows={3}
-                  className="border border-gray-300 rounded px-4 py-2 resize-y"
-                />
-              </div>
-
-              <div className="flex gap-4 mt-8 justify-end">
-                <Button onClick={() => setShowAddModal(false)} className="bg-gray-100 text-gray-800 rounded px-4 py-2">
-                  Cancel
-                </Button>
-                <Button onClick={addNewContact} className="bg-blue-500 text-white rounded px-4 py-2">
-                  Add Contact
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

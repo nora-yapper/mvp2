@@ -1,438 +1,259 @@
 "use client"
 
 import { useState } from "react"
-import { mockTeamMembers, mockProjects, mockTasks, type TeamMember, type Project, type Task } from "@/lib/team-data"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Progress } from "@/components/ui/progress"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Users, Search, Filter, TrendingUp, TrendingDown, Minus, Mail, Calendar, Award } from "lucide-react"
+import { mockTeamMembers, mockProjects, getProjectsByTeamMember, type TeamMember } from "@/lib/team-data"
 
 export default function TeamPage() {
-  const [activeTab, setActiveTab] = useState<"members" | "projects" | "analytics">("members")
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(mockTeamMembers)
-  const [projects, setProjects] = useState<Project[]>(mockProjects)
-  const [tasks, setTasks] = useState<Task[]>(mockTasks)
   const [searchTerm, setSearchTerm] = useState("")
+  const [departmentFilter, setDepartmentFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
 
-  const filteredMembers = teamMembers.filter(
-    (member) =>
+  const filteredMembers = mockTeamMembers.filter((member) => {
+    const matchesSearch =
       member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.role.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      member.role.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesDepartment = departmentFilter === "all" || member.department === departmentFilter
+    const matchesStatus = statusFilter === "all" || member.status === statusFilter
 
-  const getStatusColor = (status: string) => {
+    return matchesSearch && matchesDepartment && matchesStatus
+  })
+
+  const getStatusColor = (status: TeamMember["status"]) => {
     switch (status) {
       case "active":
-        return "#10b981"
+        return "bg-green-500"
       case "away":
-        return "#f59e0b"
-      case "inactive":
-        return "#ef4444"
+        return "bg-yellow-500"
+      case "busy":
+        return "bg-red-500"
+      case "offline":
+        return "bg-gray-500"
       default:
-        return "#6b7280"
+        return "bg-gray-500"
     }
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "critical":
-        return "#dc2626"
-      case "high":
-        return "#ea580c"
-      case "medium":
-        return "#d97706"
-      case "low":
-        return "#65a30d"
-      default:
-        return "#6b7280"
+  const getTrendIcon = (trend: "up" | "down" | "stable") => {
+    switch (trend) {
+      case "up":
+        return <TrendingUp className="h-4 w-4 text-green-500" />
+      case "down":
+        return <TrendingDown className="h-4 w-4 text-red-500" />
+      case "stable":
+        return <Minus className="h-4 w-4 text-gray-500" />
     }
   }
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f8fafc", padding: "20px" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        {/* Header */}
-        <div style={{ marginBottom: "30px" }}>
-          <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#1f2937", marginBottom: "8px" }}>
-            Team Management
-          </h1>
-          <p style={{ color: "#6b7280", fontSize: "16px" }}>
-            Manage your team members, projects, and track performance
-          </p>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Team Management</h1>
+          <p className="text-muted-foreground">Manage your team members and track performance</p>
         </div>
-
-        {/* Search Bar */}
-        <div style={{ marginBottom: "30px" }}>
-          <input
-            type="text"
-            placeholder="Search team members..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              padding: "12px 16px",
-              border: "1px solid #d1d5db",
-              borderRadius: "8px",
-              fontSize: "16px",
-              backgroundColor: "white",
-            }}
-          />
-        </div>
-
-        {/* Tabs */}
-        <div style={{ marginBottom: "30px" }}>
-          <div
-            style={{
-              display: "flex",
-              gap: "4px",
-              backgroundColor: "#f1f5f9",
-              padding: "4px",
-              borderRadius: "8px",
-              width: "fit-content",
-            }}
-          >
-            {(["members", "projects", "analytics"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "6px",
-                  border: "none",
-                  backgroundColor: activeTab === tab ? "white" : "transparent",
-                  color: activeTab === tab ? "#1f2937" : "#6b7280",
-                  fontWeight: activeTab === tab ? "600" : "400",
-                  cursor: "pointer",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Content */}
-        {activeTab === "members" && (
-          <div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px" }}>
-              {filteredMembers.map((member) => (
-                <div
-                  key={member.id}
-                  style={{
-                    backgroundColor: "white",
-                    borderRadius: "12px",
-                    padding: "24px",
-                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #e5e7eb",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
-                    <div
-                      style={{
-                        width: "48px",
-                        height: "48px",
-                        borderRadius: "50%",
-                        backgroundColor: "#e5e7eb",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginRight: "12px",
-                        fontSize: "20px",
-                        fontWeight: "bold",
-                        color: "#6b7280",
-                      }}
-                    >
-                      {member.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ fontSize: "18px", fontWeight: "600", color: "#1f2937", margin: 0 }}>
-                        {member.name}
-                      </h3>
-                      <p style={{ color: "#6b7280", fontSize: "14px", margin: 0 }}>{member.role}</p>
-                    </div>
-                    <div
-                      style={{
-                        width: "12px",
-                        height: "12px",
-                        borderRadius: "50%",
-                        backgroundColor: getStatusColor(member.status),
-                      }}
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: "16px" }}>
-                    <p style={{ fontSize: "14px", color: "#6b7280", marginBottom: "8px" }}>Skills:</p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                      {member.skills.map((skill) => (
-                        <span
-                          key={skill}
-                          style={{
-                            backgroundColor: "#f3f4f6",
-                            color: "#374151",
-                            padding: "2px 8px",
-                            borderRadius: "12px",
-                            fontSize: "12px",
-                          }}
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div
-                    style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", textAlign: "center" }}
-                  >
-                    <div>
-                      <div style={{ fontSize: "20px", fontWeight: "bold", color: "#1f2937" }}>
-                        {member.performance.tasksCompleted}
-                      </div>
-                      <div style={{ fontSize: "12px", color: "#6b7280" }}>Completed</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: "20px", fontWeight: "bold", color: "#1f2937" }}>
-                        {member.performance.tasksInProgress}
-                      </div>
-                      <div style={{ fontSize: "12px", color: "#6b7280" }}>In Progress</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: "20px", fontWeight: "bold", color: "#1f2937" }}>
-                        {member.performance.efficiency}%
-                      </div>
-                      <div style={{ fontSize: "12px", color: "#6b7280" }}>Efficiency</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === "projects" && (
-          <div>
-            <div style={{ display: "grid", gap: "16px" }}>
-              {projects.map((project) => (
-                <div
-                  key={project.id}
-                  style={{
-                    backgroundColor: "white",
-                    borderRadius: "12px",
-                    padding: "24px",
-                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #e5e7eb",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "start",
-                      marginBottom: "16px",
-                    }}
-                  >
-                    <div>
-                      <h3 style={{ fontSize: "20px", fontWeight: "600", color: "#1f2937", margin: "0 0 8px 0" }}>
-                        {project.name}
-                      </h3>
-                      <p style={{ color: "#6b7280", fontSize: "14px", margin: 0 }}>{project.description}</p>
-                    </div>
-                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                      <span
-                        style={{
-                          backgroundColor: getPriorityColor(project.priority),
-                          color: "white",
-                          padding: "4px 8px",
-                          borderRadius: "12px",
-                          fontSize: "12px",
-                          fontWeight: "500",
-                          textTransform: "capitalize",
-                        }}
-                      >
-                        {project.priority}
-                      </span>
-                      <span
-                        style={{
-                          backgroundColor:
-                            project.status === "completed"
-                              ? "#10b981"
-                              : project.status === "in-progress"
-                                ? "#3b82f6"
-                                : "#6b7280",
-                          color: "white",
-                          padding: "4px 8px",
-                          borderRadius: "12px",
-                          fontSize: "12px",
-                          fontWeight: "500",
-                          textTransform: "capitalize",
-                        }}
-                      >
-                        {project.status.replace("-", " ")}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style={{ marginBottom: "16px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                      <span style={{ fontSize: "14px", color: "#6b7280" }}>Progress</span>
-                      <span style={{ fontSize: "14px", fontWeight: "500", color: "#1f2937" }}>{project.progress}%</span>
-                    </div>
-                    <div style={{ width: "100%", height: "8px", backgroundColor: "#f3f4f6", borderRadius: "4px" }}>
-                      <div
-                        style={{
-                          width: `${project.progress}%`,
-                          height: "100%",
-                          backgroundColor: "#3b82f6",
-                          borderRadius: "4px",
-                          transition: "width 0.3s ease",
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div
-                    style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", textAlign: "center" }}
-                  >
-                    <div>
-                      <div style={{ fontSize: "16px", fontWeight: "bold", color: "#1f2937" }}>
-                        ${project.budget.toLocaleString()}
-                      </div>
-                      <div style={{ fontSize: "12px", color: "#6b7280" }}>Budget</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: "16px", fontWeight: "bold", color: "#1f2937" }}>
-                        ${project.spent.toLocaleString()}
-                      </div>
-                      <div style={{ fontSize: "12px", color: "#6b7280" }}>Spent</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: "16px", fontWeight: "bold", color: "#1f2937" }}>
-                        {project.teamMembers.length}
-                      </div>
-                      <div style={{ fontSize: "12px", color: "#6b7280" }}>Team Members</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === "analytics" && (
-          <div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                gap: "20px",
-                marginBottom: "30px",
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: "white",
-                  borderRadius: "12px",
-                  padding: "24px",
-                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                <h3 style={{ fontSize: "16px", fontWeight: "600", color: "#6b7280", margin: "0 0 8px 0" }}>
-                  Total Team Members
-                </h3>
-                <div style={{ fontSize: "32px", fontWeight: "bold", color: "#1f2937" }}>{teamMembers.length}</div>
-              </div>
-              <div
-                style={{
-                  backgroundColor: "white",
-                  borderRadius: "12px",
-                  padding: "24px",
-                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                <h3 style={{ fontSize: "16px", fontWeight: "600", color: "#6b7280", margin: "0 0 8px 0" }}>
-                  Active Projects
-                </h3>
-                <div style={{ fontSize: "32px", fontWeight: "bold", color: "#1f2937" }}>
-                  {projects.filter((p) => p.status === "in-progress").length}
-                </div>
-              </div>
-              <div
-                style={{
-                  backgroundColor: "white",
-                  borderRadius: "12px",
-                  padding: "24px",
-                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                <h3 style={{ fontSize: "16px", fontWeight: "600", color: "#6b7280", margin: "0 0 8px 0" }}>
-                  Completed Tasks
-                </h3>
-                <div style={{ fontSize: "32px", fontWeight: "bold", color: "#1f2937" }}>
-                  {tasks.filter((t) => t.status === "completed").length}
-                </div>
-              </div>
-              <div
-                style={{
-                  backgroundColor: "white",
-                  borderRadius: "12px",
-                  padding: "24px",
-                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                <h3 style={{ fontSize: "16px", fontWeight: "600", color: "#6b7280", margin: "0 0 8px 0" }}>
-                  Team Efficiency
-                </h3>
-                <div style={{ fontSize: "32px", fontWeight: "bold", color: "#1f2937" }}>
-                  {Math.round(teamMembers.reduce((sum, m) => sum + m.performance.efficiency, 0) / teamMembers.length)}%
-                </div>
-              </div>
-            </div>
-
-            <div
-              style={{
-                backgroundColor: "white",
-                borderRadius: "12px",
-                padding: "24px",
-                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <h3 style={{ fontSize: "18px", fontWeight: "600", color: "#1f2937", marginBottom: "16px" }}>
-                Team Performance Overview
-              </h3>
-              <div style={{ display: "grid", gap: "12px" }}>
-                {teamMembers.map((member) => (
-                  <div key={member.id} style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    <div style={{ minWidth: "150px", fontSize: "14px", fontWeight: "500", color: "#1f2937" }}>
-                      {member.name}
-                    </div>
-                    <div style={{ flex: 1, height: "8px", backgroundColor: "#f3f4f6", borderRadius: "4px" }}>
-                      <div
-                        style={{
-                          width: `${member.performance.efficiency}%`,
-                          height: "100%",
-                          backgroundColor: "#10b981",
-                          borderRadius: "4px",
-                        }}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        minWidth: "50px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        color: "#1f2937",
-                        textAlign: "right",
-                      }}
-                    >
-                      {member.performance.efficiency}%
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+        <Button>
+          <Users className="mr-2 h-4 w-4" />
+          Add Member
+        </Button>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Members</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{mockTeamMembers.length}</div>
+            <p className="text-xs text-muted-foreground">+2 from last month</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
+            <Award className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{mockProjects.filter((p) => p.status === "active").length}</div>
+            <p className="text-xs text-muted-foreground">2 completing this month</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg Performance</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {Math.round(
+                mockTeamMembers.reduce((acc, member) => acc + member.performance.score, 0) / mockTeamMembers.length,
+              )}
+              %
+            </div>
+            <p className="text-xs text-muted-foreground">+5% from last quarter</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Departments</CardTitle>
+            <Filter className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{new Set(mockTeamMembers.map((m) => m.department)).size}</div>
+            <p className="text-xs text-muted-foreground">Across the organization</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Team Members</CardTitle>
+          <CardDescription>View and manage your team members</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search members..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Department" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Departments</SelectItem>
+                <SelectItem value="Product">Product</SelectItem>
+                <SelectItem value="Engineering">Engineering</SelectItem>
+                <SelectItem value="Design">Design</SelectItem>
+                <SelectItem value="Marketing">Marketing</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="away">Away</SelectItem>
+                <SelectItem value="busy">Busy</SelectItem>
+                <SelectItem value="offline">Offline</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredMembers.map((member) => {
+              const memberProjects = getProjectsByTeamMember(member.id)
+
+              return (
+                <Card key={member.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="relative">
+                        <Avatar>
+                          <AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} />
+                          <AvatarFallback>
+                            {member.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div
+                          className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(member.status)}`}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{member.name}</h3>
+                        <p className="text-sm text-muted-foreground truncate">{member.role}</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary">{member.department}</Badge>
+                      <Badge variant={member.status === "active" ? "default" : "secondary"}>{member.status}</Badge>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Performance</span>
+                        <div className="flex items-center space-x-1">
+                          <span className="font-medium">{member.performance.score}%</span>
+                          {getTrendIcon(member.performance.trend)}
+                        </div>
+                      </div>
+                      <Progress value={member.performance.score} className="h-2" />
+                    </div>
+
+                    <div className="text-sm text-muted-foreground">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <Mail className="h-3 w-3" />
+                        <span className="truncate">{member.email}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 mb-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>Joined {new Date(member.joinDate).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Award className="h-3 w-3" />
+                        <span>{memberProjects.length} active projects</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1">
+                      {member.skills.slice(0, 3).map((skill) => (
+                        <Badge key={skill} variant="outline" className="text-xs">
+                          {skill}
+                        </Badge>
+                      ))}
+                      {member.skills.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{member.skills.length - 3} more
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="flex space-x-2 pt-2">
+                      <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                        View Profile
+                      </Button>
+                      <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                        Message
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+
+          {filteredMembers.length === 0 && (
+            <div className="text-center py-8">
+              <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">No team members found</h3>
+              <p className="text-muted-foreground">Try adjusting your search or filters</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -6,211 +6,250 @@ export interface TeamMember {
   role: string
   email: string
   avatar: string
-  status: "active" | "inactive" | "away"
-  skills: string[]
+  status: "active" | "away" | "busy" | "offline"
+  department: string
   joinDate: string
-  projects: string[]
+  skills: string[]
   performance: {
-    tasksCompleted: number
-    tasksInProgress: number
-    efficiency: number
+    score: number
+    trend: "up" | "down" | "stable"
+    lastReview: string
   }
 }
 
 export interface Project {
   id: string
   name: string
-  description: string
-  status: "planning" | "in-progress" | "completed" | "on-hold"
-  priority: "low" | "medium" | "high" | "critical"
-  startDate: string
-  endDate: string
+  status: "active" | "completed" | "on-hold" | "cancelled"
   progress: number
   teamMembers: string[]
-  budget: number
-  spent: number
+  deadline: string
+  priority: "low" | "medium" | "high" | "critical"
 }
 
-export interface Task {
+export interface HealthMetric {
+  id: string
+  name: string
+  value: number
+  unit: string
+  status: "healthy" | "warning" | "critical"
+  trend: "up" | "down" | "stable"
+  lastUpdated: string
+}
+
+export interface ForecastData {
+  id: string
+  metric: string
+  currentValue: number
+  projectedValue: number
+  confidence: number
+  timeframe: string
+  factors: string[]
+}
+
+export interface Report {
   id: string
   title: string
-  description: string
-  assignee: string
-  project: string
-  status: "todo" | "in-progress" | "review" | "completed"
-  priority: "low" | "medium" | "high" | "critical"
-  dueDate: string
+  type: "financial" | "performance" | "analytics" | "compliance"
+  status: "draft" | "review" | "approved" | "published"
+  createdBy: string
   createdDate: string
-  estimatedHours: number
-  actualHours: number
-  tags: string[]
+  lastModified: string
+  size: string
 }
 
-// Mock data
+export interface NetworkContact {
+  id: string
+  name: string
+  company: string
+  position: string
+  email: string
+  phone?: string
+  category: "investor" | "mentor" | "partner" | "customer" | "vendor" | "advisor"
+  relationship: "strong" | "medium" | "weak"
+  lastContact: string
+  notes: string
+}
+
+// Mock data with UUID
 export const mockTeamMembers: TeamMember[] = [
   {
     id: uuidv4(),
-    name: "Sarah Johnson",
+    name: "Sarah Chen",
     role: "Product Manager",
-    email: "sarah@company.com",
+    email: "sarah.chen@company.com",
     avatar: "/placeholder-user.jpg",
     status: "active",
-    skills: ["Product Strategy", "User Research", "Agile", "Analytics"],
+    department: "Product",
     joinDate: "2023-01-15",
-    projects: ["proj-1", "proj-2"],
+    skills: ["Product Strategy", "User Research", "Agile", "Analytics"],
     performance: {
-      tasksCompleted: 45,
-      tasksInProgress: 3,
-      efficiency: 92,
+      score: 92,
+      trend: "up",
+      lastReview: "2024-01-15",
     },
   },
   {
     id: uuidv4(),
-    name: "Mike Chen",
+    name: "Marcus Johnson",
     role: "Senior Developer",
-    email: "mike@company.com",
+    email: "marcus.johnson@company.com",
     avatar: "/placeholder-user.jpg",
     status: "active",
+    department: "Engineering",
+    joinDate: "2022-08-20",
     skills: ["React", "Node.js", "TypeScript", "AWS"],
-    joinDate: "2022-11-20",
-    projects: ["proj-1", "proj-3"],
     performance: {
-      tasksCompleted: 67,
-      tasksInProgress: 5,
-      efficiency: 88,
+      score: 88,
+      trend: "stable",
+      lastReview: "2024-01-10",
     },
   },
   {
     id: uuidv4(),
     name: "Emily Rodriguez",
     role: "UX Designer",
-    email: "emily@company.com",
+    email: "emily.rodriguez@company.com",
     avatar: "/placeholder-user.jpg",
     status: "away",
-    skills: ["UI/UX Design", "Figma", "User Testing", "Prototyping"],
+    department: "Design",
     joinDate: "2023-03-10",
-    projects: ["proj-2", "proj-4"],
+    skills: ["UI/UX Design", "Figma", "User Testing", "Prototyping"],
     performance: {
-      tasksCompleted: 32,
-      tasksInProgress: 2,
-      efficiency: 95,
-    },
-  },
-  {
-    id: uuidv4(),
-    name: "David Kim",
-    role: "DevOps Engineer",
-    email: "david@company.com",
-    avatar: "/placeholder-user.jpg",
-    status: "active",
-    skills: ["Docker", "Kubernetes", "CI/CD", "Monitoring"],
-    joinDate: "2022-08-05",
-    projects: ["proj-1", "proj-3", "proj-4"],
-    performance: {
-      tasksCompleted: 54,
-      tasksInProgress: 4,
-      efficiency: 90,
+      score: 95,
+      trend: "up",
+      lastReview: "2024-01-20",
     },
   },
 ]
 
 export const mockProjects: Project[] = [
   {
-    id: "proj-1",
+    id: uuidv4(),
     name: "Mobile App Redesign",
-    description: "Complete redesign of the mobile application with improved UX",
-    status: "in-progress",
+    status: "active",
+    progress: 75,
+    teamMembers: [mockTeamMembers[0].id, mockTeamMembers[2].id],
+    deadline: "2024-03-15",
     priority: "high",
-    startDate: "2024-01-01",
-    endDate: "2024-03-31",
-    progress: 65,
-    teamMembers: ["sarah-id", "mike-id", "david-id"],
-    budget: 150000,
-    spent: 97500,
   },
   {
-    id: "proj-2",
-    name: "Customer Portal",
-    description: "New customer self-service portal development",
-    status: "planning",
+    id: uuidv4(),
+    name: "API Integration",
+    status: "active",
+    progress: 45,
+    teamMembers: [mockTeamMembers[1].id],
+    deadline: "2024-02-28",
     priority: "medium",
-    startDate: "2024-02-15",
-    endDate: "2024-06-30",
-    progress: 15,
-    teamMembers: ["sarah-id", "emily-id"],
-    budget: 200000,
-    spent: 30000,
-  },
-  {
-    id: "proj-3",
-    name: "Infrastructure Upgrade",
-    description: "Migrate to cloud infrastructure and improve scalability",
-    status: "in-progress",
-    priority: "critical",
-    startDate: "2023-12-01",
-    endDate: "2024-04-15",
-    progress: 80,
-    teamMembers: ["mike-id", "david-id"],
-    budget: 100000,
-    spent: 80000,
-  },
-  {
-    id: "proj-4",
-    name: "Analytics Dashboard",
-    description: "Business intelligence dashboard for stakeholders",
-    status: "completed",
-    priority: "medium",
-    startDate: "2023-10-01",
-    endDate: "2023-12-31",
-    progress: 100,
-    teamMembers: ["emily-id", "david-id"],
-    budget: 75000,
-    spent: 72000,
   },
 ]
 
-export const mockTasks: Task[] = [
+export const mockHealthMetrics: HealthMetric[] = [
   {
     id: uuidv4(),
-    title: "Design new login flow",
-    description: "Create wireframes and mockups for the new authentication flow",
-    assignee: "emily-id",
-    project: "proj-1",
-    status: "in-progress",
-    priority: "high",
-    dueDate: "2024-02-15",
-    createdDate: "2024-01-20",
-    estimatedHours: 16,
-    actualHours: 12,
-    tags: ["design", "ux", "authentication"],
+    name: "System Uptime",
+    value: 99.9,
+    unit: "%",
+    status: "healthy",
+    trend: "stable",
+    lastUpdated: "2024-01-25T10:30:00Z",
   },
   {
     id: uuidv4(),
-    title: "Implement OAuth integration",
-    description: "Add OAuth 2.0 support for third-party authentication",
-    assignee: "mike-id",
-    project: "proj-1",
-    status: "todo",
-    priority: "medium",
-    dueDate: "2024-02-28",
-    createdDate: "2024-01-25",
-    estimatedHours: 24,
-    actualHours: 0,
-    tags: ["backend", "authentication", "oauth"],
+    name: "Response Time",
+    value: 245,
+    unit: "ms",
+    status: "healthy",
+    trend: "down",
+    lastUpdated: "2024-01-25T10:30:00Z",
   },
   {
     id: uuidv4(),
-    title: "Set up monitoring alerts",
-    description: "Configure monitoring and alerting for the new infrastructure",
-    assignee: "david-id",
-    project: "proj-3",
-    status: "completed",
-    priority: "critical",
-    dueDate: "2024-01-31",
-    createdDate: "2024-01-10",
-    estimatedHours: 8,
-    actualHours: 10,
-    tags: ["devops", "monitoring", "infrastructure"],
+    name: "Error Rate",
+    value: 0.02,
+    unit: "%",
+    status: "healthy",
+    trend: "stable",
+    lastUpdated: "2024-01-25T10:30:00Z",
+  },
+  {
+    id: uuidv4(),
+    name: "CPU Usage",
+    value: 78,
+    unit: "%",
+    status: "warning",
+    trend: "up",
+    lastUpdated: "2024-01-25T10:30:00Z",
+  },
+]
+
+export const mockForecastData: ForecastData[] = [
+  {
+    id: uuidv4(),
+    metric: "Monthly Revenue",
+    currentValue: 125000,
+    projectedValue: 145000,
+    confidence: 85,
+    timeframe: "Next Quarter",
+    factors: ["Seasonal trends", "New product launch", "Market expansion"],
+  },
+  {
+    id: uuidv4(),
+    metric: "User Growth",
+    currentValue: 15000,
+    projectedValue: 22000,
+    confidence: 78,
+    timeframe: "Next 6 months",
+    factors: ["Marketing campaigns", "Product improvements", "Referral program"],
+  },
+]
+
+export const mockReports: Report[] = [
+  {
+    id: uuidv4(),
+    title: "Q4 2023 Financial Report",
+    type: "financial",
+    status: "published",
+    createdBy: "Sarah Chen",
+    createdDate: "2024-01-15",
+    lastModified: "2024-01-20",
+    size: "2.4 MB",
+  },
+  {
+    id: uuidv4(),
+    title: "Team Performance Analysis",
+    type: "performance",
+    status: "review",
+    createdBy: "Marcus Johnson",
+    createdDate: "2024-01-22",
+    lastModified: "2024-01-24",
+    size: "1.8 MB",
+  },
+]
+
+export const mockNetworkContacts: NetworkContact[] = [
+  {
+    id: uuidv4(),
+    name: "David Kim",
+    company: "TechVentures Capital",
+    position: "Partner",
+    email: "david.kim@techventures.com",
+    phone: "+1-555-0123",
+    category: "investor",
+    relationship: "strong",
+    lastContact: "2024-01-20",
+    notes: "Interested in Series A funding. Follow up on term sheet.",
+  },
+  {
+    id: uuidv4(),
+    name: "Lisa Wang",
+    company: "StartupMentor Inc",
+    position: "Senior Advisor",
+    email: "lisa.wang@startupmentor.com",
+    category: "mentor",
+    relationship: "strong",
+    lastContact: "2024-01-18",
+    notes: "Provides excellent product strategy guidance. Monthly check-ins scheduled.",
   },
 ]
 
@@ -219,39 +258,18 @@ export function getTeamMemberById(id: string): TeamMember | undefined {
   return mockTeamMembers.find((member) => member.id === id)
 }
 
-export function getProjectById(id: string): Project | undefined {
-  return mockProjects.find((project) => project.id === id)
-}
-
-export function getTaskById(id: string): Task | undefined {
-  return mockTasks.find((task) => task.id === id)
-}
-
-export function getTasksByProject(projectId: string): Task[] {
-  return mockTasks.filter((task) => task.project === projectId)
-}
-
-export function getTasksByAssignee(assigneeId: string): Task[] {
-  return mockTasks.filter((task) => task.assignee === assigneeId)
-}
-
 export function getProjectsByTeamMember(memberId: string): Project[] {
   return mockProjects.filter((project) => project.teamMembers.includes(memberId))
 }
 
-export function calculateTeamEfficiency(): number {
-  const totalEfficiency = mockTeamMembers.reduce((sum, member) => sum + member.performance.efficiency, 0)
-  return Math.round(totalEfficiency / mockTeamMembers.length)
+export function getHealthMetricsByStatus(status: HealthMetric["status"]): HealthMetric[] {
+  return mockHealthMetrics.filter((metric) => metric.status === status)
 }
 
-export function getActiveProjects(): Project[] {
-  return mockProjects.filter((project) => project.status === "in-progress")
+export function getReportsByType(type: Report["type"]): Report[] {
+  return mockReports.filter((report) => report.type === type)
 }
 
-export function getOverdueTasks(): Task[] {
-  const today = new Date()
-  return mockTasks.filter((task) => {
-    const dueDate = new Date(task.dueDate)
-    return dueDate < today && task.status !== "completed"
-  })
+export function getContactsByCategory(category: NetworkContact["category"]): NetworkContact[] {
+  return mockNetworkContacts.filter((contact) => contact.category === category)
 }
