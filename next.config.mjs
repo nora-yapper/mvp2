@@ -9,9 +9,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  experimental: {
-    serverComponentsExternalPackages: ['@ai-sdk/openai']
-  }
+  serverExternalPackages: ['@ai-sdk/openai']
 }
 
 export default nextConfig

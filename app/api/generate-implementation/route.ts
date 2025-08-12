@@ -1,16 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { suggestion, teamMembers } = await req.json()
+    const { suggestion, teamMembers } = await request.json()
 
-    // Create team context for AI
-    const teamContext =
-      teamMembers && teamMembers.length > 0
-        ? `\n\nTEAM MEMBERS AVAILABLE:\n${teamMembers
-            .map((member: any) => `- ${member.name} (${member.role}): ${member.skills.join(", ")}`)
-            .join("\n")}`
-        : ""
+    if (!suggestion) {
+      return NextResponse.json({ error: "Suggestion is required" }, { status: 400 })
+    }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -19,63 +15,16 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
-            content: `You are an expert startup advisor with deep experience in early-stage companies (pre-Series A, 2-20 employees). 
-
-CRITICAL STARTUP CONTEXT:
-- Limited resources and budget constraints
-- Small team wearing multiple hats
-- Need for rapid execution and iteration
-- Focus on lean, scrappy solutions over enterprise approaches
-- Emphasis on speed-to-market and customer validation
-- Bootstrap mentality - do more with less
-
-RESPONSE FORMAT:
-Respond with ONLY a JSON array of 3-5 actionable steps. Each step must be:
-- Specific and immediately actionable
-- Appropriate for startup resource constraints
-- Realistic for small teams
-- Cost-effective or free when possible
-- Focused on high-impact, low-effort wins
-
-JSON FORMAT:
-[
-  {
-    "task": "Specific task description (startup-appropriate)",
-    "assignee": "Specific person name from team (if provided) or realistic role",
-    "deadline": "YYYY-MM-DD format - realistic startup timeline"
-  }
-]
-
-ASSIGNMENT GUIDELINES:
-${
-  teamMembers && teamMembers.length > 0
-    ? "- Assign tasks to specific team members based on their skills and expertise\n- Consider each person's current role and capabilities\n- Distribute workload appropriately across the team"
-    : "- Use realistic startup roles (Founder/CEO, Co-founder, Lead Developer, etc.)\n- Consider typical startup team structure"
-}
-
-STARTUP-SPECIFIC GUIDELINES:
-- Suggest free/low-cost tools and platforms
-- Recommend leveraging existing networks and relationships
-- Focus on MVP approaches and rapid testing
-- Emphasize personal founder involvement
-- Consider resource constraints in timing
-- Prioritize revenue-generating activities
-- Suggest scrappy, creative solutions over expensive ones${teamContext}`,
+            content:
+              "You are a startup advisor. Generate practical, actionable implementation steps for startup suggestions. Focus on low-cost, high-impact actions suitable for early-stage startups.",
           },
           {
             role: "user",
-            content: `Generate startup-appropriate implementation steps for this ${suggestion.type}:
-
-TITLE: ${suggestion.title}
-DESCRIPTION: ${suggestion.description}
-${suggestion.deadline ? `DEADLINE: ${suggestion.deadline}` : ""}
-${suggestion.priority ? `PRIORITY: ${suggestion.priority}` : ""}
-
-Remember: This is for a small startup team, not a large corporation. Focus on lean, scrappy, high-impact actions that a resource-constrained team can realistically execute.`,
+            content: `Generate 3-5 implementation steps for this suggestion: "${suggestion.title}". Description: "${suggestion.description}". Available team members: ${JSON.stringify(teamMembers)}. Each step should include: task description, assignee, deadline, and priority level.`,
           },
         ],
         max_tokens: 800,
@@ -88,27 +37,49 @@ Remember: This is for a small startup team, not a large corporation. Focus on le
     }
 
     const data = await response.json()
-    const aiResponse = data.choices[0]?.message?.content || ""
+    const content = data.choices[0]?.message?.content || "Unable to generate implementation steps."
 
-    // Parse the JSON response
-    let steps = []
-    try {
-      // Extract JSON from the response if it's wrapped in text
-      const jsonMatch = aiResponse.match(/\[[\s\S]*\]/)
-      if (jsonMatch) {
-        steps = JSON.parse(jsonMatch[0])
-      } else {
-        steps = JSON.parse(aiResponse)
-      }
-    } catch (parseError) {
-      console.error("Failed to parse AI response:", parseError)
-      // Return error for fallback handling
-      return NextResponse.json({ error: "Failed to parse AI response" }, { status: 500 })
-    }
+    // Parse the response into structured steps
+    const steps = parseImplementationSteps(content, teamMembers)
 
     return NextResponse.json({ steps })
   } catch (error) {
     console.error("Implementation generation error:", error)
     return NextResponse.json({ error: "Failed to generate implementation steps" }, { status: 500 })
   }
+}
+
+function parseImplementationSteps(content: string, teamMembers: any[]) {
+  // Simple parsing - in a real app, you'd want more sophisticated parsing
+  const lines = content.split("\n").filter((line) => line.trim())
+  const steps = []
+
+  for (let i = 0; i < Math.min(5, lines.length); i++) {
+    const line = lines[i]
+    if (line.includes(".") || line.includes("-")) {
+      steps.push({
+        task: line.replace(/^\d+\.?\s*-?\s*/, "").trim(),
+        assignee: teamMembers[i % teamMembers.length]?.name || "Team Lead",
+        deadline: getDeadline(i + 1),
+        priority: i < 2 ? "High" : i < 4 ? "Medium" : "Low",
+      })
+    }
+  }
+
+  return steps.length > 0
+    ? steps
+    : [
+        {
+          task: "Complete the suggested action",
+          assignee: teamMembers[0]?.name || "Team Lead",
+          deadline: getDeadline(1),
+          priority: "High",
+        },
+      ]
+}
+
+function getDeadline(weekOffset: number): string {
+  const date = new Date()
+  date.setDate(date.getDate() + weekOffset * 7)
+  return date.toISOString().split("T")[0]
 }
