@@ -5,13 +5,14 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "postinstall": "echo 'Fresh install completed'",
     "lint": "next lint",
     "start": "next start"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "1.0.4",
+    "@ai-sdk/gateway": "1.0.3",
     "@ai-sdk/openai": "latest",
-    "@ai-sdk/provider-utils": "2.0.2",
+    "@ai-sdk/provider-utils": "2.0.1",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
@@ -63,7 +64,7 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "latest",
     "vaul": "^0.9.6",
-    "zod": "^3.23.8"
+    "zod": "3.23.8"
   },
   "devDependencies": {
     "@types/node": "^22",
@@ -73,5 +74,14 @@
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "zod": "3.23.8"
+    }
   }
 }
