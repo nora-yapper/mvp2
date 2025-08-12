@@ -1,415 +1,851 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  FileText,
-  Download,
-  Search,
-  Plus,
-  Calendar,
-  User,
-  BarChart3,
-  DollarSign,
-  TrendingUp,
-  Eye,
-  Edit,
-  Trash2,
-} from "lucide-react"
-import { mockReports, type Report } from "@/lib/team-data"
+import { ChevronDown, FileText } from "lucide-react"
 
 export default function ReportsPage() {
-  const [reports] = useState(mockReports)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [typeFilter, setTypeFilter] = useState("all")
-  const [statusFilter, setStatusFilter] = useState("all")
-
-  const filteredReports = reports.filter((report) => {
-    const matchesSearch = report.title.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = typeFilter === "all" || report.type === typeFilter
-    const matchesStatus = statusFilter === "all" || report.status === statusFilter
-
-    return matchesSearch && matchesType && matchesStatus
+  const [currentView, setCurrentView] = useState<"history" | "form" | "generated">("history")
+  const [formData, setFormData] = useState({
+    title: "",
+    period: "",
+    audience: "",
+    sections: {
+      startupDescription: true,
+      progressOverview: true,
+      tractionMilestones: true,
+      risksBottlenecks: true,
+      productStrategy: true,
+      forecastPriorities: true,
+    },
+    notes: "",
   })
 
-  const getStatusColor = (status: Report["status"]) => {
-    switch (status) {
-      case "published":
-        return "bg-green-100 text-green-800"
-      case "approved":
-        return "bg-blue-100 text-blue-800"
-      case "review":
-        return "bg-yellow-100 text-yellow-800"
-      case "draft":
-        return "bg-gray-100 text-gray-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
+  const [savedReports, setSavedReports] = useState<
+    Array<{
+      id: string
+      title: string
+      date: string
+      content: string
+    }>
+  >([])
+
+  const handleSectionToggle = (section: keyof typeof formData.sections) => {
+    setFormData((prev) => ({
+      ...prev,
+      sections: {
+        ...prev.sections,
+        [section]: !prev.sections[section],
+      },
+    }))
   }
 
-  const getTypeIcon = (type: Report["type"]) => {
-    switch (type) {
-      case "financial":
-        return <DollarSign className="h-4 w-4" />
-      case "performance":
-        return <TrendingUp className="h-4 w-4" />
-      case "analytics":
-        return <BarChart3 className="h-4 w-4" />
-      case "compliance":
-        return <FileText className="h-4 w-4" />
-      default:
-        return <FileText className="h-4 w-4" />
-    }
+  const generateReport = () => {
+    setCurrentView("generated")
   }
 
-  const reportsByType = {
-    financial: reports.filter((r) => r.type === "financial").length,
-    performance: reports.filter((r) => r.type === "performance").length,
-    analytics: reports.filter((r) => r.type === "analytics").length,
-    compliance: reports.filter((r) => r.type === "compliance").length,
+  const backToForm = () => {
+    setCurrentView("form")
   }
 
-  const reportsByStatus = {
-    published: reports.filter((r) => r.status === "published").length,
-    approved: reports.filter((r) => r.status === "approved").length,
-    review: reports.filter((r) => r.status === "review").length,
-    draft: reports.filter((r) => r.status === "draft").length,
+  const showReportHistory = () => {
+    setCurrentView("history")
   }
 
-  return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Reports</h1>
-          <p className="text-muted-foreground">Generate, manage, and share business reports</p>
+  const createFirstReport = () => {
+    setCurrentView("form")
+  }
+
+  // Toggle Switch Component
+  const ToggleSwitch = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
+    <button
+      onClick={onChange}
+      style={{
+        width: "60px",
+        height: "30px",
+        backgroundColor: checked ? "#007bff" : "#444",
+        border: "1px solid #555",
+        borderRadius: "15px",
+        position: "relative",
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+      }}
+    >
+      <div
+        style={{
+          width: "24px",
+          height: "24px",
+          backgroundColor: "#fff",
+          borderRadius: "50%",
+          position: "absolute",
+          top: "2px",
+          left: checked ? "32px" : "2px",
+          transition: "all 0.3s ease",
+        }}
+      />
+    </button>
+  )
+
+  // Hamburger Menu with Sidebar
+  const HamburgerMenu = () => {
+    const [sidebarOpen, setSidebarOpen] = useState(false)
+
+    return (
+      <>
+        <div style={{ position: "fixed", top: "20px", left: "20px", display: "flex", gap: "10px", zIndex: 1000 }}>
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            style={{
+              background: "#2a2a2a",
+              border: "1px solid #444",
+              fontSize: "24px",
+              cursor: "pointer",
+              color: "#e0e0e0",
+              width: "50px",
+              height: "50px",
+              clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#3a3a3a"
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#2a2a2a"
+            }}
+          >
+            ☰
+          </button>
+
+          <button
+            onClick={() => (window.location.href = "/main")}
+            style={{
+              background: "#2a2a2a",
+              border: "1px solid #444",
+              fontSize: "20px",
+              cursor: "pointer",
+              color: "#e0e0e0",
+              width: "50px",
+              height: "50px",
+              clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+              transition: "all 0.3s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#3a3a3a"
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#2a2a2a"
+            }}
+            title="Back to Main"
+          >
+            ←
+          </button>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Report
-        </Button>
+
+        {/* Sidebar */}
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: sidebarOpen ? 0 : "-300px",
+            width: "300px",
+            height: "100vh",
+            backgroundColor: "#2a2a2a",
+            transition: "left 0.3s ease",
+            zIndex: 999,
+            padding: "20px",
+            borderRight: "1px solid #444",
+          }}
+        >
+          <div style={{ marginTop: "0px", marginBottom: "30px" }}>
+            <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
+              <button
+                style={{
+                  background: "#1a1a1a",
+                  border: "1px solid #444",
+                  fontSize: "24px",
+                  cursor: "pointer",
+                  color: "#e0e0e0",
+                  width: "45px",
+                  height: "45px",
+                  clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                }}
+              >
+                ⚙️
+              </button>
+              <button
+                style={{
+                  background: "#1a1a1a",
+                  border: "1px solid #444",
+                  fontSize: "24px",
+                  cursor: "pointer",
+                  color: "#e0e0e0",
+                  width: "45px",
+                  height: "45px",
+                  clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                }}
+              >
+                👤
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {[
+              { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
+              { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: false },
+              { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
+              { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
+              { label: "Reports", onClick: () => {}, active: true },
+              { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
+            ].map((item, index) => (
+              <button
+                key={index}
+                onClick={item.onClick}
+                style={{
+                  padding: "18px",
+                  fontSize: "16px",
+                  cursor: "pointer",
+                  border: "1px solid #444",
+                  backgroundColor: item.active ? "#007bff" : "#1a1a1a",
+                  color: "#e0e0e0",
+                  width: "100%",
+                  clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                  letterSpacing: "0.05em",
+                  fontWeight: "500",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  if (!item.active) {
+                    e.currentTarget.style.backgroundColor = "#3a3a3a"
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!item.active) {
+                    e.currentTarget.style.backgroundColor = "#1a1a1a"
+                  }
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Overlay for sidebar */}
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              backgroundColor: "rgba(0,0,0,0.6)",
+              zIndex: 998,
+            }}
+          />
+        )}
+      </>
+    )
+  }
+
+  const saveReport = () => {
+    const newReport = {
+      id: Date.now().toString(),
+      title: formData.title || "Untitled Report",
+      date: new Date().toLocaleDateString(),
+      content: "Executive Summary content...", // This would be the actual report content
+    }
+    setSavedReports((prev) => [newReport, ...prev])
+    alert("Report saved successfully!")
+  }
+
+  const downloadPDF = () => {
+    // Create a simple HTML content for the PDF
+    const reportContent = `
+      <html>
+        <head>
+          <title>Generated Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+            h1 { color: #007bff; margin-bottom: 30px; }
+            h2 { color: #333; margin-top: 30px; margin-bottom: 15px; }
+            h3 { color: #555; margin-top: 25px; margin-bottom: 10px; }
+            p { line-height: 1.6; margin-bottom: 15px; }
+            ul { margin-bottom: 20px; }
+            li { margin-bottom: 8px; }
+          </style>
+        </head>
+        <body>
+          <h1>Generated Report</h1>
+          <h2>Executive Summary</h2>
+          <p>This quarterly report provides a comprehensive overview of our progress across all major initiatives. We have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction.</p>
+          
+          <h3>Key Achievements</h3>
+          <ul>
+            <li>Completed major platform upgrade affecting 50,000+ users</li>
+            <li>Reduced system downtime by 65% through infrastructure improvements</li>
+            <li>Onboarded 3 new team members with full integration success</li>
+            <li>Achieved 94% customer satisfaction score in latest survey</li>
+          </ul>
+          
+          <h3>Current Challenges</h3>
+          <p>While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas.</p>
+          
+          <h3>Next Quarter Outlook</h3>
+          <p>Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement.</p>
+        </body>
+      </html>
+    `
+
+    // Create a blob with the HTML content
+    const blob = new Blob([reportContent], { type: "text/html" })
+    const url = URL.createObjectURL(blob)
+
+    // Create a temporary link and trigger download
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `stakeholder-report-${new Date().toISOString().split("T")[0]}.html`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    // Clean up the URL
+    URL.revokeObjectURL(url)
+  }
+
+  if (currentView === "history") {
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
+        <HamburgerMenu />
+
+        <div style={{ padding: "80px 40px 40px", textAlign: "center" }}>
+          <h1
+            style={{
+              fontSize: "48px",
+              fontWeight: "300",
+              marginBottom: "60px",
+              letterSpacing: "0.05em",
+            }}
+          >
+            Report History
+          </h1>
+
+          <div
+            style={{
+              maxWidth: "800px",
+              margin: "0 auto",
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
+              padding: "80px 40px",
+              textAlign: "center",
+            }}
+          >
+            {savedReports.length === 0 ? (
+              <>
+                <FileText size={80} style={{ color: "#666", marginBottom: "30px" }} />
+                <h2 style={{ fontSize: "32px", fontWeight: "400", marginBottom: "20px", color: "#e0e0e0" }}>
+                  No Reports Generated Yet
+                </h2>
+                <p style={{ fontSize: "18px", color: "#999", marginBottom: "40px", lineHeight: "1.6" }}>
+                  Once you generate your first stakeholder report, it will appear here for easy access and reference.
+                </p>
+                <button
+                  onClick={createFirstReport}
+                  style={{
+                    padding: "16px 32px",
+                    fontSize: "16px",
+                    backgroundColor: "#007bff",
+                    color: "#fff",
+                    border: "1px solid #0056b3",
+                    cursor: "pointer",
+                    clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                    fontWeight: "500",
+                    letterSpacing: "0.05em",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  Create Your First Report
+                </button>
+              </>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                {savedReports.map((report) => (
+                  <div
+                    key={report.id}
+                    style={{
+                      backgroundColor: "#1a1a1a",
+                      border: "1px solid #555",
+                      clipPath:
+                        "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+                      padding: "20px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <h3 style={{ fontSize: "18px", fontWeight: "500", marginBottom: "5px" }}>{report.title}</h3>
+                      <p style={{ fontSize: "14px", color: "#999" }}>Generated on {report.date}</p>
+                    </div>
+                    <button
+                      style={{
+                        padding: "8px 16px",
+                        fontSize: "14px",
+                        backgroundColor: "#007bff",
+                        color: "#fff",
+                        border: "1px solid #0056b3",
+                        cursor: "pointer",
+                        clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                      }}
+                    >
+                      View Report
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+    )
+  }
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Reports</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{reports.length}</div>
-            <p className="text-xs text-muted-foreground">+3 this month</p>
-          </CardContent>
-        </Card>
+  if (currentView === "form") {
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
+        <HamburgerMenu />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Published</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{reportsByStatus.published}</div>
-            <p className="text-xs text-muted-foreground">Available to stakeholders</p>
-          </CardContent>
-        </Card>
+        <div style={{ padding: "80px 40px 40px" }}>
+          <div style={{ textAlign: "center", marginBottom: "60px" }}>
+            <h1
+              style={{
+                fontSize: "48px",
+                fontWeight: "300",
+                marginBottom: "20px",
+                letterSpacing: "0.05em",
+              }}
+            >
+              Stakeholder Reports
+            </h1>
+            <p style={{ fontSize: "18px", color: "#999" }}>
+              Generate comprehensive reports for your investors, mentors, and stakeholders
+            </p>
+          </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Review</CardTitle>
-            <Edit className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{reportsByStatus.review}</div>
-            <p className="text-xs text-muted-foreground">Pending approval</p>
-          </CardContent>
-        </Card>
+          <div style={{ maxWidth: "800px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "40px" }}>
+            {/* Report Overview Section */}
+            <div
+              style={{
+                backgroundColor: "#2a2a2a",
+                border: "1px solid #444",
+                clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
+                padding: "40px",
+              }}
+            >
+              <h2 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "30px" }}>Report Overview</h2>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Drafts</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{reportsByStatus.draft}</div>
-            <p className="text-xs text-muted-foreground">Work in progress</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="all-reports" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="all-reports">All Reports</TabsTrigger>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-          <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all-reports" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Report Library</CardTitle>
-              <CardDescription>Browse and manage all your reports</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search reports..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+              <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "16px", marginBottom: "10px", color: "#e0e0e0" }}>
+                    Report Title
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter report title"
+                    value={formData.title}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                    style={{
+                      width: "100%",
+                      padding: "16px",
+                      backgroundColor: "#1a1a1a",
+                      border: "1px solid #444",
+                      color: "#e0e0e0",
+                      fontSize: "16px",
+                      clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                      outline: "none",
+                    }}
                   />
                 </div>
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="financial">Financial</SelectItem>
-                    <SelectItem value="performance">Performance</SelectItem>
-                    <SelectItem value="analytics">Analytics</SelectItem>
-                    <SelectItem value="compliance">Compliance</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
-                    <SelectItem value="approved">Approved</SelectItem>
-                    <SelectItem value="review">In Review</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
-              <div className="space-y-4">
-                {filteredReports.map((report) => (
-                  <Card key={report.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-4 flex-1">
-                          <div className="p-2 bg-gray-100 rounded-lg">{getTypeIcon(report.type)}</div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-lg mb-1">{report.title}</h3>
-                            <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-2">
-                              <div className="flex items-center space-x-1">
-                                <User className="h-3 w-3" />
-                                <span>{report.createdBy}</span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <Calendar className="h-3 w-3" />
-                                <span>{new Date(report.createdDate).toLocaleDateString()}</span>
-                              </div>
-                              <span>{report.size}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Badge className={getStatusColor(report.status)}>
-                                {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                              </Badge>
-                              <Badge variant="outline">
-                                {report.type.charAt(0).toUpperCase() + report.type.slice(1)}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Download className="h-4 w-4 mr-1" />
-                            Download
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div>
+                  <label style={{ display: "block", fontSize: "16px", marginBottom: "10px", color: "#e0e0e0" }}>
+                    Reporting Period
+                  </label>
+                  <input
+                    type="date"
+                    placeholder="Select date"
+                    value={formData.period}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, period: e.target.value }))}
+                    style={{
+                      width: "100%",
+                      padding: "16px",
+                      backgroundColor: "#1a1a1a",
+                      border: "1px solid #444",
+                      color: "#e0e0e0",
+                      fontSize: "16px",
+                      clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                      outline: "none",
+                      colorScheme: "dark", // This makes the calendar picker dark themed
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "16px", marginBottom: "10px", color: "#e0e0e0" }}>
+                    Audience
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <select
+                      value={formData.audience}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, audience: e.target.value }))}
+                      style={{
+                        width: "100%",
+                        padding: "16px",
+                        backgroundColor: "#1a1a1a",
+                        border: "1px solid #444",
+                        color: "#e0e0e0",
+                        fontSize: "16px",
+                        clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                        outline: "none",
+                        appearance: "none",
+                      }}
+                    >
+                      <option value="">Select audience</option>
+                      <option value="investors">Investors</option>
+                      <option value="mentors">Mentors</option>
+                      <option value="incubators">Incubators</option>
+                      <option value="general">General</option>
+                    </select>
+                    <ChevronDown
+                      size={20}
+                      style={{
+                        position: "absolute",
+                        right: "16px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#999",
+                        pointerEvents: "none",
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Content Selection Section */}
+            <div
+              style={{
+                backgroundColor: "#2a2a2a",
+                border: "1px solid #444",
+                clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
+                padding: "40px",
+              }}
+            >
+              <h2 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "30px" }}>Content Selection</h2>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                {[
+                  { key: "startupDescription", label: "Startup Description" },
+                  { key: "progressOverview", label: "Progress Overview" },
+                  { key: "tractionMilestones", label: "Traction & Milestones" },
+                  { key: "risksBottlenecks", label: "Risks & Bottlenecks" },
+                  { key: "productStrategy", label: "Product & Strategy Snapshot" },
+                  { key: "forecastPriorities", label: "Forecast & Priorities" },
+                ].map(({ key, label }) => (
+                  <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "16px", color: "#e0e0e0" }}>{label}</span>
+                    <ToggleSwitch
+                      checked={formData.sections[key as keyof typeof formData.sections]}
+                      onChange={() => handleSectionToggle(key as keyof typeof formData.sections)}
+                    />
+                  </div>
                 ))}
-
-                {filteredReports.length === 0 && (
-                  <div className="text-center py-8">
-                    <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No reports found</h3>
-                    <p className="text-muted-foreground">Try adjusting your search or filters</p>
-                  </div>
-                )}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
 
-        <TabsContent value="templates" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="h-5 w-5 text-green-600" />
-                  <CardTitle className="text-base">Financial Report</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Comprehensive financial analysis with revenue, expenses, and profitability metrics.
-                </p>
-                <Button size="sm" className="w-full">
-                  Use Template
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Optional Notes Section */}
+            <div
+              style={{
+                backgroundColor: "#2a2a2a",
+                border: "1px solid #444",
+                clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
+                padding: "40px",
+              }}
+            >
+              <h2 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "30px" }}>Optional Notes</h2>
 
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-blue-600" />
-                  <CardTitle className="text-base">Performance Report</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Team and project performance analysis with KPIs and growth metrics.
-                </p>
-                <Button size="sm" className="w-full">
-                  Use Template
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <BarChart3 className="h-5 w-5 text-purple-600" />
-                  <CardTitle className="text-base">Analytics Report</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Data-driven insights with user behavior, conversion rates, and trends.
-                </p>
-                <Button size="sm" className="w-full">
-                  Use Template
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="scheduled" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Scheduled Reports</CardTitle>
-              <CardDescription>Automatically generated reports on a schedule</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <DollarSign className="h-5 w-5 text-green-600" />
-                    <div>
-                      <h4 className="font-medium">Monthly Financial Summary</h4>
-                      <p className="text-sm text-muted-foreground">Every 1st of the month at 9:00 AM</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="default">Active</Badge>
-                    <Button size="sm" variant="outline">
-                      Edit
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <TrendingUp className="h-5 w-5 text-blue-600" />
-                    <div>
-                      <h4 className="font-medium">Weekly Performance Report</h4>
-                      <p className="text-sm text-muted-foreground">Every Monday at 8:00 AM</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="default">Active</Badge>
-                    <Button size="sm" variant="outline">
-                      Edit
-                    </Button>
-                  </div>
-                </div>
+              <div>
+                <label style={{ display: "block", fontSize: "16px", marginBottom: "10px", color: "#e0e0e0" }}>
+                  Additional Comments or Context (optional)
+                </label>
+                <textarea
+                  placeholder="Add any additional context or specific instructions for the report..."
+                  value={formData.notes}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
+                  rows={6}
+                  style={{
+                    width: "100%",
+                    padding: "16px",
+                    backgroundColor: "#1a1a1a",
+                    border: "1px solid #444",
+                    color: "#e0e0e0",
+                    fontSize: "16px",
+                    clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                    outline: "none",
+                    resize: "vertical",
+                  }}
+                />
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
 
-        <TabsContent value="analytics" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Report Usage</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span>Financial Reports</span>
-                    <span className="font-bold">{reportsByType.financial}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Performance Reports</span>
-                    <span className="font-bold">{reportsByType.performance}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Analytics Reports</span>
-                    <span className="font-bold">{reportsByType.analytics}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Compliance Reports</span>
-                    <span className="font-bold">{reportsByType.compliance}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Action Buttons */}
+            <div
+              style={{
+                backgroundColor: "#2a2a2a",
+                border: "1px solid #444",
+                clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
+                padding: "40px",
+                display: "flex",
+                gap: "20px",
+                justifyContent: "center",
+              }}
+            >
+              <button
+                onClick={generateReport}
+                style={{
+                  padding: "16px 32px",
+                  fontSize: "16px",
+                  backgroundColor: "#007bff",
+                  color: "#fff",
+                  border: "1px solid #0056b3",
+                  cursor: "pointer",
+                  clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                  fontWeight: "500",
+                  letterSpacing: "0.05em",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#0056b3"
+                  e.currentTarget.style.transform = "translateY(-2px)"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#007bff"
+                  e.currentTarget.style.transform = "translateY(0px)"
+                }}
+              >
+                Generate Report
+              </button>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Report Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span>Published</span>
-                    <Badge className="bg-green-100 text-green-800">{reportsByStatus.published}</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Approved</span>
-                    <Badge className="bg-blue-100 text-blue-800">{reportsByStatus.approved}</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>In Review</span>
-                    <Badge className="bg-yellow-100 text-yellow-800">{reportsByStatus.review}</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Draft</span>
-                    <Badge className="bg-gray-100 text-gray-800">{reportsByStatus.draft}</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              <button
+                onClick={showReportHistory}
+                style={{
+                  padding: "16px 32px",
+                  fontSize: "16px",
+                  backgroundColor: "#444",
+                  color: "#e0e0e0",
+                  border: "1px solid #555",
+                  cursor: "pointer",
+                  clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                  fontWeight: "500",
+                  letterSpacing: "0.05em",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#555"
+                  e.currentTarget.style.transform = "translateY(-2px)"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#444"
+                  e.currentTarget.style.transform = "translateY(0px)"
+                }}
+              >
+                Report History
+              </button>
+            </div>
           </div>
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
+        </div>
+      </div>
+    )
+  }
+
+  if (currentView === "generated") {
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
+        <HamburgerMenu />
+
+        <div style={{ padding: "80px 40px 40px" }}>
+          <div style={{ textAlign: "center", marginBottom: "60px" }}>
+            <h1
+              style={{
+                fontSize: "48px",
+                fontWeight: "300",
+                marginBottom: "20px",
+                letterSpacing: "0.05em",
+              }}
+            >
+              {formData.title || "Generated Report"}
+            </h1>
+            <p style={{ fontSize: "18px", color: "#999", marginBottom: "20px" }}>
+              {formData.period && `Report Period: ${new Date(formData.period).toLocaleDateString()}`}
+              {formData.period && formData.audience && " • "}
+              {formData.audience &&
+                `Audience: ${formData.audience.charAt(0).toUpperCase() + formData.audience.slice(1)}`}
+            </p>
+          </div>
+
+          <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+            {/* Report Content */}
+            <div
+              style={{
+                backgroundColor: "#2a2a2a",
+                border: "1px solid #444",
+                clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
+                padding: "50px",
+                marginBottom: "40px",
+              }}
+            >
+              {formData.sections.startupDescription && (
+                <>
+                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>Startup Description</h3>
+                  <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#e0e0e0", marginBottom: "40px" }}>
+                    Our startup is focused on delivering innovative solutions that address key market challenges. We
+                    have built a strong foundation with a clear value proposition and growing market traction.
+                  </p>
+                </>
+              )}
+
+              {formData.sections.progressOverview && (
+                <>
+                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>Progress Overview</h3>
+                  <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#e0e0e0", marginBottom: "40px" }}>
+                    This quarter we have successfully delivered 87% of our planned objectives while maintaining high
+                    quality standards and team satisfaction. Our development velocity has increased by 40% compared to
+                    the previous quarter.
+                  </p>
+                </>
+              )}
+
+              {formData.sections.tractionMilestones && (
+                <>
+                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>Traction & Milestones</h3>
+                  <ul
+                    style={{
+                      fontSize: "16px",
+                      lineHeight: "1.8",
+                      color: "#e0e0e0",
+                      marginBottom: "40px",
+                      paddingLeft: "20px",
+                    }}
+                  >
+                    <li>Completed major platform upgrade affecting 50,000+ users</li>
+                    <li>Reduced system downtime by 65% through infrastructure improvements</li>
+                    <li>Onboarded 3 new team members with full integration success</li>
+                    <li>Achieved 94% customer satisfaction score in latest survey</li>
+                  </ul>
+                </>
+              )}
+
+              {formData.sections.risksBottlenecks && (
+                <>
+                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>Risks & Bottlenecks</h3>
+                  <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#e0e0e0", marginBottom: "40px" }}>
+                    While progress has been strong, we face ongoing challenges in scaling our operations and maintaining
+                    quality as we grow. Resource allocation and team coordination remain key focus areas that require
+                    immediate attention.
+                  </p>
+                </>
+              )}
+
+              {formData.sections.productStrategy && (
+                <>
+                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>
+                    Product & Strategy Snapshot
+                  </h3>
+                  <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#e0e0e0", marginBottom: "40px" }}>
+                    Our product roadmap is aligned with market demands and user feedback. We've prioritized features
+                    that drive user engagement and retention, with a focus on scalability and performance optimization.
+                  </p>
+                </>
+              )}
+
+              {formData.sections.forecastPriorities && (
+                <>
+                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>Forecast & Priorities</h3>
+                  <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#e0e0e0", marginBottom: "40px" }}>
+                    Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships.
+                    Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our
+                    next growth phase.
+                  </p>
+                </>
+              )}
+
+              {formData.notes && (
+                <>
+                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>Additional Notes</h3>
+                  <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#e0e0e0", marginBottom: "40px" }}>
+                    {formData.notes}
+                  </p>
+                </>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div
+              style={{
+                backgroundColor: "#2a2a2a",
+                border: "1px solid #444",
+                clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
+                padding: "40px",
+                display: "flex",
+                gap: "20px",
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              {[
+                { label: "Save Report", action: saveReport },
+                { label: "Send Report", action: () => {} },
+                { label: "Download PDF", action: downloadPDF },
+                { label: "Back to Form", action: backToForm },
+              ].map((button, index) => (
+                <button
+                  key={index}
+                  onClick={button.action}
+                  style={{
+                    padding: "16px 24px",
+                    fontSize: "16px",
+                    backgroundColor: button.label === "Back to Form" ? "#444" : "#007bff",
+                    color: "#fff",
+                    border: `1px solid ${button.label === "Back to Form" ? "#555" : "#0056b3"}`,
+                    cursor: "pointer",
+                    clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                    fontWeight: "500",
+                    letterSpacing: "0.05em",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = button.label === "Back to Form" ? "#555" : "#0056b3"
+                    e.currentTarget.style.transform = "translateY(-2px)"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = button.label === "Back to Form" ? "#444" : "#007bff"
+                    e.currentTarget.style.transform = "translateY(0px)"
+                  }}
+                >
+                  {button.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return null
 }

@@ -8,7 +8,7 @@ interface HomebaseComponent {
   content: string
 }
 
-export default function HomebasePage() {
+export default function HomebaseWorkspacePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [components, setComponents] = useState<HomebaseComponent[]>([])
   const [tasks, setTasks] = useState([])
@@ -93,61 +93,52 @@ export default function HomebasePage() {
 
   return (
     <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
-      {/* Hamburger Menu - Top Left */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
+      {/* Top Bar */}
+      <div
         style={{
           position: "fixed",
-          top: "20px",
-          left: "20px",
-          background: "#2a2a2a",
-          border: "1px solid #444",
-          fontSize: "24px",
-          cursor: "pointer",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "60px",
+          backgroundColor: "white",
+          borderBottom: "1px solid #ccc",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
           zIndex: 1000,
-          color: "#e0e0e0",
-          width: "50px",
-          height: "50px",
-          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-          transition: "all 0.3s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#3a3a3a"
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "#2a2a2a"
         }}
       >
-        ☰
-      </button>
+        {/* Sidebar Toggle */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          style={{
+            background: "none",
+            border: "none",
+            fontSize: "24px",
+            cursor: "pointer",
+            marginRight: "15px",
+          }}
+        >
+          ☰
+        </button>
 
-      {/* Back Arrow - Top Left, next to hamburger */}
-      <button
-        onClick={handleBackToMain}
-        style={{
-          position: "fixed",
-          top: "20px",
-          left: "80px",
-          background: "#2a2a2a",
-          border: "1px solid #444",
-          fontSize: "24px",
-          cursor: "pointer",
-          zIndex: 1000,
-          color: "#e0e0e0",
-          width: "50px",
-          height: "50px",
-          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-          transition: "all 0.3s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#3a3a3a"
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "#2a2a2a"
-        }}
-      >
-        ←
-      </button>
+        {/* Back Arrow */}
+        <button
+          onClick={handleBackToMain}
+          style={{
+            background: "none",
+            border: "none",
+            fontSize: "24px",
+            cursor: "pointer",
+          }}
+        >
+          ←
+        </button>
+
+        {/* Title */}
+        <h2 style={{ marginLeft: "20px", fontSize: "18px", color: "#333" }}>Homebase Workspace</h2>
+      </div>
 
       {/* Sidebar */}
       <div
@@ -157,11 +148,10 @@ export default function HomebasePage() {
           left: sidebarOpen ? 0 : "-300px",
           width: "300px",
           height: "100vh",
-          backgroundColor: "#2a2a2a",
+          backgroundColor: "#f0f0f0",
           transition: "left 0.3s ease",
           zIndex: 999,
           padding: "20px",
-          borderRight: "1px solid #444",
         }}
       >
         {/* Top section - Settings and Profile icons */}
@@ -169,28 +159,20 @@ export default function HomebasePage() {
           <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
             <button
               style={{
-                background: "#1a1a1a",
-                border: "1px solid #444",
+                background: "none",
+                border: "none",
                 fontSize: "24px",
                 cursor: "pointer",
-                color: "#e0e0e0",
-                width: "45px",
-                height: "45px",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
               }}
             >
               ⚙️
             </button>
             <button
               style={{
-                background: "#1a1a1a",
-                border: "1px solid #444",
+                background: "none",
+                border: "none",
                 fontSize: "24px",
                 cursor: "pointer",
-                color: "#e0e0e0",
-                width: "45px",
-                height: "45px",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
               }}
             >
               👤
@@ -199,53 +181,88 @@ export default function HomebasePage() {
         </div>
 
         {/* Six vertically stacked buttons */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {[
-            { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
-            { label: "Command Deck", onClick: () => (window.location.href = "/command-deck"), active: false },
-            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
-            { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
-            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
-            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
-          ].map((item, index) => (
-            <button
-              key={index}
-              onClick={item.onClick}
-              style={{
-                padding: "18px",
-                fontSize: "16px",
-                cursor: "pointer",
-                border: "1px solid #444",
-                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
-                color: "#e0e0e0",
-                width: "100%",
-                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                letterSpacing: "0.05em",
-                fontWeight: "500",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                if (!item.active) {
-                  e.currentTarget.style.backgroundColor = "#3a3a3a"
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!item.active) {
-                  e.currentTarget.style.backgroundColor = "#1a1a1a"
-                }
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <button
+            onClick={() => (window.location.href = "/main")}
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Map
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Command Deck
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Health Analysis
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Forecast
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Reports
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Network
+          </button>
         </div>
       </div>
 
       {/* Main Content */}
       <div
         style={{
-          marginTop: "0px",
-          padding: "100px 20px 40px",
+          marginTop: "60px",
+          padding: "40px 20px",
           color: "#e0e0e0",
         }}
       >
@@ -378,7 +395,7 @@ export default function HomebasePage() {
                 display: "flex",
                 flexDirection: "column",
               }}
-              onClick={() => (window.location.href = "/command-deck")}
+              onClick={() => (window.location.href = "/homebase/tasks")}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "#3a3a3a"
                 e.currentTarget.style.transform = "translateY(-2px)"
@@ -474,7 +491,7 @@ export default function HomebasePage() {
             left: 0,
             width: "100vw",
             height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.6)",
+            backgroundColor: "rgba(0,0,0,0.3)",
             zIndex: 998,
           }}
         />

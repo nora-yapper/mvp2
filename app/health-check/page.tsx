@@ -1,352 +1,602 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Activity,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  RefreshCw,
-  Server,
-  Database,
-  Cpu,
-  HardDrive,
-  Wifi,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-} from "lucide-react"
-import { mockHealthMetrics, type HealthMetric } from "@/lib/team-data"
+import type React from "react"
+
+import { useState, useEffect, useRef } from "react"
+import { ArrowUp, ChevronDown } from "lucide-react"
+
+interface ChatMessage {
+  role: "user" | "assistant"
+  content: string
+  timestamp: Date
+}
 
 export default function HealthCheckPage() {
-  const [metrics, setMetrics] = useState(mockHealthMetrics)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [lastUpdated, setLastUpdated] = useState(new Date())
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [inputValue, setInputValue] = useState("")
+  const [showAnalysis, setShowAnalysis] = useState(false)
+  const [expandedMetrics, setExpandedMetrics] = useState<Set<string>>(new Set())
+  const [chatOpen, setChatOpen] = useState(false)
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+  const [chatInput, setChatInput] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
+  const chatMessagesRef = useRef<HTMLDivElement>(null)
+  const [analysisResult, setAnalysisResult] = useState("")
 
-  const refreshMetrics = async () => {
-    setIsRefreshing(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+  const metrics = [
+    { title: "Product & Innovation", score: 85, category: "top" },
+    { title: "Marketing & Brand", score: 62, category: "top" },
+    { title: "Sales & Revenue", score: 95, category: "top" },
+    { title: "Team & Culture", score: 73, category: "bottom" },
+    { title: "Operations & Scalability", score: 45, category: "bottom" },
+    { title: "Financial Health", score: 88, category: "bottom" },
+  ]
 
-    // Update metrics with slight variations
-    const updatedMetrics = metrics.map((metric) => ({
-      ...metric,
-      value: metric.value + (Math.random() - 0.5) * (metric.value * 0.1),
-      lastUpdated: new Date().toISOString(),
-    }))
+  // Initialize chat with welcome message
+  useEffect(() => {
+    const welcomeMessage: ChatMessage = {
+      role: "assistant",
+      content:
+        "Hi, I'm Nora AI-stronaut! 🚀\n\nI can help you explore your startup's health, interpret your scores, and guide you through your next steps.\n\nAsk me anything about your metrics, how to improve them, or where to focus next!",
+      timestamp: new Date(),
+    }
+    setChatMessages([welcomeMessage])
+  }, [])
 
-    setMetrics(updatedMetrics)
-    setLastUpdated(new Date())
-    setIsRefreshing(false)
-  }
+  // Scroll to bottom of chat when new messages are added
+  useEffect(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight
+    }
+  }, [chatMessages])
 
-  const getStatusIcon = (status: HealthMetric["status"]) => {
-    switch (status) {
-      case "healthy":
-        return <CheckCircle className="h-5 w-5 text-green-500" />
-      case "warning":
-        return <AlertTriangle className="h-5 w-5 text-yellow-500" />
-      case "critical":
-        return <XCircle className="h-5 w-5 text-red-500" />
+  const handleAnalyze = async () => {
+    if (inputValue.trim()) {
+      setShowAnalysis(true)
+      setAnalysisResult("Analyzing...")
+
+      try {
+        const response = await fetch("/api/analyze-startup-area", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            area: inputValue.trim(),
+          }),
+        })
+
+        const data = await response.json()
+        setAnalysisResult(data.analysis || "Analysis complete. Please try again.")
+      } catch (error) {
+        console.error("Analysis error:", error)
+        setAnalysisResult("Sorry, I'm having trouble analyzing right now. Please try again in a moment.")
+      }
     }
   }
 
-  const getStatusColor = (status: HealthMetric["status"]) => {
-    switch (status) {
-      case "healthy":
-        return "text-green-600 bg-green-50 border-green-200"
-      case "warning":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200"
-      case "critical":
-        return "text-red-600 bg-red-50 border-red-200"
+  const handleViewDetails = (title: string) => {
+    setExpandedMetrics((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(title)) {
+        newSet.delete(title)
+      } else {
+        newSet.add(title)
+      }
+      return newSet
+    })
+  }
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim()) return
+
+    const userMessage: ChatMessage = {
+      role: "user",
+      content: chatInput,
+      timestamp: new Date(),
+    }
+
+    setChatMessages((prev) => [...prev, userMessage])
+    setChatInput("")
+    setIsTyping(true)
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are Nora AI-stronaut, a helpful AI assistant for startup health analysis. You help entrepreneurs understand their metrics and provide actionable advice. Keep responses concise and actionable. Use a friendly, professional tone with occasional space/rocket emojis.",
+            },
+            ...chatMessages.map((msg) => ({ role: msg.role, content: msg.content })),
+            { role: "user", content: chatInput },
+          ],
+        }),
+      })
+
+      const data = await response.json()
+
+      const assistantMessage: ChatMessage = {
+        role: "assistant",
+        content: data.message || "I'm here to help you with your startup health analysis!",
+        timestamp: new Date(),
+      }
+
+      setChatMessages((prev) => [...prev, assistantMessage])
+    } catch (error) {
+      console.error("Chat error:", error)
+      const errorMessage: ChatMessage = {
+        role: "assistant",
+        content: "Sorry, I'm having trouble connecting right now. Please try again in a moment! 🚀",
+        timestamp: new Date(),
+      }
+      setChatMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsTyping(false)
     }
   }
 
-  const getTrendIcon = (trend: "up" | "down" | "stable") => {
-    switch (trend) {
-      case "up":
-        return <TrendingUp className="h-4 w-4 text-green-500" />
-      case "down":
-        return <TrendingDown className="h-4 w-4 text-red-500" />
-      case "stable":
-        return <Minus className="h-4 w-4 text-gray-500" />
+  const handleChatKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      sendChatMessage()
     }
   }
 
-  const healthyCount = metrics.filter((m) => m.status === "healthy").length
-  const warningCount = metrics.filter((m) => m.status === "warning").length
-  const criticalCount = metrics.filter((m) => m.status === "critical").length
-  const overallHealth = (healthyCount / metrics.length) * 100
+  // Metric Card Component
+  const MetricCard = ({ title, score }: { title: string; score: number }) => {
+    const isExpanded = expandedMetrics.has(title)
+
+    return (
+      <div>
+        <div
+          style={{
+            backgroundColor: "#2a2a2a",
+            border: "1px solid #444",
+            padding: "30px 20px",
+            clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+            textAlign: "center",
+            minHeight: "280px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          <h3
+            style={{
+              color: "#e0e0e0",
+              fontSize: "18px",
+              fontWeight: "500",
+              margin: "0 0 30px 0",
+              letterSpacing: "0.05em",
+            }}
+          >
+            {title}
+          </h3>
+
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {/* Vertical Bar Chart */}
+            <div
+              style={{
+                width: "40px",
+                height: "120px",
+                backgroundColor: "#1a1a1a",
+                border: "1px solid #444",
+                position: "relative",
+                marginBottom: "20px",
+                clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: "0",
+                  left: "0",
+                  right: "0",
+                  height: `${score}%`,
+                  background: "linear-gradient(to top, #666, #aaa)",
+                  clipPath: "polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))",
+                }}
+              />
+            </div>
+
+            <div
+              style={{
+                fontSize: "32px",
+                fontWeight: "bold",
+                color: "#e0e0e0",
+                marginBottom: "5px",
+              }}
+            >
+              {score}%
+            </div>
+            <div
+              style={{
+                fontSize: "14px",
+                color: "#999",
+                marginBottom: "20px",
+              }}
+            >
+              Current Score
+            </div>
+          </div>
+
+          <button
+            onClick={() => handleViewDetails(title)}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#ccc",
+              fontSize: "14px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "5px",
+              padding: "10px",
+              transition: "color 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#fff"
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#ccc"
+            }}
+          >
+            View Details{" "}
+            <ChevronDown
+              size={16}
+              style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s ease" }}
+            />
+          </button>
+        </div>
+
+        {/* Dropdown Details */}
+        {isExpanded && (
+          <div
+            style={{
+              marginTop: "10px",
+              padding: "20px",
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+              color: "#999",
+              fontSize: "14px",
+              lineHeight: "1.6",
+              textAlign: "center",
+              animation: "slideDown 0.3s ease-out",
+            }}
+          >
+            Details coming soon...
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">System Health Check</h1>
-          <p className="text-muted-foreground">Monitor your system's performance and health metrics</p>
+    <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
+      {/* Hamburger Menu */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        style={{
+          position: "fixed",
+          top: "20px",
+          left: "20px",
+          background: "#2a2a2a",
+          border: "1px solid #444",
+          fontSize: "24px",
+          cursor: "pointer",
+          zIndex: 1000,
+          color: "#e0e0e0",
+          width: "50px",
+          height: "50px",
+          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+        }}
+      >
+        ☰
+      </button>
+
+      {/* Sidebar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? 0 : "-300px",
+          width: "300px",
+          height: "100vh",
+          backgroundColor: "#2a2a2a",
+          transition: "left 0.3s ease",
+          zIndex: 999,
+          padding: "20px",
+          borderRight: "1px solid #444",
+        }}
+      >
+        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
+            <button
+              style={{
+                background: "#1a1a1a",
+                border: "1px solid #444",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              }}
+            >
+              ⚙️
+            </button>
+            <button
+              style={{
+                background: "#1a1a1a",
+                border: "1px solid #444",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              }}
+            >
+              👤
+            </button>
+          </div>
         </div>
-        <Button onClick={refreshMetrics} disabled={isRefreshing}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
-          {isRefreshing ? "Refreshing..." : "Refresh"}
-        </Button>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {[
+            { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
+            { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: false },
+            { label: "Health Check", onClick: () => {}, active: true },
+            { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
+            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
+            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
+          ].map((item, index) => (
+            <button
+              key={index}
+              onClick={item.onClick}
+              style={{
+                padding: "18px",
+                fontSize: "16px",
+                cursor: "pointer",
+                border: "1px solid #444",
+                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
+                color: "#e0e0e0",
+                width: "100%",
+                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                letterSpacing: "0.05em",
+                fontWeight: "500",
+                transition: "all 0.3s ease",
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overall Health</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{Math.round(overallHealth)}%</div>
-            <Progress value={overallHealth} className="mt-2" />
-            <p className="text-xs text-muted-foreground mt-2">Last updated: {lastUpdated.toLocaleTimeString()}</p>
-          </CardContent>
-        </Card>
+      {/* Main Content */}
+      <div style={{ padding: "100px 50px 50px 50px", maxWidth: "1200px", margin: "0 auto" }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: "60px" }}>
+          <h1
+            style={{
+              fontSize: "48px",
+              fontWeight: "300",
+              margin: "0 0 20px 0",
+              letterSpacing: "0.05em",
+            }}
+          >
+            Health Check
+          </h1>
+          <p
+            style={{
+              fontSize: "18px",
+              color: "#999",
+              margin: "0 0 40px 0",
+              lineHeight: "1.6",
+            }}
+          >
+            Choose an area to analyze and I'll show you how your startup is doing
+          </p>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Healthy</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{healthyCount}</div>
-            <p className="text-xs text-muted-foreground">Systems operating normally</p>
-          </CardContent>
-        </Card>
+          {/* Input Field */}
+          <div style={{ position: "relative", maxWidth: "500px", margin: "0 auto" }}>
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="e.g. team, product, growth, research..."
+              style={{
+                width: "100%",
+                padding: "15px 60px 15px 20px",
+                backgroundColor: "#2a2a2a",
+                border: "1px solid #444",
+                color: "#e0e0e0",
+                fontSize: "16px",
+                clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                outline: "none",
+              }}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  handleAnalyze()
+                }
+              }}
+            />
+            <button
+              onClick={handleAnalyze}
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "#666",
+                border: "1px solid #888",
+                color: "#e0e0e0",
+                width: "40px",
+                height: "40px",
+                cursor: "pointer",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ArrowUp size={20} />
+            </button>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Warnings</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{warningCount}</div>
-            <p className="text-xs text-muted-foreground">Systems need attention</p>
-          </CardContent>
-        </Card>
+        {/* Analysis Results */}
+        {showAnalysis && (
+          <div
+            style={{
+              marginBottom: "60px",
+              padding: "30px",
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              clipPath: "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
+              maxWidth: "800px",
+              margin: "0 auto 60px auto",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "24px",
+                fontWeight: "500",
+                margin: "0 0 20px 0",
+                letterSpacing: "0.05em",
+              }}
+            >
+              Analysis Results for "{inputValue}"
+            </h3>
+            <p
+              style={{
+                color: "#ccc",
+                lineHeight: "1.6",
+                margin: "0",
+                fontSize: "16px",
+              }}
+            >
+              {analysisResult}
+            </p>
+          </div>
+        )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Critical</CardTitle>
-            <XCircle className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{criticalCount}</div>
-            <p className="text-xs text-muted-foreground">Systems require immediate action</p>
-          </CardContent>
-        </Card>
+        {/* Metrics Section */}
+        <div style={{ textAlign: "center", marginBottom: "60px" }}>
+          <h2
+            style={{
+              fontSize: "36px",
+              fontWeight: "300",
+              margin: "0 0 15px 0",
+              letterSpacing: "0.05em",
+            }}
+          >
+            Your Startup Metrics
+          </h2>
+          <p
+            style={{
+              fontSize: "16px",
+              color: "#999",
+              margin: "0 0 50px 0",
+            }}
+          >
+            Real-time health metrics of key areas
+          </p>
+
+          {/* Top Row Metrics */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "30px",
+              marginBottom: "40px",
+            }}
+          >
+            {metrics
+              .filter((m) => m.category === "top")
+              .map((metric, index) => (
+                <MetricCard key={index} title={metric.title} score={metric.score} />
+              ))}
+          </div>
+
+          {/* Bottom Row Metrics */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "30px",
+            }}
+          >
+            {metrics
+              .filter((m) => m.category === "bottom")
+              .map((metric, index) => (
+                <MetricCard key={index} title={metric.title} score={metric.score} />
+              ))}
+          </div>
+        </div>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="infrastructure">Infrastructure</TabsTrigger>
-          <TabsTrigger value="alerts">Alerts</TabsTrigger>
-        </TabsList>
+      {/* Overlay for sidebar */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.6)",
+            zIndex: 998,
+          }}
+        />
+      )}
 
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {metrics.map((metric) => (
-              <Card key={metric.id} className={`border-2 ${getStatusColor(metric.status)}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{metric.name}</CardTitle>
-                    {getStatusIcon(metric.status)}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold">
-                        {typeof metric.value === "number"
-                          ? metric.value.toFixed(metric.unit === "%" ? 1 : 0)
-                          : metric.value}
-                        {metric.unit}
-                      </span>
-                      {getTrendIcon(metric.trend)}
-                    </div>
-
-                    <Badge variant={metric.status === "healthy" ? "default" : "destructive"}>
-                      {metric.status.toUpperCase()}
-                    </Badge>
-
-                    <p className="text-xs text-muted-foreground">
-                      Updated: {new Date(metric.lastUpdated).toLocaleString()}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="performance" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Cpu className="mr-2 h-5 w-5" />
-                  CPU Performance
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span>Current Usage</span>
-                    <span className="font-bold">78%</span>
-                  </div>
-                  <Progress value={78} />
-                  <div className="text-sm text-muted-foreground">Average over last 24 hours: 65%</div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <HardDrive className="mr-2 h-5 w-5" />
-                  Storage Usage
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span>Disk Usage</span>
-                    <span className="font-bold">45%</span>
-                  </div>
-                  <Progress value={45} />
-                  <div className="text-sm text-muted-foreground">2.1 TB used of 4.7 TB available</div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="infrastructure" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Server className="mr-2 h-5 w-5" />
-                  Servers
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Web Server 1</span>
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Web Server 2</span>
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  </div>
-                  <div className="flex justify-between">
-                    <span>API Server</span>
-                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Database className="mr-2 h-5 w-5" />
-                  Databases
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Primary DB</span>
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Replica DB</span>
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Cache DB</span>
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Wifi className="mr-2 h-5 w-5" />
-                  Network
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>CDN</span>
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Load Balancer</span>
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Firewall</span>
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="alerts" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Alerts</CardTitle>
-              <CardDescription>System alerts and notifications from the last 24 hours</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3 p-3 border rounded-lg">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
-                  <div className="flex-1">
-                    <h4 className="font-medium">High CPU Usage Detected</h4>
-                    <p className="text-sm text-muted-foreground">CPU usage exceeded 80% threshold on API server</p>
-                    <p className="text-xs text-muted-foreground mt-1">2 hours ago</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3 p-3 border rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                  <div className="flex-1">
-                    <h4 className="font-medium">Database Backup Completed</h4>
-                    <p className="text-sm text-muted-foreground">Scheduled backup completed successfully</p>
-                    <p className="text-xs text-muted-foreground mt-1">6 hours ago</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3 p-3 border rounded-lg">
-                  <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
-                  <div className="flex-1">
-                    <h4 className="font-medium">Service Outage Resolved</h4>
-                    <p className="text-sm text-muted-foreground">Payment service outage has been resolved</p>
-                    <p className="text-xs text-muted-foreground mt-1">12 hours ago</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Background pattern */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `
+            linear-gradient(45deg, transparent 49%, rgba(255,255,255,0.01) 50%, transparent 51%),
+            linear-gradient(-45deg, transparent 49%, rgba(255,255,255,0.01) 50%, transparent 51%)
+          `,
+          backgroundSize: "30px 30px",
+          zIndex: -1,
+        }}
+      />
+      <style jsx>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   )
 }
