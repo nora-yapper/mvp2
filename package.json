@@ -41,9 +41,10 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "latest",
-    "date-fns": "^4.1.0",
+    "date-fns": "4.1.0",
     "embla-carousel-react": "latest",
-    "geist": "^1.4.2",
+    "geist": "latest",
+    "icons": "latest",
     "input-otp": "latest",
     "lucide-react": "^0.454.0",
     "next": "15.2.4",
@@ -57,7 +58,8 @@
     "sonner": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "vaul": "latest"
+    "vaul": "latest",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22",

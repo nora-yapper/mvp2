@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Progress } from "@/components/ui/progress"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, Clock, Calendar, Kanban, TableIcon, Loader2, Edit, Save, X } from "lucide-react"
-import { getTeamMembers } from "@/lib/team-data"
+import Sidebar from "./Sidebar"
 
 interface Task {
   id: string
@@ -39,6 +39,12 @@ interface TeamMemberWorkload {
   status: "Underloaded" | "Balanced" | "Overloaded"
 }
 
+interface TeamMember {
+  id: string
+  name: string
+  role: string
+}
+
 export default function CommandDeck() {
   const [activeView, setActiveView] = useState("Timeline")
   const [tasks, setTasks] = useState<Task[]>([])
@@ -50,7 +56,6 @@ export default function CommandDeck() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedSteps, setGeneratedSteps] = useState<GeneratedStep[]>([])
   const [isStepsModalOpen, setIsStepsModalOpen] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [editingStepIndex, setEditingStepIndex] = useState<number | null>(null)
   const [editingStep, setEditingStep] = useState<GeneratedStep | null>(null)
   const [newTask, setNewTask] = useState({
@@ -62,7 +67,14 @@ export default function CommandDeck() {
     category: "General",
   })
 
-  const teamMembers = getTeamMembers()
+  // Mock team members data
+  const teamMembers: TeamMember[] = [
+    { id: "1", name: "Sarah Chen", role: "Product Manager" },
+    { id: "2", name: "Alex Johnson", role: "Developer" },
+    { id: "3", name: "Mike Rodriguez", role: "Designer" },
+    { id: "4", name: "Emily Davis", role: "Marketing" },
+    { id: "5", name: "James Wilson", role: "Sales" },
+  ]
 
   // Mock team workload data
   const teamWorkload: TeamMemberWorkload[] = [
@@ -71,6 +83,27 @@ export default function CommandDeck() {
     { name: "Mike Rodriguez", workload: 92, status: "Overloaded" },
     { name: "Emily Davis", workload: 68, status: "Balanced" },
     { name: "James Wilson", workload: 34, status: "Underloaded" },
+  ]
+
+  const sidebarItems = [
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: "DashboardIcon",
+      items: [],
+    },
+    {
+      title: "Health Check",
+      url: "/health-check",
+      icon: "Activity",
+      items: [],
+    },
+    {
+      title: "Settings",
+      url: "/settings",
+      icon: "SettingsIcon",
+      items: [],
+    },
   ]
 
   const filteredTasks = tasks.filter((task) => {
@@ -112,20 +145,29 @@ export default function CommandDeck() {
 
     setIsGenerating(true)
     try {
-      const response = await fetch("/api/generate-mission-steps", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      // Mock API call - replace with actual API when available
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      const mockSteps: GeneratedStep[] = [
+        {
+          title: "Market Research",
+          description: "Conduct comprehensive market analysis",
+          assignee: "Sarah Chen",
+          deadline: "2024-02-15",
+          priority: "High",
+          category: "Research",
         },
-        body: JSON.stringify({ mission, teamMembers }),
-      })
+        {
+          title: "Product Development",
+          description: "Build MVP based on research findings",
+          assignee: "Alex Johnson",
+          deadline: "2024-03-01",
+          priority: "High",
+          category: "Development",
+        },
+      ]
 
-      if (!response.ok) {
-        throw new Error("Failed to generate steps")
-      }
-
-      const data = await response.json()
-      setGeneratedSteps(data.steps)
+      setGeneratedSteps(mockSteps)
       setIsStepsModalOpen(true)
     } catch (error) {
       console.error("Error generating mission steps:", error)
@@ -402,145 +444,11 @@ export default function CommandDeck() {
   )
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0", position: "relative" }}>
-      {/* Hamburger Menu - Top Left */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        style={{
-          position: "fixed",
-          top: "20px",
-          left: "20px",
-          background: "#2a2a2a",
-          border: "1px solid #444",
-          fontSize: "24px",
-          cursor: "pointer",
-          zIndex: 1000,
-          color: "#e0e0e0",
-          width: "50px",
-          height: "50px",
-          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-          transition: "all 0.3s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#3a3a3a"
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "#2a2a2a"
-        }}
-      >
-        ☰
-      </button>
-
-      {/* Overlay for sidebar */}
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.6)",
-            zIndex: 998,
-          }}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: sidebarOpen ? 0 : "-300px",
-          width: "300px",
-          height: "100vh",
-          backgroundColor: "#2a2a2a",
-          transition: "left 0.3s ease",
-          zIndex: 999,
-          padding: "20px",
-          borderRight: "1px solid #444",
-        }}
-      >
-        {/* Top section - Settings and Profile icons */}
-        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
-          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
-            <button
-              style={{
-                background: "#1a1a1a",
-                border: "1px solid #444",
-                fontSize: "24px",
-                cursor: "pointer",
-                color: "#e0e0e0",
-                width: "45px",
-                height: "45px",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-              }}
-            >
-              ⚙️
-            </button>
-            <button
-              style={{
-                background: "#1a1a1a",
-                border: "1px solid #444",
-                fontSize: "24px",
-                cursor: "pointer",
-                color: "#e0e0e0",
-                width: "45px",
-                height: "45px",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-              }}
-            >
-              👤
-            </button>
-          </div>
-        </div>
-
-        {/* Six vertically stacked buttons */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {[
-            { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
-            { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: true },
-            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
-            { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
-            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
-            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
-          ].map((item, index) => (
-            <button
-              key={index}
-              onClick={item.onClick}
-              style={{
-                padding: "18px",
-                fontSize: "16px",
-                cursor: "pointer",
-                border: "1px solid #444",
-                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
-                color: "#e0e0e0",
-                width: "100%",
-                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                letterSpacing: "0.05em",
-                fontWeight: "500",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                if (!item.active) {
-                  e.currentTarget.style.backgroundColor = "#3a3a3a"
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!item.active) {
-                  e.currentTarget.style.backgroundColor = "#1a1a1a"
-                }
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-900 text-gray-100">
+      <Sidebar items={sidebarItems} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: "0px", paddingTop: "80px" }}>
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="flex items-center justify-between p-6 border-b border-gray-700">
           <h1 className="text-3xl font-bold text-gray-100">Command Deck</h1>

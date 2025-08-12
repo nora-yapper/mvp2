@@ -2,16 +2,37 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const { problem } = await request.json()
+    const { problemDescription } = await request.json()
 
-    if (!problem) {
+    if (!problemDescription) {
       return NextResponse.json({ error: "Problem description is required" }, { status: 400 })
+    }
+
+    const openaiApiKey = process.env.OPENAI_API_KEY
+    const analysisInstructions = `
+Analyze the problem description and provide a structured response with the following format:
+
+**Problem Statement (1 sentence):** A clear summary of the core problem, in plain language.
+
+**Target Audience:** Who experiences this problem (describe user segment).
+
+**Context & Trigger:** When, where, or in what situation the problem appears.
+
+**Impact or Pain:** Why this problem matters to the user (consequences, frustrations, missed opportunities).
+
+**Assumptions to Validate:** List 2–3 key assumptions or uncertainties that need to be tested through interviews.
+
+Please format your response clearly with these exact headings and provide actionable insights for each section.
+`
+
+    if (!openaiApiKey) {
+      return NextResponse.json({ error: "OpenAI API key not configured" }, { status: 500 })
     }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${openaiApiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -19,12 +40,11 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: "system",
-            content:
-              "You are a startup advisor. Analyze the given problem and provide structured insights including root causes, impact assessment, and actionable recommendations.",
+            content: analysisInstructions,
           },
           {
             role: "user",
-            content: `Analyze this startup problem: ${problem}`,
+            content: `Please analyze this problem description: ${problemDescription}`,
           },
         ],
         max_tokens: 1000,
@@ -37,11 +57,11 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json()
-    const analysis = data.choices[0]?.message?.content || "Unable to analyze the problem."
+    const analysis = data.choices[0]?.message?.content || "Unable to generate analysis"
 
     return NextResponse.json({ analysis })
   } catch (error) {
-    console.error("Problem analysis error:", error)
-    return NextResponse.json({ error: "Failed to analyze problem" }, { status: 500 })
+    console.error("Error calling OpenAI API:", error)
+    return NextResponse.json({ error: "Failed to analyze problem description" }, { status: 500 })
   }
 }
