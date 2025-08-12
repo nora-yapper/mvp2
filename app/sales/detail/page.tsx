@@ -36,18 +36,17 @@ export default function SalesDetailPage() {
     }, 100)
   }, [])
 
-  // Always include Value Proposition Canvas as mandatory, plus selected options
-  const allSections = ["value-proposition", ...selectedOptions.filter((opt) => opt !== "value-proposition")]
+  // Always include Value Proposition Canvas as mandatory, plus Overview
+  const allSections = ["overview", "value-proposition", ...selectedOptions.filter((opt) => opt !== "value-proposition")]
 
   const sectionLabels: { [key: string]: string } = {
+    overview: "Overview",
     "value-proposition": "Value Proposition Canvas",
-    "benefit-list": "Benefit List",
-    "60-second-pitch": "60-Second Pitch",
-    "1-sentence-description": "1-Sentence Startup Description",
+    "short-pitches": "Short Pitches",
   }
 
   const isStepUnlocked = (stepId: string) => {
-    return unlockedSteps.includes(stepId)
+    return stepId === "overview" || unlockedSteps.includes(stepId)
   }
 
   const scrollToSection = (sectionId: string) => {
@@ -58,8 +57,8 @@ export default function SalesDetailPage() {
   }
 
   const handleTaskClick = (sectionId: string, taskId: string) => {
-    // Only allow clicks for Value Proposition Canvas
-    if (sectionId === "value-proposition") {
+    // Only allow clicks for Overview and Value Proposition Canvas
+    if (sectionId === "overview" || sectionId === "value-proposition") {
       const optionsParam = selectedOptions.join(",")
       window.location.href = `/sales/task?section=${sectionId}&task=${taskId}&options=${optionsParam}`
     }
@@ -122,538 +121,51 @@ export default function SalesDetailPage() {
     </div>
   )
 
-  // Value Proposition Canvas Section Component
-  const ValuePropositionSection = ({ isUnlocked }: { isUnlocked: boolean }) => {
-    const [canvasData, setCanvasData] = useState({
-      valueProposition: "",
-      customerSegment: "",
-      gainCreators: "",
-      productsServices: "",
-      painRelievers: "",
-      gains: "",
-      customerJobs: "",
-      pains: "",
-    })
-
-    const [isExpanded, setIsExpanded] = useState(false)
-
-    const handleInputChange = (field: string, value: string) => {
-      setCanvasData((prev) => ({
-        ...prev,
-        [field]: value,
-      }))
-    }
-
-    return (
-      <div
+  // Overview Section Component
+  const OverviewSection = () => (
+    <div
+      style={{
+        backgroundColor: "#1a1a1a",
+        minHeight: "100vh",
+        padding: "60px 40px",
+        position: "relative",
+      }}
+    >
+      <h1
         style={{
-          backgroundColor: "#1a1a1a",
-          minHeight: "100vh",
-          padding: "60px 40px",
-          position: "relative",
+          fontSize: "4rem",
+          color: "#666",
+          fontWeight: "bold",
+          marginBottom: "60px",
+          textAlign: "left",
+          letterSpacing: "0.1em",
         }}
       >
-        <h1
-          style={{
-            fontSize: "2.8rem",
-            color: "#666",
-            fontWeight: "bold",
-            marginBottom: "60px",
-            textAlign: "center",
-            letterSpacing: "0.1em",
-          }}
+        OVERVIEW
+      </h1>
+
+      <div style={{ maxWidth: "800px" }}>
+        <GeometricCard
+          clickable={true}
+          onClick={() => handleTaskClick("overview", "sales-strategy")}
+          style={{ fontSize: "18px", lineHeight: "1.6" }}
         >
-          VALUE PROPOSITION CANVAS
-        </h1>
-
-        {!isExpanded ? (
-          <div style={{ display: "flex", justifyContent: "center", maxWidth: "1000px", margin: "0 auto" }}>
-            {/* Value Map Card */}
-            <div style={{ maxWidth: "600px" }}>
-              <GeometricCard clickable={isUnlocked} onClick={() => isUnlocked && setIsExpanded(true)}>
-                <h3
-                  style={{
-                    fontSize: "16px",
-                    fontWeight: "bold",
-                    marginBottom: "20px",
-                    color: "#ccc",
-                    textAlign: "center",
-                  }}
-                >
-                  VALUE MAP
-                </h3>
-                <div style={{ fontSize: "14px", lineHeight: "1.6" }}>
-                  <p style={{ marginBottom: "15px" }}>
-                    A structured tool to map your user's jobs, pains, and gains - and how your solution fits them.
-                  </p>
-                </div>
-              </GeometricCard>
-            </div>
-          </div>
-        ) : (
-          <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-            {/* Back button */}
-            <button
-              onClick={() => setIsExpanded(false)}
-              style={{
-                marginBottom: "20px",
-                padding: "10px 20px",
-                backgroundColor: "#2a2a2a",
-                border: "1px solid #444",
-                color: "#ccc",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              ← Back to Overview
-            </button>
-
-            {/* Input fields at top */}
-            <div style={{ display: "flex", gap: "20px", marginBottom: "40px" }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ color: "#ccc", fontSize: "14px", marginBottom: "8px", display: "block" }}>
-                  Value Proposition:
-                </label>
-                <input
-                  type="text"
-                  value={canvasData.valueProposition}
-                  onChange={(e) => handleInputChange("valueProposition", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    backgroundColor: "#2a2a2a",
-                    border: "1px solid #444",
-                    borderRadius: "4px",
-                    color: "#fff",
-                    fontSize: "14px",
-                  }}
-                  placeholder="Enter your value proposition"
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ color: "#ccc", fontSize: "14px", marginBottom: "8px", display: "block" }}>
-                  Customer Segment:
-                </label>
-                <input
-                  type="text"
-                  value={canvasData.customerSegment}
-                  onChange={(e) => handleInputChange("customerSegment", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    backgroundColor: "#2a2a2a",
-                    border: "1px solid #444",
-                    borderRadius: "4px",
-                    color: "#fff",
-                    fontSize: "14px",
-                  }}
-                  placeholder="Enter your customer segment"
-                />
-              </div>
-            </div>
-
-            {/* Canvas Layout */}
-            <div style={{ display: "flex", gap: "60px", alignItems: "center", justifyContent: "center" }}>
-              {/* Left Square - Value Map */}
-              <div
-                style={{
-                  width: "400px",
-                  height: "400px",
-                  border: "3px solid #444",
-                  position: "relative",
-                  backgroundColor: "#2a2a2a",
-                }}
-              >
-                {/* Diagonal line */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "0",
-                    left: "0",
-                    width: "100%",
-                    height: "100%",
-                    background: "linear-gradient(135deg, transparent 49%, #444 49%, #444 51%, transparent 51%)",
-                  }}
-                />
-
-                {/* Gain Creators - Top */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "20px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    width: "160px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div style={{ color: "#ccc", fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>
-                    Gain Creators
-                  </div>
-                  <div style={{ fontSize: "24px", marginBottom: "8px" }}>📈</div>
-                  <textarea
-                    value={canvasData.gainCreators}
-                    onChange={(e) => handleInputChange("gainCreators", e.target.value)}
-                    style={{
-                      width: "100%",
-                      height: "60px",
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid #555",
-                      borderRadius: "4px",
-                      color: "#fff",
-                      fontSize: "12px",
-                      padding: "4px",
-                      resize: "none",
-                    }}
-                    placeholder="How do you create gains?"
-                  />
-                </div>
-
-                {/* Products & Services - Center Left */}
-                <div
-                  style={{
-                    position: "absolute",
-                    left: "20px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    width: "140px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div style={{ color: "#ccc", fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>
-                    Products & Services
-                  </div>
-                  <div style={{ fontSize: "24px", marginBottom: "8px" }}>🎁</div>
-                  <textarea
-                    value={canvasData.productsServices}
-                    onChange={(e) => handleInputChange("productsServices", e.target.value)}
-                    style={{
-                      width: "100%",
-                      height: "60px",
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid #555",
-                      borderRadius: "4px",
-                      color: "#fff",
-                      fontSize: "12px",
-                      padding: "4px",
-                      resize: "none",
-                    }}
-                    placeholder="What do you offer?"
-                  />
-                </div>
-
-                {/* Pain Relievers - Bottom */}
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "20px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    width: "160px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div style={{ color: "#ccc", fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>
-                    Pain Relievers
-                  </div>
-                  <div style={{ fontSize: "24px", marginBottom: "8px" }}>💊</div>
-                  <textarea
-                    value={canvasData.painRelievers}
-                    onChange={(e) => handleInputChange("painRelievers", e.target.value)}
-                    style={{
-                      width: "100%",
-                      height: "60px",
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid #555",
-                      borderRadius: "4px",
-                      color: "#fff",
-                      fontSize: "12px",
-                      padding: "4px",
-                      resize: "none",
-                    }}
-                    placeholder="How do you relieve pains?"
-                  />
-                </div>
-              </div>
-
-              {/* Arrows */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                <div style={{ fontSize: "24px", color: "#666" }}>→</div>
-                <div style={{ fontSize: "24px", color: "#666" }}>←</div>
-              </div>
-
-              {/* Right Circle - Customer Profile */}
-              <div
-                style={{
-                  width: "400px",
-                  height: "400px",
-                  border: "3px solid #444",
-                  borderRadius: "50%",
-                  position: "relative",
-                  backgroundColor: "#2a2a2a",
-                }}
-              >
-                {/* Customer in center */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: "80px",
-                    height: "80px",
-                    borderRadius: "50%",
-                    backgroundColor: "#444",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "32px",
-                  }}
-                >
-                  👤
-                </div>
-
-                {/* Gains - Top */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "30px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    width: "120px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div style={{ color: "#ccc", fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>Gains</div>
-                  <div style={{ fontSize: "20px", marginBottom: "8px" }}>😊</div>
-                  <textarea
-                    value={canvasData.gains}
-                    onChange={(e) => handleInputChange("gains", e.target.value)}
-                    style={{
-                      width: "100%",
-                      height: "50px",
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid #555",
-                      borderRadius: "4px",
-                      color: "#fff",
-                      fontSize: "11px",
-                      padding: "4px",
-                      resize: "none",
-                    }}
-                    placeholder="What gains do they want?"
-                  />
-                </div>
-
-                {/* Customer Jobs - Right */}
-                <div
-                  style={{
-                    position: "absolute",
-                    right: "30px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    width: "120px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div style={{ color: "#ccc", fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>
-                    Customer Jobs
-                  </div>
-                  <div style={{ fontSize: "20px", marginBottom: "8px" }}>📋</div>
-                  <textarea
-                    value={canvasData.customerJobs}
-                    onChange={(e) => handleInputChange("customerJobs", e.target.value)}
-                    style={{
-                      width: "100%",
-                      height: "50px",
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid #555",
-                      borderRadius: "4px",
-                      color: "#fff",
-                      fontSize: "11px",
-                      padding: "4px",
-                      resize: "none",
-                    }}
-                    placeholder="What jobs do they need to do?"
-                  />
-                </div>
-
-                {/* Pains - Bottom */}
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "30px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    width: "120px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div style={{ color: "#ccc", fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>Pains</div>
-                  <div style={{ fontSize: "20px", marginBottom: "8px" }}>😞</div>
-                  <textarea
-                    value={canvasData.pains}
-                    onChange={(e) => handleInputChange("pains", e.target.value)}
-                    style={{
-                      width: "100%",
-                      height: "50px",
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid #555",
-                      borderRadius: "4px",
-                      color: "#fff",
-                      fontSize: "11px",
-                      padding: "4px",
-                      resize: "none",
-                    }}
-                    placeholder="What pains do they experience?"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Instructions */}
-            <div
-              style={{
-                marginTop: "60px",
-                padding: "30px",
-                backgroundColor: "#2a2a2a",
-                borderRadius: "8px",
-                color: "#ccc",
-              }}
-            >
-              <h3 style={{ color: "#fff", marginBottom: "20px", fontSize: "18px" }}>Instructions</h3>
-              <div style={{ fontSize: "14px", lineHeight: "1.6" }}>
-                <div style={{ marginBottom: "25px", padding: "15px", backgroundColor: "#1a1a1a", borderRadius: "4px" }}>
-                  <p style={{ marginBottom: "10px" }}>
-                    <strong style={{ color: "#fff" }}>Value Proposition:</strong> A clear statement that explains how
-                    your product or service solves customers' problems, delivers specific benefits, and tells the ideal
-                    customer why they should buy from you instead of the competition.
-                  </p>
-                  <p>
-                    <strong style={{ color: "#fff" }}>Customer Segment:</strong> A specific group of people or
-                    organizations that share similar characteristics, needs, behaviors, or demographics that your
-                    business aims to serve.
-                  </p>
-                </div>
-
-                <p style={{ marginBottom: "15px" }}>
-                  <strong>Value Map (Left Square):</strong> Describe how your product or service creates value
-                </p>
-                <ul style={{ marginBottom: "20px", paddingLeft: "20px" }}>
-                  <li>
-                    <strong>Products & Services:</strong> List your offerings
-                  </li>
-                  <li>
-                    <strong>Pain Relievers:</strong> How you solve customer problems
-                  </li>
-                  <li>
-                    <strong>Gain Creators:</strong> How you create benefits for customers
-                  </li>
-                </ul>
-                <p style={{ marginBottom: "15px" }}>
-                  <strong>Customer Profile (Right Circle):</strong> Describe your customer segment
-                </p>
-                <ul style={{ paddingLeft: "20px" }}>
-                  <li>
-                    <strong>Customer Jobs:</strong> What customers are trying to accomplish
-                  </li>
-                  <li>
-                    <strong>Pains:</strong> Problems and frustrations customers face
-                  </li>
-                  <li>
-                    <strong>Gains:</strong> Benefits customers want to achieve
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  // Benefit List Section Component
-  const BenefitListSection = ({ isUnlocked }: { isUnlocked: boolean }) => (
-    <div
-      style={{
-        backgroundColor: "#1a1a1a",
-        minHeight: "100vh",
-        padding: "60px 40px",
-        position: "relative",
-      }}
-    >
-      <h1
-        style={{
-          fontSize: "3.5rem",
-          color: "#666",
-          fontWeight: "bold",
-          marginBottom: "60px",
-          textAlign: "center",
-          letterSpacing: "0.1em",
-        }}
-      >
-        BENEFIT LIST
-      </h1>
-
-      <div style={{ display: "flex", justifyContent: "center", maxWidth: "900px", margin: "0 auto" }}>
-        <div style={{ width: "600px" }}>
-          <GeometricCard style={{ minHeight: "300px" }}>
-            <h3
-              style={{
-                fontSize: "18px",
-                fontWeight: "bold",
-                marginBottom: "20px",
-                color: "#ccc",
-                textAlign: "center",
-              }}
-            >
-              WHAT DOES USER GET?
-            </h3>
-            <div style={{ fontSize: "14px", lineHeight: "1.5", color: "#ccc", textAlign: "center" }}>
-              Explanation of What BENEFITS ARE
-            </div>
-          </GeometricCard>
-        </div>
+          <h3 style={{ fontSize: "20px", marginBottom: "15px", color: "#fff" }}>Sales Strategy & Approach</h3>
+          <p style={{ marginBottom: "20px" }}>
+            Develop a comprehensive sales strategy that aligns with your product vision and target market. Define your
+            sales process, identify key customer segments, and establish clear value propositions.
+          </p>
+          <p>
+            Create a systematic approach to sales that maximizes conversion rates and builds lasting customer
+            relationships through effective communication and value delivery.
+          </p>
+        </GeometricCard>
       </div>
     </div>
   )
 
-  // 60-Second Pitch Section Component
-  const SixtySecondPitchSection = ({ isUnlocked }: { isUnlocked: boolean }) => (
-    <div
-      style={{
-        backgroundColor: "#1a1a1a",
-        minHeight: "100vh",
-        padding: "60px 40px",
-        position: "relative",
-      }}
-    >
-      <h1
-        style={{
-          fontSize: "3.5rem",
-          color: "#666",
-          fontWeight: "bold",
-          marginBottom: "60px",
-          textAlign: "center",
-          letterSpacing: "0.1em",
-        }}
-      >
-        60-SECOND PITCH
-      </h1>
-
-      <div style={{ display: "flex", justifyContent: "center", maxWidth: "900px", margin: "0 auto" }}>
-        <div style={{ width: "700px" }}>
-          <GeometricCard style={{ minHeight: "200px" }}>
-            <div style={{ fontSize: "14px", lineHeight: "1.5", color: "#ccc", textAlign: "center" }}>
-              WHAT THE 60SECOND pitch is
-            </div>
-          </GeometricCard>
-        </div>
-      </div>
-    </div>
-  )
-
-  // 1-Sentence Description Section Component
-  const OneSentenceDescriptionSection = ({ isUnlocked }: { isUnlocked: boolean }) => (
+  // Value Proposition Canvas Section Component
+  const ValuePropositionSection = ({ isUnlocked }: { isUnlocked: boolean }) => (
     <div
       style={{
         backgroundColor: "#1a1a1a",
@@ -672,14 +184,97 @@ export default function SalesDetailPage() {
           letterSpacing: "0.1em",
         }}
       >
-        1-SENTENCE STARTUP DESCRIPTION
+        VALUE PROPOSITION CANVAS
       </h1>
 
-      <div style={{ display: "flex", justifyContent: "center", maxWidth: "900px", margin: "0 auto" }}>
-        <div style={{ width: "600px" }}>
+      <div style={{ display: "flex", gap: "40px", maxWidth: "1000px", margin: "0 auto" }}>
+        {/* Customer Profile Card */}
+        <div style={{ flex: "0 0 300px" }}>
+          <GeometricCard
+            clickable={isUnlocked}
+            onClick={() => handleTaskClick("value-proposition", "customer-profile")}
+          >
+            <h3
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginBottom: "20px",
+                color: "#ccc",
+                textAlign: "center",
+              }}
+            >
+              CUSTOMER PROFILE
+            </h3>
+            <p style={{ fontSize: "14px", lineHeight: "1.5" }}>
+              Define your customer segments, their jobs-to-be-done, pain points, and desired gains. Understand what
+              drives your customers' decisions.
+            </p>
+          </GeometricCard>
+        </div>
+
+        {/* Value Map Card */}
+        <div style={{ flex: 1 }}>
+          <GeometricCard clickable={isUnlocked} onClick={() => handleTaskClick("value-proposition", "value-map")}>
+            <h3
+              style={{
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginBottom: "20px",
+                color: "#ccc",
+                textAlign: "center",
+              }}
+            >
+              VALUE MAP
+            </h3>
+            <div style={{ fontSize: "14px", lineHeight: "1.6" }}>
+              <p style={{ marginBottom: "15px" }}>
+                Map your products and services to customer needs. Define how you create value through pain relievers and
+                gain creators.
+              </p>
+              <p>Establish clear connections between what you offer and what customers actually want and need.</p>
+            </div>
+          </GeometricCard>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Short Pitches Section Component (Non-clickable)
+  const ShortPitchesSection = ({ isUnlocked }: { isUnlocked: boolean }) => (
+    <div
+      style={{
+        backgroundColor: "#1a1a1a",
+        minHeight: "100vh",
+        padding: "60px 40px",
+        position: "relative",
+      }}
+    >
+      <h1
+        style={{
+          fontSize: "3.5rem",
+          color: "#666",
+          fontWeight: "bold",
+          marginBottom: "60px",
+          textAlign: "center",
+          letterSpacing: "0.1em",
+        }}
+      >
+        SHORT PITCHES
+      </h1>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "40px", maxWidth: "900px", margin: "0 auto" }}>
+        <div style={{ alignSelf: "flex-start", width: "400px" }}>
+          <GeometricCard style={{ minHeight: "150px" }}>
+            <div style={{ fontSize: "14px", lineHeight: "1.5", color: "#ccc" }}>
+              Elevator pitch and quick value propositions.
+            </div>
+          </GeometricCard>
+        </div>
+
+        <div style={{ alignSelf: "flex-end", width: "500px" }}>
           <GeometricCard style={{ minHeight: "200px" }}>
-            <div style={{ fontSize: "14px", lineHeight: "1.5", color: "#ccc", textAlign: "center" }}>
-              WHAT THE 1 sentence pitch is, now that they know their idea well.
+            <div style={{ fontSize: "14px", lineHeight: "1.5", color: "#ccc" }}>
+              Tailored pitches for different audiences and scenarios.
             </div>
           </GeometricCard>
         </div>
@@ -692,14 +287,12 @@ export default function SalesDetailPage() {
 
     const sectionContent = () => {
       switch (section) {
+        case "overview":
+          return <OverviewSection />
         case "value-proposition":
           return <ValuePropositionSection isUnlocked={isUnlocked} />
-        case "benefit-list":
-          return <BenefitListSection isUnlocked={isUnlocked} />
-        case "60-second-pitch":
-          return <SixtySecondPitchSection isUnlocked={isUnlocked} />
-        case "1-sentence-description":
-          return <OneSentenceDescriptionSection isUnlocked={isUnlocked} />
+        case "short-pitches":
+          return <ShortPitchesSection isUnlocked={isUnlocked} />
         default:
           return <div>Section not found</div>
       }
@@ -919,7 +512,7 @@ export default function SalesDetailPage() {
               padding: "15px",
               fontSize: "16px",
               cursor: "pointer",
-              border: "1px solid #ccs",
+              border: "1px solid #ccc",
               backgroundColor: "white",
               width: "100%",
             }}

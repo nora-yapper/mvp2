@@ -1,85 +1,41 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { generateText } from "ai"
+import { openai } from "@ai-sdk/openai"
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { scenario, currentContext } = await req.json()
+    const { scenario, currentState, variables } = await request.json()
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are an expert startup advisor analyzing what-if scenarios. 
+    if (!scenario) {
+      return NextResponse.json({ error: "Scenario description is required" }, { status: 400 })
+    }
 
-CONTEXT: Early-stage startup (${currentContext.team_size} people, ${currentContext.runway_days} days runway)
-CURRENT PRIORITIES: ${currentContext.current_priorities.join(", ")}
+    const { text } = await generateText({
+      model: openai("gpt-4o"),
+      system:
+        "You are an expert scenario planner and strategic analyst. Analyze what-if scenarios and their potential impacts on business outcomes.",
+      prompt: `What-if Scenario: ${scenario}
+Current State: ${currentState || "Not specified"}
+Key Variables: ${variables || "Not specified"}
 
-Analyze the given scenario and provide structured insights on how it would impact different aspects of the startup journey.
+Provide a comprehensive what-if analysis including:
+1. Scenario probability assessment
+2. Potential outcomes (best case, worst case, most likely)
+3. Impact analysis on key business metrics
+4. Required resources and capabilities
+5. Timeline and implementation considerations
+6. Risk factors and mitigation strategies
+7. Success indicators and monitoring metrics
+8. Alternative scenarios and contingency plans
+9. Strategic recommendations
+10. Action items and next steps
 
-RESPONSE FORMAT - Return ONLY a JSON object with these sections:
-{
-  "timeline": "How this affects key milestones and deadlines (2-3 sentences)",
-  "resources": "Impact on budget, runway, and resource allocation (2-3 sentences)", 
-  "team": "Effects on team dynamics, workload, and morale (2-3 sentences)",
-  "investors": "How this might affect investor relationships and fundraising (2-3 sentences)",
-  "market": "Impact on market position and competitive advantage (2-3 sentences)",
-  "recommendations": "Strategic recommendations to mitigate risks or capitalize on opportunities (3-4 sentences)"
-}
-
-Be specific, actionable, and realistic for an early-stage startup. Focus on practical implications.`,
-          },
-          {
-            role: "user",
-            content: `Analyze this what-if scenario: "${scenario}"
-
-Consider the startup context and provide detailed analysis of how this scenario would impact the different aspects of the business.`,
-          },
-        ],
-        max_tokens: 1000,
-        temperature: 0.7,
-      }),
+Format as a detailed scenario analysis report with clear recommendations.`,
     })
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-    const aiResponse = data.choices[0]?.message?.content || ""
-
-    // Parse the JSON response
-    let analysis = {}
-    try {
-      // Extract JSON from the response if it's wrapped in text
-      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        analysis = JSON.parse(jsonMatch[0])
-      } else {
-        analysis = JSON.parse(aiResponse)
-      }
-    } catch (parseError) {
-      console.error("Failed to parse AI response:", parseError)
-      // Return fallback analysis
-      analysis = {
-        timeline: "This scenario could significantly impact your current timeline and milestone delivery dates.",
-        resources: "Resource allocation and budget planning would need to be reassessed based on this change.",
-        team: "Team workload and dynamics may be affected, requiring careful management and communication.",
-        investors: "Investor expectations and reporting may need to be updated to reflect these changes.",
-        market: "Market positioning and competitive strategy should be evaluated in light of this scenario.",
-        recommendations:
-          "Consider developing contingency plans and maintaining open communication with stakeholders while monitoring key metrics closely.",
-      }
-    }
-
-    return NextResponse.json({ analysis })
+    return NextResponse.json({ analysis: text })
   } catch (error) {
-    console.error("What-if analysis error:", error)
-    return NextResponse.json({ error: "Failed to analyze scenario" }, { status: 500 })
+    console.error("Error analyzing what-if scenario:", error)
+    return NextResponse.json({ error: "Failed to analyze what-if scenario" }, { status: 500 })
   }
 }
