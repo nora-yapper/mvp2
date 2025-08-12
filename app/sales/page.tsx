@@ -10,13 +10,23 @@ export default function SalesPage() {
   const options = [
     {
       id: "value-proposition",
-      label: "Value Proposition Canvas",
-      info: "Create a comprehensive value proposition canvas to clearly define your product's value to customers.",
+      label: "Value Proposition Canvas (Required)",
+      info: "A structured tool to map your user's jobs, pains, and gains - and how your solution fits them.",
     },
     {
-      id: "short-pitches",
-      label: "Short Pitches",
-      info: "Develop concise and compelling pitches for different audiences and scenarios.",
+      id: "benefit-list",
+      label: "Benefit List",
+      info: "A simple list of concrete gains your user gets - save time, reduce risk, earn more, etc.",
+    },
+    {
+      id: "60-second-pitch",
+      label: "60-Second Pitch",
+      info: "A short, spoken-style version of your idea - what it is, who it's for, and why it matters.",
+    },
+    {
+      id: "1-sentence-description",
+      label: "1-Sentence Startup Description",
+      info: "A sharp, written version of your startup's core idea (great for intros, emails, and decks).",
     },
   ]
 
@@ -140,15 +150,16 @@ export default function SalesPage() {
           </div>
         </div>
 
-        {/* Six vertically stacked buttons */}
+        {/* Seven vertically stacked buttons */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {[
-            { label: "Map", onClick: () => (window.location.href = "/main") },
-            { label: "Command Deck", onClick: () => {} },
-            { label: "Health Analysis", onClick: () => {} },
-            { label: "Forecast", onClick: () => {} },
-            { label: "Reports", onClick: () => {} },
-            { label: "Network", onClick: () => {} },
+            { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
+            { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: false },
+            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
+            { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
+            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
+            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
+            { label: "Team", onClick: () => (window.location.href = "/team"), active: false },
           ].map((item, index) => (
             <button
               key={index}
@@ -158,7 +169,7 @@ export default function SalesPage() {
                 fontSize: "16px",
                 cursor: "pointer",
                 border: "1px solid #444",
-                backgroundColor: "#1a1a1a",
+                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
                 color: "#e0e0e0",
                 width: "100%",
                 clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
@@ -167,10 +178,14 @@ export default function SalesPage() {
                 transition: "all 0.3s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#3a3a3a"
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#3a3a3a"
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#1a1a1a"
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#1a1a1a"
+                }
               }}
             >
               {item.label}
@@ -216,8 +231,25 @@ export default function SalesPage() {
               letterSpacing: "0.05em",
             }}
           >
-            Sales Strategy
+            Idea Description
           </h2>
+
+          {/* Description Paragraph */}
+          <p
+            style={{
+              fontSize: "1rem",
+              fontWeight: "300",
+              margin: "0 0 50px 0",
+              textAlign: "center",
+              color: "#ccc",
+              lineHeight: "1.6",
+              letterSpacing: "0.02em",
+            }}
+          >
+            To sell your idea, you need to explain it simply. This level helps you get clear on what your startup does,
+            why it matters, and how it helps - so people instantly get it. You'll write a short pitch, describe your
+            value in one sentence, and explore what real benefits you offer.
+          </p>
 
           {/* Options */}
           <div style={{ marginBottom: "50px" }}>
