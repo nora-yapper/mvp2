@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { v4 as uuidv4 } from "uuid"
 
 interface HomebaseComponent {
   id: string
@@ -21,7 +22,7 @@ export default function HomebaseWorkspacePage() {
     } else {
       // Initialize with comprehensive "About Your Startup" component
       const defaultComponent: HomebaseComponent = {
-        id: "about-startup",
+        id: "about-startup", // Keep this as is since it's a special component
         title: "About Your Startup",
         content: JSON.stringify({
           basicInfo: {
@@ -72,7 +73,7 @@ export default function HomebaseWorkspacePage() {
 
   const addNewComponent = () => {
     const newComponent: HomebaseComponent = {
-      id: `component-${Date.now()}`,
+      id: uuidv4(),
       title: "New Component",
       content: "Enter your content here.",
     }

@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid"
+
 export interface TeamMember {
   id: string
   name: string
@@ -68,7 +70,7 @@ export function saveTeamMembers(members: TeamMember[]): void {
 export function addTeamMember(member: Omit<TeamMember, "id">): TeamMember {
   const newMember: TeamMember = {
     ...member,
-    id: Date.now().toString(),
+    id: uuidv4(),
   }
 
   const currentMembers = getTeamMembers()

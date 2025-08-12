@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
+import { v4 as uuidv4 } from "uuid"
 
 interface PostIt {
   id: string
@@ -338,7 +339,7 @@ export default function ProductTaskPage() {
     }
   }, [ideas])
 
-  const generateId = () => Math.random().toString(36).substr(2, 9)
+  const generateId = () => uuidv4()
 
   // Action Table Part 2 functions
   const addNewRow = () => {
