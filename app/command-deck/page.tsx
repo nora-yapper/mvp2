@@ -1,17 +1,44 @@
 "use client"
 
 import { useState } from "react"
+import {
+  ArrowLeft,
+  Plus,
+  Search,
+  MoreHorizontal,
+  Calendar,
+  User,
+  Clock,
+  CheckCircle2,
+  Circle,
+  AlertCircle,
+  Target,
+  Zap,
+  Users,
+  BarChart3,
+  Settings,
+  Menu,
+  X,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Clock, Calendar, Kanban, TableIcon, Loader2, Edit, Save, X } from "lucide-react"
-import { getTeamMembers } from "@/lib/team-data"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import Link from "next/link"
 
 interface Task {
   id: string
@@ -24,54 +51,92 @@ interface Task {
   category: string
 }
 
-interface GeneratedStep {
-  title: string
-  description: string
-  assignee: string
-  deadline: string
-  priority: "High" | "Medium" | "Low"
-  category: string
+interface TeamMember {
+  id: string
+  name: string
+  role: string
+  avatar?: string
 }
 
-interface TeamMemberWorkload {
-  name: string
-  workload: number
-  status: "Underloaded" | "Balanced" | "Overloaded"
-}
+const mockTeamMembers: TeamMember[] = [
+  { id: "1", name: "John Doe", role: "CEO & Founder" },
+  { id: "2", name: "Jane Smith", role: "CTO" },
+  { id: "3", name: "Mike Johnson", role: "Lead Developer" },
+  { id: "4", name: "Sarah Wilson", role: "Product Designer" },
+  { id: "5", name: "Alex Chen", role: "Marketing Manager" },
+]
+
+const mockTasks: Task[] = [
+  {
+    id: "1",
+    title: "Conduct User Research",
+    description: "Interview 10 potential customers to understand their pain points",
+    assignee: "Sarah Wilson",
+    deadline: "2024-01-15",
+    priority: "High",
+    status: "In Progress",
+    category: "Research",
+  },
+  {
+    id: "2",
+    title: "Develop MVP Features",
+    description: "Build core functionality for the minimum viable product",
+    assignee: "Mike Johnson",
+    deadline: "2024-01-20",
+    priority: "High",
+    status: "In Progress",
+    category: "Development",
+  },
+  {
+    id: "3",
+    title: "Create Marketing Strategy",
+    description: "Develop comprehensive go-to-market strategy",
+    assignee: "Alex Chen",
+    deadline: "2024-01-18",
+    priority: "Medium",
+    status: "To Do",
+    category: "Marketing",
+  },
+  {
+    id: "4",
+    title: "Design User Interface",
+    description: "Create wireframes and mockups for the application",
+    assignee: "Sarah Wilson",
+    deadline: "2024-01-12",
+    priority: "High",
+    status: "Done",
+    category: "Design",
+  },
+  {
+    id: "5",
+    title: "Set up Analytics",
+    description: "Implement tracking and analytics for user behavior",
+    assignee: "Jane Smith",
+    deadline: "2024-01-25",
+    priority: "Low",
+    status: "To Do",
+    category: "Development",
+  },
+]
 
 export default function CommandDeck() {
-  const [activeView, setActiveView] = useState("Timeline")
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [tasks, setTasks] = useState<Task[]>(mockTasks)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterPriority, setFilterPriority] = useState("all")
-  const [filterStatus, setFilterStatus] = useState("all")
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false)
-  const [mission, setMission] = useState("")
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [generatedSteps, setGeneratedSteps] = useState<GeneratedStep[]>([])
-  const [isStepsModalOpen, setIsStepsModalOpen] = useState(false)
+  const [filterPriority, setFilterPriority] = useState<string>("all")
+  const [filterStatus, setFilterStatus] = useState<string>("all")
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [editingStepIndex, setEditingStepIndex] = useState<number | null>(null)
-  const [editingStep, setEditingStep] = useState<GeneratedStep | null>(null)
+  const [newTaskOpen, setNewTaskOpen] = useState(false)
+  const [missionInput, setMissionInput] = useState("")
+  const [isGenerating, setIsGenerating] = useState(false)
+
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     assignee: "",
     deadline: "",
-    priority: "Medium" as "High" | "Medium" | "Low",
-    category: "General",
+    priority: "Medium" as const,
+    category: "",
   })
-
-  const teamMembers = getTeamMembers()
-
-  // Mock team workload data
-  const teamWorkload: TeamMemberWorkload[] = [
-    { name: "Sarah Chen", workload: 45, status: "Underloaded" },
-    { name: "Alex Johnson", workload: 75, status: "Balanced" },
-    { name: "Mike Rodriguez", workload: 92, status: "Overloaded" },
-    { name: "Emily Davis", workload: 68, status: "Balanced" },
-    { name: "James Wilson", workload: 34, status: "Underloaded" },
-  ]
 
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
@@ -79,20 +144,46 @@ export default function CommandDeck() {
       task.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesPriority = filterPriority === "all" || task.priority === filterPriority
     const matchesStatus = filterStatus === "all" || task.status === filterStatus
+
     return matchesSearch && matchesPriority && matchesStatus
   })
 
+  const tasksByStatus = {
+    "To Do": filteredTasks.filter((task) => task.status === "To Do"),
+    "In Progress": filteredTasks.filter((task) => task.status === "In Progress"),
+    Done: filteredTasks.filter((task) => task.status === "Done"),
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "High":
+        return "border-red-500/50 text-red-400"
+      case "Medium":
+        return "border-yellow-500/50 text-yellow-400"
+      case "Low":
+        return "border-green-500/50 text-green-400"
+      default:
+        return "border-gray-500/50 text-gray-400"
+    }
+  }
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "Done":
+        return <CheckCircle2 className="h-4 w-4 text-green-400" />
+      case "In Progress":
+        return <Clock className="h-4 w-4 text-yellow-400" />
+      default:
+        return <Circle className="h-4 w-4 text-gray-400" />
+    }
+  }
+
   const handleAddTask = () => {
-    if (newTask.title && newTask.assignee && newTask.deadline) {
+    if (newTask.title && newTask.assignee) {
       const task: Task = {
         id: Date.now().toString(),
-        title: newTask.title,
-        description: newTask.description,
-        assignee: newTask.assignee,
-        deadline: newTask.deadline,
-        priority: newTask.priority,
+        ...newTask,
         status: "To Do",
-        category: newTask.category,
       }
       setTasks([...tasks, task])
       setNewTask({
@@ -101,14 +192,14 @@ export default function CommandDeck() {
         assignee: "",
         deadline: "",
         priority: "Medium",
-        category: "General",
+        category: "",
       })
-      setIsAddTaskOpen(false)
+      setNewTaskOpen(false)
     }
   }
 
   const handleGenerateMissionSteps = async () => {
-    if (!mission.trim()) return
+    if (!missionInput.trim()) return
 
     setIsGenerating(true)
     try {
@@ -117,895 +208,455 @@ export default function CommandDeck() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ mission, teamMembers }),
+        body: JSON.stringify({
+          mission: missionInput,
+          teamMembers: mockTeamMembers,
+        }),
       })
 
       if (!response.ok) {
-        throw new Error("Failed to generate steps")
+        throw new Error("Failed to generate mission steps")
       }
 
       const data = await response.json()
-      setGeneratedSteps(data.steps)
-      setIsStepsModalOpen(true)
+
+      if (data.steps && Array.isArray(data.steps)) {
+        const newTasks: Task[] = data.steps.map((step: any, index: number) => ({
+          id: `generated-${Date.now()}-${index}`,
+          title: step.title,
+          description: step.description,
+          assignee: step.assignee,
+          deadline: step.deadline,
+          priority: step.priority,
+          status: "To Do" as const,
+          category: step.category,
+        }))
+
+        setTasks((prevTasks) => [...prevTasks, ...newTasks])
+        setMissionInput("")
+        setNewTaskOpen(false)
+      }
     } catch (error) {
       console.error("Error generating mission steps:", error)
-      alert("Failed to generate mission steps. Please try again.")
     } finally {
       setIsGenerating(false)
     }
   }
 
-  const handleImplementSteps = () => {
-    const newTasks: Task[] = generatedSteps.map((step, index) => ({
-      id: (Date.now() + index).toString(),
-      title: step.title,
-      description: step.description,
-      assignee: step.assignee,
-      deadline: step.deadline,
-      priority: step.priority,
-      status: "To Do" as const,
-      category: step.category,
-    }))
-
-    setTasks([...tasks, ...newTasks])
-    setIsStepsModalOpen(false)
-    setGeneratedSteps([])
-    setMission("")
-  }
-
-  const handleEditStep = (index: number) => {
-    setEditingStepIndex(index)
-    setEditingStep({ ...generatedSteps[index] })
-  }
-
-  const handleSaveStep = () => {
-    if (editingStepIndex !== null && editingStep) {
-      const updatedSteps = [...generatedSteps]
-      updatedSteps[editingStepIndex] = editingStep
-      setGeneratedSteps(updatedSteps)
-      setEditingStepIndex(null)
-      setEditingStep(null)
-    }
-  }
-
-  const handleCancelEdit = () => {
-    setEditingStepIndex(null)
-    setEditingStep(null)
-  }
-
-  const handleDeleteStep = (index: number) => {
-    const updatedSteps = generatedSteps.filter((_, i) => i !== index)
-    setGeneratedSteps(updatedSteps)
-  }
-
-  const updateTaskStatus = (taskId: string, newStatus: "To Do" | "In Progress" | "Done") => {
+  const updateTaskStatus = (taskId: string, newStatus: Task["status"]) => {
     setTasks(tasks.map((task) => (task.id === taskId ? { ...task, status: newStatus } : task)))
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "High":
-        return "bg-red-500"
-      case "Medium":
-        return "bg-yellow-500"
-      case "Low":
-        return "bg-green-500"
-      default:
-        return "bg-gray-500"
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "To Do":
-        return "bg-gray-500"
-      case "In Progress":
-        return "bg-blue-500"
-      case "Done":
-        return "bg-green-500"
-      default:
-        return "bg-gray-500"
-    }
-  }
-
-  const getWorkloadColor = (status: string) => {
-    switch (status) {
-      case "Underloaded":
-        return "text-blue-400"
-      case "Balanced":
-        return "text-green-400"
-      case "Overloaded":
-        return "text-red-400"
-      default:
-        return "text-gray-400"
-    }
-  }
-
-  const getCurrentMonth = () => {
-    const now = new Date()
-    return now.toLocaleDateString("en-US", { month: "long", year: "numeric" })
-  }
-
-  const getNextMonth = () => {
-    const now = new Date()
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-    return nextMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })
-  }
-
-  const renderTimelineView = () => {
-    if (filteredTasks.length === 0) {
-      return (
-        <div className="grid grid-cols-3 gap-6 min-h-[300px]">
-          {/* Tasks Column */}
-          <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
-            <div className="mb-4">
-              <h4 className="text-lg font-semibold text-gray-100">Tasks</h4>
-              <p className="text-sm text-gray-400">{tasks.length} records</p>
-            </div>
-            <div className="text-center py-8">
-              <p className="text-gray-400 text-sm">
-                No tasks currently. Generate and implement a plan to see tasks here.
-              </p>
-            </div>
-          </div>
-
-          {/* Current Month Column */}
-          <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
-            <div className="mb-4 text-center">
-              <h4 className="text-lg font-semibold text-gray-100">{getCurrentMonth().split(" ")[0]}</h4>
-              <p className="text-sm text-gray-400">{getCurrentMonth().split(" ")[1]}</p>
-            </div>
-            <div className="text-center py-8">
-              <p className="text-gray-400 text-sm">Timeline will appear when tasks are added</p>
-            </div>
-          </div>
-
-          {/* Next Month Column */}
-          <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
-            <div className="mb-4 text-center">
-              <h4 className="text-lg font-semibold text-gray-100">{getNextMonth().split(" ")[0]}</h4>
-              <p className="text-sm text-gray-400">{getNextMonth().split(" ")[1]}</p>
-            </div>
-            <div className="text-center py-8">
-              <p className="text-gray-400 text-sm">Timeline will appear when tasks are added</p>
-            </div>
-          </div>
-        </div>
-      )
-    }
-
-    return (
-      <div className="space-y-4">
-        {filteredTasks.map((task) => (
-          <Card key={task.id} className="border-l-4 border-l-blue-500 bg-gray-700 border-gray-600">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-100">{task.title}</h3>
-                  <p className="text-sm text-gray-300 mt-1">{task.description}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
-                      {task.assignee}
-                    </Badge>
-                    <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
-                    <Badge className={`text-xs text-white ${getStatusColor(task.status)}`}>{task.status}</Badge>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-100">{task.deadline}</p>
-                  <p className="text-xs text-gray-400">{task.category}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    )
-  }
-
-  const renderKanbanView = () => {
-    const columns = ["To Do", "In Progress", "Done"]
-
-    return (
-      <div className="grid grid-cols-3 gap-6">
-        {columns.map((column) => (
-          <div key={column} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
-            <h3 className="font-semibold text-gray-100 mb-4">{column}</h3>
-            <div className="space-y-3">
-              {filteredTasks
-                .filter((task) => task.status === column)
-                .map((task) => (
-                  <Card
-                    key={task.id}
-                    className="cursor-pointer hover:shadow-md transition-shadow bg-gray-600 border-gray-500"
-                  >
-                    <CardContent className="p-3">
-                      <h4 className="font-medium text-sm text-gray-100">{task.title}</h4>
-                      <p className="text-xs text-gray-300 mt-1">{task.description}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
-                          {task.assignee}
-                        </Badge>
-                        <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>
-                          {task.priority}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-gray-400 mt-1">{task.deadline}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  const renderTableView = () => (
-    <div className="rounded-md border border-gray-600 bg-gray-700">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-gray-600">
-            <TableHead className="text-gray-200">Task</TableHead>
-            <TableHead className="text-gray-200">Assignee</TableHead>
-            <TableHead className="text-gray-200">Priority</TableHead>
-            <TableHead className="text-gray-200">Status</TableHead>
-            <TableHead className="text-gray-200">Deadline</TableHead>
-            <TableHead className="text-gray-200">Category</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredTasks.map((task) => (
-            <TableRow key={task.id} className="border-gray-600 hover:bg-gray-600">
-              <TableCell>
-                <div>
-                  <p className="font-medium text-gray-100">{task.title}</p>
-                  <p className="text-sm text-gray-300">{task.description}</p>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline" className="border-gray-500 text-gray-300">
-                  {task.assignee}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Badge className={`text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
-              </TableCell>
-              <TableCell>
-                <Select
-                  value={task.status}
-                  onValueChange={(value) => updateTaskStatus(task.id, value as "To Do" | "In Progress" | "Done")}
-                >
-                  <SelectTrigger className="w-32 bg-gray-600 border-gray-500 text-gray-100">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-700 border-gray-600">
-                    <SelectItem value="To Do" className="text-gray-100 hover:bg-gray-600">
-                      To Do
-                    </SelectItem>
-                    <SelectItem value="In Progress" className="text-gray-100 hover:bg-gray-600">
-                      In Progress
-                    </SelectItem>
-                    <SelectItem value="Done" className="text-gray-100 hover:bg-gray-600">
-                      Done
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </TableCell>
-              <TableCell className="text-gray-200">{task.deadline}</TableCell>
-              <TableCell className="text-gray-200">{task.category}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  )
-
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0", position: "relative" }}>
-      {/* Hamburger Menu - Top Left */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        style={{
-          position: "fixed",
-          top: "20px",
-          left: "20px",
-          background: "#2a2a2a",
-          border: "1px solid #444",
-          fontSize: "24px",
-          cursor: "pointer",
-          zIndex: 1000,
-          color: "#e0e0e0",
-          width: "50px",
-          height: "50px",
-          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-          transition: "all 0.3s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#3a3a3a"
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "#2a2a2a"
-        }}
-      >
-        ☰
-      </button>
-
-      {/* Overlay for sidebar */}
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.6)",
-            zIndex: 998,
-          }}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: sidebarOpen ? 0 : "-300px",
-          width: "300px",
-          height: "100vh",
-          backgroundColor: "#2a2a2a",
-          transition: "left 0.3s ease",
-          zIndex: 999,
-          padding: "20px",
-          borderRight: "1px solid #444",
-        }}
-      >
-        {/* Top section - Settings and Profile icons */}
-        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
-          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
-            <button
-              style={{
-                background: "#1a1a1a",
-                border: "1px solid #444",
-                fontSize: "24px",
-                cursor: "pointer",
-                color: "#e0e0e0",
-                width: "45px",
-                height: "45px",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-              }}
-            >
-              ⚙️
-            </button>
-            <button
-              style={{
-                background: "#1a1a1a",
-                border: "1px solid #444",
-                fontSize: "24px",
-                cursor: "pointer",
-                color: "#e0e0e0",
-                width: "45px",
-                height: "45px",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-              }}
-            >
-              👤
-            </button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Top Bar */}
+      <div className="flex items-center justify-between p-4 border-b border-white/10 bg-black/20 backdrop-blur-sm">
+        <div className="flex items-center gap-4">
+          <Link href="/main">
+            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-xl font-semibold text-white">Command Deck</h1>
         </div>
-
-        {/* Six vertically stacked buttons */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {[
-            { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
-            { label: "Command Deck", onClick: () => (window.location.href = "/command-deck"), active: true },
-            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
-            { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
-            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
-            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
-          ].map((item, index) => (
-            <button
-              key={index}
-              onClick={item.onClick}
-              style={{
-                padding: "18px",
-                fontSize: "16px",
-                cursor: "pointer",
-                border: "1px solid #444",
-                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
-                color: "#e0e0e0",
-                width: "100%",
-                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                letterSpacing: "0.05em",
-                fontWeight: "500",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                if (!item.active) {
-                  e.currentTarget.style.backgroundColor = "#3a3a3a"
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!item.active) {
-                  e.currentTarget.style.backgroundColor = "#1a1a1a"
-                }
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="text-white hover:bg-white/10 md:hidden"
+          >
+            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </Button>
+          <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
+            <Settings className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
+            <User className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: "0px", paddingTop: "80px" }}>
-        {/* Header */}
-        <header className="flex items-center justify-between p-6 border-b border-gray-700">
-          <h1 className="text-3xl font-bold text-gray-100">Command Deck</h1>
-          <Button variant="outline" className="border-gray-600 text-gray-200 hover:bg-gray-700 bg-transparent">
-            Recalibrate
-          </Button>
-        </header>
+      <div className="flex">
+        {/* Sidebar */}
+        <div
+          className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:relative z-30 w-64 transition-transform duration-300 bg-black/30 backdrop-blur-sm border-r border-white/10 min-h-screen`}
+        >
+          <div className="p-4">
+            <h2 className="text-lg font-semibold text-white mb-4">Navigation</h2>
+          </div>
 
-        <main className="flex-1 overflow-auto p-6 space-y-8">
-          <div className="max-w-7xl mx-auto space-y-8">
-            {/* Set Your Mission Section */}
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-100 mb-4">Set Your Mission</h2>
-              <div className="space-y-4">
-                <Textarea
-                  placeholder="Describe your big goal..."
-                  value={mission}
-                  onChange={(e) => setMission(e.target.value)}
-                  className="min-h-[120px] bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-400 text-lg"
-                />
-                <Button
-                  onClick={handleGenerateMissionSteps}
-                  disabled={!mission.trim() || isGenerating}
-                  className="bg-blue-600 hover:bg-blue-700 px-8 py-2"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating Plan...
-                    </>
-                  ) : (
-                    "Generate Plan"
-                  )}
-                </Button>
+          <nav className="px-4 space-y-2">
+            <Link href="/homebase">
+              <Button variant="ghost" size="sm" className="w-full justify-start text-white hover:bg-white/10">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Homebase
+              </Button>
+            </Link>
+            <Link href="/team">
+              <Button variant="ghost" size="sm" className="w-full justify-start text-white hover:bg-white/10">
+                <Users className="h-4 w-4 mr-2" />
+                Team
+              </Button>
+            </Link>
+            <Button variant="ghost" size="sm" className="w-full justify-start text-white hover:bg-white/10 bg-white/10">
+              <Zap className="h-4 w-4 mr-2" />
+              Command Deck
+            </Button>
+            <Link href="/homebase/tasks">
+              <Button variant="ghost" size="sm" className="w-full justify-start text-white hover:bg-white/10">
+                <Target className="h-4 w-4 mr-2" />
+                Tasks
+              </Button>
+            </Link>
+          </nav>
+        </div>
+
+        {/* Overlay for mobile */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 bg-black/50 z-20 md:hidden" onClick={() => setSidebarOpen(false)} />
+        )}
+
+        {/* Main Content */}
+        <div className="flex-1 p-6 overflow-y-auto max-h-screen">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div>
+                <h1 className="text-3xl font-bold text-white mb-2">Command Deck</h1>
+                <p className="text-white/70">Mission control for your startup operations</p>
               </div>
+
+              <Dialog open={newTaskOpen} onOpenChange={setNewTaskOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Task
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-slate-900 border-white/20 text-white max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Add New Task</DialogTitle>
+                    <DialogDescription className="text-white/70">
+                      Create a new task manually or generate tasks from a mission statement.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <Tabs defaultValue="manual" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 bg-slate-800">
+                      <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+                      <TabsTrigger value="ai">AI Generation</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="manual" className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="title">Task Title</Label>
+                          <Input
+                            id="title"
+                            value={newTask.title}
+                            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                            className="bg-slate-800 border-white/20"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="category">Category</Label>
+                          <Input
+                            id="category"
+                            value={newTask.category}
+                            onChange={(e) => setNewTask({ ...newTask, category: e.target.value })}
+                            className="bg-slate-800 border-white/20"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                          id="description"
+                          value={newTask.description}
+                          onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                          className="bg-slate-800 border-white/20"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="assignee">Assignee</Label>
+                          <Select
+                            value={newTask.assignee}
+                            onValueChange={(value) => setNewTask({ ...newTask, assignee: value })}
+                          >
+                            <SelectTrigger className="bg-slate-800 border-white/20">
+                              <SelectValue placeholder="Select assignee" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-800 border-white/20">
+                              {mockTeamMembers.map((member) => (
+                                <SelectItem key={member.id} value={member.name}>
+                                  {member.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="priority">Priority</Label>
+                          <Select
+                            value={newTask.priority}
+                            onValueChange={(value: any) => setNewTask({ ...newTask, priority: value })}
+                          >
+                            <SelectTrigger className="bg-slate-800 border-white/20">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-800 border-white/20">
+                              <SelectItem value="High">High</SelectItem>
+                              <SelectItem value="Medium">Medium</SelectItem>
+                              <SelectItem value="Low">Low</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="deadline">Deadline</Label>
+                          <Input
+                            id="deadline"
+                            type="date"
+                            value={newTask.deadline}
+                            onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
+                            className="bg-slate-800 border-white/20"
+                          />
+                        </div>
+                      </div>
+
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => setNewTaskOpen(false)}
+                          className="border-white/20 text-white hover:bg-white/10"
+                        >
+                          Cancel
+                        </Button>
+                        <Button onClick={handleAddTask} className="bg-purple-600 hover:bg-purple-700">
+                          Add Task
+                        </Button>
+                      </DialogFooter>
+                    </TabsContent>
+
+                    <TabsContent value="ai" className="space-y-4">
+                      <div>
+                        <Label htmlFor="mission">Mission Statement</Label>
+                        <Textarea
+                          id="mission"
+                          placeholder="Describe your startup mission or goal, and AI will generate actionable tasks..."
+                          value={missionInput}
+                          onChange={(e) => setMissionInput(e.target.value)}
+                          className="bg-slate-800 border-white/20 min-h-[100px]"
+                        />
+                      </div>
+
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => setNewTaskOpen(false)}
+                          className="border-white/20 text-white hover:bg-white/10"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleGenerateMissionSteps}
+                          disabled={!missionInput.trim() || isGenerating}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          {isGenerating ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Zap className="h-4 w-4 mr-2" />
+                              Generate Tasks
+                            </>
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </TabsContent>
+                  </Tabs>
+                </DialogContent>
+              </Dialog>
             </div>
 
-            {/* Your Current Plan Section */}
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-100 mb-6">Your Current Plan</h2>
-
-              <Card className="bg-gray-800 border-gray-700">
-                <CardContent className="p-6">
-                  {/* Plan Views Header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-semibold text-gray-100">Plan Views</h3>
-                    <div className="flex items-center gap-4">
-                      <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
-                        <DialogTrigger asChild>
-                          <Button className="bg-gray-700 hover:bg-gray-600 border border-gray-600">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Task
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="bg-gray-800 border-gray-700">
-                          <DialogHeader>
-                            <DialogTitle className="text-gray-100">Add New Task</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <label className="text-sm font-medium text-gray-200">Title</label>
-                              <Input
-                                value={newTask.title}
-                                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                                placeholder="Task title"
-                                className="bg-gray-700 border-gray-600 text-gray-100 placeholder:text-gray-400"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-gray-200">Description</label>
-                              <Textarea
-                                value={newTask.description}
-                                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                                placeholder="Task description"
-                                className="bg-gray-700 border-gray-600 text-gray-100 placeholder:text-gray-400"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-gray-200">Assignee</label>
-                              <Select
-                                value={newTask.assignee}
-                                onValueChange={(value) => setNewTask({ ...newTask, assignee: value })}
-                              >
-                                <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
-                                  <SelectValue placeholder="Select assignee" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-gray-800 border-gray-600">
-                                  {teamMembers.map((member) => (
-                                    <SelectItem
-                                      key={member.id}
-                                      value={member.name}
-                                      className="text-gray-100 hover:bg-gray-700"
-                                    >
-                                      {member.name} - {member.role}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-gray-200">Deadline</label>
-                              <Input
-                                type="date"
-                                value={newTask.deadline}
-                                onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
-                                className="bg-gray-700 border-gray-600 text-gray-100"
-                                style={{ colorScheme: "dark" }}
-                              />
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-gray-200">Priority</label>
-                              <Select
-                                value={newTask.priority}
-                                onValueChange={(value) =>
-                                  setNewTask({ ...newTask, priority: value as "High" | "Medium" | "Low" })
-                                }
-                              >
-                                <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="bg-gray-800 border-gray-600">
-                                  <SelectItem value="High" className="text-gray-100 hover:bg-gray-700">
-                                    High
-                                  </SelectItem>
-                                  <SelectItem value="Medium" className="text-gray-100 hover:bg-gray-700">
-                                    Medium
-                                  </SelectItem>
-                                  <SelectItem value="Low" className="text-gray-100 hover:bg-gray-700">
-                                    Low
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-gray-200">Category</label>
-                              <Input
-                                value={newTask.category}
-                                onChange={(e) => setNewTask({ ...newTask, category: e.target.value })}
-                                placeholder="Task category"
-                                className="bg-gray-700 border-gray-600 text-gray-100 placeholder:text-gray-400"
-                              />
-                            </div>
-                            <Button onClick={handleAddTask} className="w-full bg-blue-600 hover:bg-blue-700">
-                              Add Task
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-
-                      <Button
-                        variant="outline"
-                        className="border-gray-600 text-gray-200 hover:bg-gray-700 bg-transparent"
-                      >
-                        <Clock className="mr-2 h-4 w-4" />
-                        Task History
-                      </Button>
-
-                      <div className="flex items-center gap-2">
-                        {[
-                          { name: "Timeline", icon: Calendar },
-                          { name: "Kanban", icon: Kanban },
-                          { name: "Table", icon: TableIcon },
-                        ].map((view) => (
-                          <Button
-                            key={view.name}
-                            variant={activeView === view.name ? "default" : "ghost"}
-                            onClick={() => setActiveView(view.name)}
-                            className={
-                              activeView === view.name
-                                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                : "text-gray-300 hover:text-gray-100 hover:bg-gray-700"
-                            }
-                          >
-                            <view.icon className="mr-2 h-4 w-4" />
-                            {view.name}
-                          </Button>
-                        ))}
-                      </div>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card className="bg-black/40 border-white/20 backdrop-blur-sm">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-white/70">Total Tasks</p>
+                      <p className="text-2xl font-bold text-white">{tasks.length}</p>
                     </div>
+                    <Target className="h-8 w-8 text-purple-400" />
                   </div>
+                </CardContent>
+              </Card>
 
-                  {/* Filters */}
-                  <div className="flex items-center gap-4 mb-6">
-                    <Input
-                      placeholder="Search tasks..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="max-w-sm bg-gray-700 border-gray-600 text-gray-100 placeholder:text-gray-400"
-                    />
-                    <Select value={filterPriority} onValueChange={setFilterPriority}>
-                      <SelectTrigger className="w-32 bg-gray-700 border-gray-600 text-gray-100">
-                        <SelectValue placeholder="Priority" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-600">
-                        <SelectItem value="all" className="text-gray-100 hover:bg-gray-700">
-                          All Priority
-                        </SelectItem>
-                        <SelectItem value="High" className="text-gray-100 hover:bg-gray-700">
-                          High
-                        </SelectItem>
-                        <SelectItem value="Medium" className="text-gray-100 hover:bg-gray-700">
-                          Medium
-                        </SelectItem>
-                        <SelectItem value="Low" className="text-gray-100 hover:bg-gray-700">
-                          Low
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select value={filterStatus} onValueChange={setFilterStatus}>
-                      <SelectTrigger className="w-32 bg-gray-700 border-gray-600 text-gray-100">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-600">
-                        <SelectItem value="all" className="text-gray-100 hover:bg-gray-700">
-                          All Status
-                        </SelectItem>
-                        <SelectItem value="To Do" className="text-gray-100 hover:bg-gray-700">
-                          To Do
-                        </SelectItem>
-                        <SelectItem value="In Progress" className="text-gray-100 hover:bg-gray-700">
-                          In Progress
-                        </SelectItem>
-                        <SelectItem value="Done" className="text-gray-100 hover:bg-gray-700">
-                          Done
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+              <Card className="bg-black/40 border-white/20 backdrop-blur-sm">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-white/70">In Progress</p>
+                      <p className="text-2xl font-bold text-white">{tasksByStatus["In Progress"].length}</p>
+                    </div>
+                    <Clock className="h-8 w-8 text-yellow-400" />
                   </div>
+                </CardContent>
+              </Card>
 
-                  {/* View Content */}
-                  {activeView === "Timeline" && renderTimelineView()}
-                  {activeView === "Kanban" && renderKanbanView()}
-                  {activeView === "Table" && renderTableView()}
+              <Card className="bg-black/40 border-white/20 backdrop-blur-sm">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-white/70">Completed</p>
+                      <p className="text-2xl font-bold text-white">{tasksByStatus["Done"].length}</p>
+                    </div>
+                    <CheckCircle2 className="h-8 w-8 text-green-400" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black/40 border-white/20 backdrop-blur-sm">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-white/70">High Priority</p>
+                      <p className="text-2xl font-bold text-white">
+                        {tasks.filter((t) => t.priority === "High").length}
+                      </p>
+                    </div>
+                    <AlertCircle className="h-8 w-8 text-red-400" />
+                  </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Team Workload Section */}
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-100 mb-6">Team Workload</h2>
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+                  <Input
+                    placeholder="Search tasks..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-black/40 border-white/20 text-white placeholder:text-white/50"
+                  />
+                </div>
+              </div>
 
-              <Card className="bg-gray-800 border-gray-700">
-                <CardContent className="p-6">
-                  <div className="space-y-6">
-                    {teamWorkload.map((member, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div className="flex-1">
+              <Select value={filterPriority} onValueChange={setFilterPriority}>
+                <SelectTrigger className="w-full md:w-[180px] bg-black/40 border-white/20 text-white">
+                  <SelectValue placeholder="Filter by priority" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-white/20">
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  <SelectItem value="High">High Priority</SelectItem>
+                  <SelectItem value="Medium">Medium Priority</SelectItem>
+                  <SelectItem value="Low">Low Priority</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-full md:w-[180px] bg-black/40 border-white/20 text-white">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-white/20">
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="To Do">To Do</SelectItem>
+                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="Done">Done</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Kanban Board */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {Object.entries(tasksByStatus).map(([status, statusTasks]) => (
+                <div key={status} className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                      {getStatusIcon(status)}
+                      {status}
+                    </h3>
+                    <Badge variant="secondary" className="bg-white/10 text-white">
+                      {statusTasks.length}
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-3">
+                    {statusTasks.map((task) => (
+                      <Card
+                        key={task.id}
+                        className="bg-black/40 border-white/20 backdrop-blur-sm hover:bg-black/50 transition-colors"
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <h4 className="font-medium text-white text-sm">{task.title}</h4>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0 text-white/50 hover:text-white"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="bg-slate-900 border-white/20">
+                                <DropdownMenuItem onClick={() => updateTaskStatus(task.id, "To Do")}>
+                                  Move to To Do
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => updateTaskStatus(task.id, "In Progress")}>
+                                  Move to In Progress
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => updateTaskStatus(task.id, "Done")}>
+                                  Move to Done
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+
+                          <p className="text-xs text-white/70 mb-3 line-clamp-2">{task.description}</p>
+
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-lg font-medium text-gray-100">{member.name}</h4>
-                            <div className="flex items-center gap-4">
-                              <span className={`text-sm font-medium ${getWorkloadColor(member.status)}`}>
-                                {member.status}
-                              </span>
-                              <span className="text-sm text-gray-300">{member.workload}%</span>
+                            <Badge variant="outline" className={`text-xs ${getPriorityColor(task.priority)}`}>
+                              {task.priority}
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs bg-white/10 text-white/70">
+                              {task.category}
+                            </Badge>
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-1 text-white/70">
+                              <User className="h-3 w-3" />
+                              {task.assignee}
+                            </div>
+                            <div className="flex items-center gap-1 text-white/70">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(task.deadline).toLocaleDateString()}
                             </div>
                           </div>
-                          <Progress value={member.workload} className="h-2 bg-gray-700" />
-                        </div>
-                      </div>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </main>
-      </div>
-
-      {/* Generated Steps Modal */}
-      <Dialog open={isStepsModalOpen} onOpenChange={setIsStepsModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-gray-800 border-gray-700">
-          <DialogHeader>
-            <DialogTitle className="text-gray-100">Generated Action Plan</DialogTitle>
-            <p className="text-sm text-gray-300">Mission: {mission}</p>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-gray-300">
-              Here are the actionable steps to achieve your mission. You can edit, delete, or modify these steps before
-              implementing them:
-            </p>
-            <div className="space-y-3">
-              {generatedSteps.map((step, index) => (
-                <Card key={index} className="border-l-4 border-l-blue-500 bg-gray-700 border-gray-600">
-                  <CardContent className="p-4">
-                    {editingStepIndex === index ? (
-                      // Edit mode
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium text-gray-200">Title</label>
-                          <Input
-                            value={editingStep?.title || ""}
-                            onChange={(e) =>
-                              setEditingStep((prev) => (prev ? { ...prev, title: e.target.value } : null))
-                            }
-                            className="bg-gray-600 border-gray-500 text-gray-100"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-200">Description</label>
-                          <Textarea
-                            value={editingStep?.description || ""}
-                            onChange={(e) =>
-                              setEditingStep((prev) => (prev ? { ...prev, description: e.target.value } : null))
-                            }
-                            className="bg-gray-600 border-gray-500 text-gray-100"
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-sm font-medium text-gray-200">Assignee</label>
-                            <Select
-                              value={editingStep?.assignee || ""}
-                              onValueChange={(value) =>
-                                setEditingStep((prev) => (prev ? { ...prev, assignee: value } : null))
-                              }
-                            >
-                              <SelectTrigger className="bg-gray-600 border-gray-500 text-gray-100">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="bg-gray-800 border-gray-600">
-                                {teamMembers.map((member) => (
-                                  <SelectItem
-                                    key={member.id}
-                                    value={member.name}
-                                    className="text-gray-100 hover:bg-gray-700"
-                                  >
-                                    {member.name} - {member.role}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-gray-200">Priority</label>
-                            <Select
-                              value={editingStep?.priority || "Medium"}
-                              onValueChange={(value) =>
-                                setEditingStep((prev) =>
-                                  prev ? { ...prev, priority: value as "High" | "Medium" | "Low" } : null,
-                                )
-                              }
-                            >
-                              <SelectTrigger className="bg-gray-600 border-gray-500 text-gray-100">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="bg-gray-800 border-gray-600">
-                                <SelectItem value="High" className="text-gray-100 hover:bg-gray-700">
-                                  High
-                                </SelectItem>
-                                <SelectItem value="Medium" className="text-gray-100 hover:bg-gray-700">
-                                  Medium
-                                </SelectItem>
-                                <SelectItem value="Low" className="text-gray-100 hover:bg-gray-700">
-                                  Low
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-sm font-medium text-gray-200">Deadline</label>
-                            <Input
-                              type="date"
-                              value={editingStep?.deadline || ""}
-                              onChange={(e) =>
-                                setEditingStep((prev) => (prev ? { ...prev, deadline: e.target.value } : null))
-                              }
-                              className="bg-gray-600 border-gray-500 text-gray-100"
-                              style={{ colorScheme: "dark" }}
-                            />
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-gray-200">Category</label>
-                            <Input
-                              value={editingStep?.category || ""}
-                              onChange={(e) =>
-                                setEditingStep((prev) => (prev ? { ...prev, category: e.target.value } : null))
-                              }
-                              className="bg-gray-600 border-gray-500 text-gray-100"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleCancelEdit}
-                            className="border-gray-500 text-gray-200 hover:bg-gray-600 bg-transparent"
-                          >
-                            <X className="h-4 w-4 mr-1" />
-                            Cancel
-                          </Button>
-                          <Button size="sm" onClick={handleSaveStep} className="bg-green-600 hover:bg-green-700">
-                            <Save className="h-4 w-4 mr-1" />
-                            Save
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      // View mode
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-100">{step.title}</h3>
-                          <p className="text-sm text-gray-300 mt-1">{step.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
-                              {step.assignee}
-                            </Badge>
-                            <Badge className={`text-xs text-white ${getPriorityColor(step.priority)}`}>
-                              {step.priority}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
-                              {step.category}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 ml-4">
-                          <div className="text-right">
-                            <p className="text-sm font-medium text-gray-100">{step.deadline}</p>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditStep(index)}
-                              className="h-8 w-8 p-0 text-gray-400 hover:text-gray-100 hover:bg-gray-600"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteStep(index)}
-                              className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                </div>
               ))}
             </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setIsStepsModalOpen(false)}
-                className="border-gray-600 text-gray-200 hover:bg-gray-700"
-              >
-                Dismiss
-              </Button>
-              <Button
-                onClick={handleImplementSteps}
-                className="bg-blue-600 hover:bg-blue-700"
-                disabled={generatedSteps.length === 0}
-              >
-                Implement All Steps ({generatedSteps.length})
-              </Button>
-            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
     </div>
   )
 }
