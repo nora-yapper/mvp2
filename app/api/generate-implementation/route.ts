@@ -1,51 +1,33 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { plan } = await req.json()
+    const { task, context } = await request.json()
 
-    // Mock response instead of AI-generated content
-    const mockImplementation = {
-      implementation: `Implementation Plan for: "${plan}"
-
-## Phase 1: Foundation (Weeks 1-2)
-- **Setup**: Establish project structure and team roles
-- **Research**: Gather requirements and constraints
-- **Planning**: Create detailed timeline and milestones
-
-## Phase 2: Development (Weeks 3-6)
-- **Core Implementation**: Build primary features and functionality
-- **Testing**: Conduct thorough quality assurance
-- **Iteration**: Refine based on initial feedback
-
-## Phase 3: Deployment (Weeks 7-8)
-- **Launch Preparation**: Final testing and documentation
-- **Go-Live**: Execute deployment strategy
-- **Monitoring**: Track performance and user adoption
-
-## Success Metrics
-- Timeline adherence: 95%
-- Quality benchmarks: Meet all defined criteria
-- Stakeholder satisfaction: 90%+ approval rating
-
-## Risk Mitigation
-- Regular checkpoint reviews
-- Contingency planning for critical path items
-- Clear escalation procedures
-
-This implementation approach ensures systematic progress while maintaining flexibility for adjustments.`,
-      timeline: "8 weeks",
-      phases: [
-        { name: "Foundation", duration: "2 weeks", status: "pending" },
-        { name: "Development", duration: "4 weeks", status: "pending" },
-        { name: "Deployment", duration: "2 weeks", status: "pending" },
-      ],
-      resources: ["Project manager", "Development team", "Quality assurance", "Stakeholder representatives"],
+    if (!task) {
+      return NextResponse.json({ error: "Task description is required" }, { status: 400 })
     }
 
-    return NextResponse.json(mockImplementation)
+    // Mock response instead of AI SDK
+    const implementation = {
+      task,
+      steps: [
+        "Research and gather requirements",
+        "Create initial design/prototype",
+        "Develop core functionality",
+        "Test with target users",
+        "Iterate based on feedback",
+        "Launch and monitor",
+      ],
+      timeline: `${Math.floor(Math.random() * 12) + 2} weeks`,
+      resources: ["Development team", "Design resources", "Testing environment", "User feedback channels"],
+      risks: ["Technical complexity", "User adoption", "Resource constraints"],
+      success_metrics: ["User engagement rate", "Task completion rate", "User satisfaction score"],
+    }
+
+    return NextResponse.json({ implementation })
   } catch (error) {
-    console.error("Error in generate-implementation:", error)
-    return NextResponse.json({ error: "Failed to generate implementation plan" }, { status: 500 })
+    console.error("Error generating implementation:", error)
+    return NextResponse.json({ error: "Failed to generate implementation" }, { status: 500 })
   }
 }

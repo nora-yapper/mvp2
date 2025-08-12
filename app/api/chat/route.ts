@@ -1,31 +1,29 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { messages } = await req.json()
-    const lastMessage = messages[messages.length - 1]
+    const { message, context } = await request.json()
 
-    // Mock response instead of AI-generated content
-    const mockResponse = {
-      message: `Thank you for your message: "${lastMessage.content}". 
-
-I understand you're looking for assistance. Here's what I can help you with:
-
-• **Strategic Planning**: Develop comprehensive business strategies
-• **Problem Solving**: Analyze complex challenges and provide solutions  
-• **Research Support**: Gather and synthesize relevant information
-• **Implementation Guidance**: Create actionable steps for your goals
-
-How would you like to proceed? I'm here to help you achieve your objectives.`,
-      timestamp: new Date().toISOString(),
-      suggestions: [
-        "Tell me more about your specific goals",
-        "What challenges are you currently facing?",
-        "Would you like help with planning or execution?",
-      ],
+    if (!message) {
+      return NextResponse.json({ error: "Message is required" }, { status: 400 })
     }
 
-    return NextResponse.json(mockResponse)
+    // Mock response instead of AI SDK
+    const responses = [
+      "That's an interesting point. Let me help you explore that further.",
+      "Based on your startup context, I'd recommend focusing on user validation first.",
+      "Have you considered the market size for this opportunity?",
+      "Let's break this down into actionable steps.",
+      "What metrics would you use to measure success here?",
+    ]
+
+    const response = responses[Math.floor(Math.random() * responses.length)]
+
+    return NextResponse.json({
+      response,
+      timestamp: new Date().toISOString(),
+      context: context || "general",
+    })
   } catch (error) {
     console.error("Error in chat:", error)
     return NextResponse.json({ error: "Failed to process chat message" }, { status: 500 })

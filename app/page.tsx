@@ -86,9 +86,9 @@ export default function HomePage() {
           right: 0,
           bottom: 0,
           backgroundImage: `
-            linear-gradient(45deg, transparent 49%, rgba(255,255,255,0.02) 50%, transparent 51%),
-            linear-gradient(-45deg, transparent 49%, rgba(255,255,255,0.02) 50%, transparent 51%)
-          `,
+          linear-gradient(45deg, transparent 49%, rgba(255,255,255,0.02) 50%, transparent 51%),
+          linear-gradient(-45deg, transparent 49%, rgba(255,255,255,0.02) 50%, transparent 51%)
+        `,
           backgroundSize: "20px 20px",
           zIndex: -1,
         }}

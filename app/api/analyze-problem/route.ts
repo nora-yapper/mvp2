@@ -1,37 +1,31 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { problem } = await req.json()
+    const { problem } = await request.json()
 
-    // Mock response instead of AI-generated content
-    const mockAnalysis = {
-      analysis: `Based on the problem "${problem}", here are the key insights:
-
-1. **Root Cause Analysis**: The issue appears to stem from multiple interconnected factors that need systematic evaluation.
-
-2. **Impact Assessment**: This problem affects various stakeholders and requires a comprehensive approach to resolution.
-
-3. **Recommended Actions**:
-   - Conduct thorough research on similar cases
-   - Engage with relevant stakeholders
-   - Develop a phased implementation plan
-   - Monitor progress and adjust as needed
-
-4. **Success Metrics**: Define clear KPIs to measure the effectiveness of proposed solutions.
-
-This analysis provides a foundation for developing targeted solutions.`,
-      confidence: 0.85,
-      recommendations: [
-        "Prioritize immediate impact areas",
-        "Establish clear communication channels",
-        "Create feedback loops for continuous improvement",
-      ],
+    if (!problem) {
+      return NextResponse.json({ error: "Problem description is required" }, { status: 400 })
     }
 
-    return NextResponse.json(mockAnalysis)
+    // Mock response instead of AI SDK
+    const analysis = {
+      problem: problem,
+      severity: Math.random() > 0.5 ? "high" : "medium",
+      category: ["technical", "business", "user experience"][Math.floor(Math.random() * 3)],
+      recommendations: [
+        "Conduct user research to validate the problem",
+        "Analyze competitor solutions",
+        "Define success metrics",
+        "Create a minimum viable solution",
+      ],
+      estimatedEffort: `${Math.floor(Math.random() * 8) + 1} weeks`,
+      confidence: Math.floor(Math.random() * 30) + 70,
+    }
+
+    return NextResponse.json({ analysis })
   } catch (error) {
-    console.error("Error in analyze-problem:", error)
+    console.error("Error analyzing problem:", error)
     return NextResponse.json({ error: "Failed to analyze problem" }, { status: 500 })
   }
 }

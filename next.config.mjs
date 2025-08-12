@@ -10,10 +10,8 @@ const nextConfig = {
     unoptimized: true,
   },
   experimental: {
-    optimizePackageImports: [
-      "lucide-react"
-    ],
+    optimizePackageImports: ['lucide-react'],
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig

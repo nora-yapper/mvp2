@@ -1,63 +1,60 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { mission } = await req.json()
+    const { mission, timeframe } = await request.json()
 
-    // Mock response instead of AI-generated content
-    const mockSteps = {
-      steps: `Mission Steps for: "${mission}"
-
-## Step 1: Strategic Assessment
-**Objective**: Understand current state and define success criteria
-- Conduct stakeholder analysis
-- Map existing resources and capabilities
-- Identify gaps and opportunities
-- Set measurable goals and KPIs
-
-## Step 2: Planning & Design
-**Objective**: Create comprehensive execution strategy
-- Develop detailed project roadmap
-- Allocate resources and assign responsibilities
-- Create risk management framework
-- Establish communication protocols
-
-## Step 3: Implementation
-**Objective**: Execute the mission systematically
-- Launch pilot programs or initial phases
-- Monitor progress against milestones
-- Adapt strategy based on real-world feedback
-- Maintain stakeholder engagement
-
-## Step 4: Optimization
-**Objective**: Refine and scale successful elements
-- Analyze performance data and outcomes
-- Implement improvements and best practices
-- Scale successful initiatives
-- Document lessons learned
-
-## Step 5: Sustainability
-**Objective**: Ensure long-term success and continuity
-- Establish ongoing governance structures
-- Create knowledge transfer processes
-- Build capability for future iterations
-- Measure and report on long-term impact
-
-Each step builds upon the previous one, creating a robust foundation for mission success.`,
-      totalSteps: 5,
-      estimatedDuration: "12-16 weeks",
-      keyMilestones: [
-        "Strategic assessment complete",
-        "Implementation plan approved",
-        "Pilot launch successful",
-        "Full deployment achieved",
-        "Sustainability measures in place",
-      ],
+    if (!mission) {
+      return NextResponse.json({ error: "Mission description is required" }, { status: 400 })
     }
 
-    return NextResponse.json(mockSteps)
+    // Mock response instead of AI SDK
+    const steps = [
+      {
+        id: 1,
+        title: "Define Success Criteria",
+        description: "Establish clear, measurable goals for the mission",
+        duration: "1 week",
+        priority: "high",
+      },
+      {
+        id: 2,
+        title: "Resource Planning",
+        description: "Identify and allocate necessary resources",
+        duration: "2 weeks",
+        priority: "high",
+      },
+      {
+        id: 3,
+        title: "Execution Phase",
+        description: "Implement the core mission activities",
+        duration: "4-6 weeks",
+        priority: "critical",
+      },
+      {
+        id: 4,
+        title: "Monitor & Adjust",
+        description: "Track progress and make necessary adjustments",
+        duration: "ongoing",
+        priority: "medium",
+      },
+      {
+        id: 5,
+        title: "Review & Document",
+        description: "Evaluate results and document learnings",
+        duration: "1 week",
+        priority: "medium",
+      },
+    ]
+
+    return NextResponse.json({
+      mission,
+      timeframe: timeframe || "8-10 weeks",
+      steps,
+      total_estimated_duration: "8-10 weeks",
+    })
   } catch (error) {
-    console.error("Error in generate-mission-steps:", error)
+    console.error("Error generating mission steps:", error)
     return NextResponse.json({ error: "Failed to generate mission steps" }, { status: 500 })
   }
 }
