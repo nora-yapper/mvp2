@@ -1,395 +1,164 @@
 "use client"
 
 import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Search, FileText, Users, TrendingUp, Plus } from "lucide-react"
+import Link from "next/link"
 
 export default function ResearchPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([])
-  const [expandedInfo, setExpandedInfo] = useState<string | null>(null)
 
-  const options = [
+  const researchAreas = [
     {
-      id: "overview",
-      label: "Overview",
-      info: "Define the problem you’re tackling and what you need to learn from your research.",
+      title: "Market Analysis",
+      description: "Analyze market size, trends, and opportunities",
+      icon: TrendingUp,
+      href: "/research/detail?type=market",
     },
     {
-      id: "questions",
-      label: "Interview Questions",
-      info: "Write focused questions that help you test your assumptions.",
+      title: "Competitor Research",
+      description: "Study competitors and competitive landscape",
+      icon: Search,
+      href: "/research/detail?type=competitor",
     },
     {
-      id: "preparation",
-      label: "Interview Preparation",
-      info: "Get ready to talk to people, from note templates to mindset tips.",
+      title: "Customer Insights",
+      description: "Understand customer needs and behavior",
+      icon: Users,
+      href: "/research/detail?type=customer",
     },
     {
-      id: "outreach",
-      label: "Outreach",
-      info: "Plan who to contact and how to reach out to potential interviewees.",
+      title: "Industry Reports",
+      description: "Access industry reports and analysis",
+      icon: FileText,
+      href: "/research/detail?type=industry",
     },
-    {
-      id: "interviews",
-      label: "Interviews",
-      info: "Run real conversations and capture the insights that matter.",
-    },
-    { id: "evaluation", label: "Evaluation", info: "Review what you learned and decide what to do next." },
   ]
 
-  const toggleOption = (optionId: string) => {
-    setSelectedOptions((prev) => (prev.includes(optionId) ? prev.filter((id) => id !== optionId) : [...prev, optionId]))
-  }
-
-  const toggleInfo = (optionId: string) => {
-    setExpandedInfo((prev) => (prev === optionId ? null : optionId))
-  }
-
-  const handleGeneratePlan = () => {
-    // Store the plan generation in session storage
-    sessionStorage.setItem("researchPlanGenerated", "true")
-    sessionStorage.setItem("researchPlanOptions", selectedOptions.join(","))
-
-    const optionsParam = selectedOptions.join(",")
-    window.location.href = `/research/plan?options=${optionsParam}`
-  }
-
   return (
-    <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
-      {/* Top Bar */}
-      <div
+    <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0", position: "relative" }}>
+      {/* Hamburger Menu - Top Left */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
         style={{
           position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "70px",
-          backgroundColor: "#2a2a2a",
-          borderBottom: "1px solid #444",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
+          top: "20px",
+          left: "20px",
+          background: "#2a2a2a",
+          border: "1px solid #444",
+          fontSize: "24px",
+          cursor: "pointer",
           zIndex: 1000,
+          color: "#e0e0e0",
+          width: "50px",
+          height: "50px",
+          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+          transition: "all 0.3s ease",
         }}
       >
-        {/* Sidebar Toggle */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{
-            background: "#1a1a1a",
-            border: "1px solid #444",
-            fontSize: "24px",
-            cursor: "pointer",
-            marginRight: "15px",
-            color: "#e0e0e0",
-            width: "50px",
-            height: "50px",
-            clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-          }}
-        >
-          ☰
-        </button>
+        ☰
+      </button>
 
-        {/* Back Arrow */}
+      {/* Back Arrow */}
+      <Link href="/main">
         <button
-          onClick={() => (window.location.href = "/main")}
           style={{
-            background: "#1a1a1a",
+            position: "fixed",
+            top: "20px",
+            left: "80px",
+            background: "#2a2a2a",
             border: "1px solid #444",
             fontSize: "24px",
             cursor: "pointer",
+            zIndex: 1000,
             color: "#e0e0e0",
             width: "50px",
             height: "50px",
             clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+            transition: "all 0.3s ease",
           }}
         >
           ←
         </button>
-      </div>
-
-      {/* Sidebar */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: sidebarOpen ? 0 : "-300px",
-          width: "300px",
-          height: "100vh",
-          backgroundColor: "#2a2a2a",
-          transition: "left 0.3s ease",
-          zIndex: 999,
-          padding: "20px",
-          borderRight: "1px solid #444",
-        }}
-      >
-        {/* Top section - Settings and Profile icons */}
-        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
-          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
-            <button
-              style={{
-                background: "#1a1a1a",
-                border: "1px solid #444",
-                fontSize: "24px",
-                cursor: "pointer",
-                color: "#e0e0e0",
-                width: "45px",
-                height: "45px",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-              }}
-            >
-              ⚙️
-            </button>
-            <button
-              style={{
-                background: "#1a1a1a",
-                border: "1px solid #444",
-                fontSize: "24px",
-                cursor: "pointer",
-                color: "#e0e0e0",
-                width: "45px",
-                height: "45px",
-                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-              }}
-            >
-              👤
-            </button>
-          </div>
-        </div>
-
-        {/* Seven vertically stacked buttons */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {[
-            { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
-            { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: false },
-            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
-            { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
-            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
-            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
-            { label: "Team", onClick: () => (window.location.href = "/team"), active: false },
-          ].map((item, index) => (
-            <button
-              key={index}
-              onClick={item.onClick}
-              style={{
-                padding: "18px",
-                fontSize: "16px",
-                cursor: "pointer",
-                border: "1px solid #444",
-                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
-                color: "#e0e0e0",
-                width: "100%",
-                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-                letterSpacing: "0.05em",
-                fontWeight: "500",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                if (!item.active) {
-                  e.currentTarget.style.backgroundColor = "#3a3a3a"
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!item.active) {
-                  e.currentTarget.style.backgroundColor = "#1a1a1a"
-                }
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      </Link>
 
       {/* Main Content */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          padding: "90px 20px 20px 20px",
-          color: "#e0e0e0",
-        }}
-      >
-        <div style={{ maxWidth: "700px", width: "100%" }}>
-          {/* Form Title */}
-          <h1
-            style={{
-              fontSize: "3rem",
-              margin: "0 0 15px 0",
-              textAlign: "center",
-              color: "#fff",
-              fontWeight: "bold",
-              letterSpacing: "0.1em",
-            }}
-          >
-            RESEARCH LEVEL 1
-          </h1>
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: "0px", paddingTop: "80px" }}>
+        <header className="flex items-center justify-between p-6 border-b border-gray-700">
+          <h1 className="text-3xl font-bold text-gray-100">Research</h1>
+          <Button className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="mr-2 h-4 w-4" />
+            New Research
+          </Button>
+        </header>
 
-          {/* Form Subtitle */}
-          <h2
-            style={{
-              fontSize: "1.4rem",
-              fontWeight: "300",
-              margin: "0 0 50px 0",
-              textAlign: "center",
-              color: "#ccc",
-              letterSpacing: "0.05em",
-            }}
-          >
-            Problem Validation
-          </h2>
+        <main className="flex-1 overflow-auto p-6">
+          <div className="max-w-6xl mx-auto">
+            {/* Research Areas Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {researchAreas.map((area, index) => (
+                <Link key={index} href={area.href}>
+                  <Card className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors cursor-pointer">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <area.icon className="h-8 w-8 text-blue-400" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <CardTitle className="text-gray-100 text-lg mb-2">{area.title}</CardTitle>
+                      <CardDescription className="text-gray-400">{area.description}</CardDescription>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
 
-          {/* Description Paragraph */}
-          <p
-            style={{
-              fontSize: "1rem",
-              fontWeight: "400",
-              margin: "0 0 40px 0",
-              textAlign: "center",
-              color: "#aaa",
-              lineHeight: "1.6",
-              letterSpacing: "0.02em",
-              maxWidth: "600px",
-              marginLeft: "auto",
-              marginRight: "auto",
-            }}
-          >
-            Make sure the problem behind your idea is worth tackling. Here, you'll talk to real people, test your
-            assumptions, and learn what actually matters, so you don't waste time building something no one needs. This
-            is the foundation for everything that follows.
-          </p>
-
-          {/* Options */}
-          <div style={{ marginBottom: "50px" }}>
-            {options.map((option) => (
-              <div key={option.id} style={{ marginBottom: "20px" }}>
-                {/* Option Button */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "20px",
-                    backgroundColor: "#2a2a2a",
-                    border: "1px solid #444",
-                    clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))",
-                    gap: "20px",
-                    transition: "all 0.3s ease",
-                  }}
-                >
-                  {/* Eye Icon */}
-                  <button
-                    onClick={() => toggleInfo(option.id)}
-                    style={{
-                      background: "#1a1a1a",
-                      border: "1px solid #444",
-                      fontSize: "18px",
-                      cursor: "pointer",
-                      color: "#e0e0e0",
-                      width: "45px",
-                      height: "45px",
-                      clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-                    }}
-                  >
-                    👁️
-                  </button>
-
-                  {/* Option Label */}
-                  <span
-                    style={{
-                      flex: 1,
-                      fontSize: "18px",
-                      fontWeight: "500",
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    {option.label}
-                  </span>
-
-                  {/* Plus/Check Icon */}
-                  <button
-                    onClick={() => toggleOption(option.id)}
-                    style={{
-                      background: selectedOptions.includes(option.id) ? "#007bff" : "#1a1a1a",
-                      border: "1px solid #444",
-                      fontSize: "18px",
-                      cursor: "pointer",
-                      color: "#e0e0e0",
-                      width: "45px",
-                      height: "45px",
-                      clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
-                    }}
-                  >
-                    {selectedOptions.includes(option.id) ? "✓" : "+"}
-                  </button>
-                </div>
-
-                {/* Info Dropdown */}
-                {expandedInfo === option.id && (
-                  <div
-                    style={{
-                      padding: "20px",
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid #444",
-                      borderTop: "none",
-                      fontSize: "15px",
-                      color: "#ccc",
-                      lineHeight: "1.6",
-                    }}
-                  >
-                    {option.info}
+            {/* Recent Research */}
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-gray-100">Recent Research</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Your latest research activities and findings
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-gray-100">SaaS Market Analysis 2024</h4>
+                      <p className="text-sm text-gray-400">Market size: $195B, Growth rate: 18% YoY</p>
+                    </div>
+                    <Button variant="outline" size="sm" className="border-gray-600 text-gray-200 bg-transparent">
+                      View
+                    </Button>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
 
-          {/* Generate Plan Button */}
-          <div style={{ textAlign: "center" }}>
-            <button
-              onClick={handleGeneratePlan}
-              style={{
-                padding: "20px 50px",
-                fontSize: "18px",
-                cursor: "pointer",
-                border: "1px solid #007bff",
-                backgroundColor: "#007bff",
-                color: "white",
-                clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))",
-                fontWeight: "500",
-                letterSpacing: "0.05em",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#0056b3"
-                e.currentTarget.style.transform = "translateY(-2px)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#007bff"
-                e.currentTarget.style.transform = "translateY(0px)"
-              }}
-            >
-              GENERATE PLAN
-            </button>
+                  <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-gray-100">Competitor Analysis: Top 5 Players</h4>
+                      <p className="text-sm text-gray-400">Detailed analysis of market leaders</p>
+                    </div>
+                    <Button variant="outline" size="sm" className="border-gray-600 text-gray-200 bg-transparent">
+                      View
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-gray-100">Customer Survey Results</h4>
+                      <p className="text-sm text-gray-400">Insights from 150 potential customers</p>
+                    </div>
+                    <Button variant="outline" size="sm" className="border-gray-600 text-gray-200 bg-transparent">
+                      View
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </div>
+        </main>
       </div>
-
-      {/* Overlay for sidebar */}
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.6)",
-            zIndex: 998,
-          }}
-        />
-      )}
     </div>
   )
 }

@@ -1,25 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {
-  ArrowLeft,
-  Plus,
-  Settings,
-  User,
-  BarChart3,
-  Users,
-  Target,
-  MessageSquare,
-  FileText,
-  Zap,
-  TrendingUp,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import Link from "next/link"
 
 interface HomebaseComponent {
   id: string
@@ -111,290 +92,393 @@ export default function HomebasePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Top Bar */}
-      <div className="flex items-center justify-between p-4 border-b border-white/10 bg-black/20 backdrop-blur-sm">
-        <div className="flex items-center gap-4">
-          <Link href="/main">
-            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <h1 className="text-xl font-semibold text-white">Homebase Workspace</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
-            <Settings className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
-            <User className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+    <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
+      {/* Hamburger Menu - Top Left */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        style={{
+          position: "fixed",
+          top: "20px",
+          left: "20px",
+          background: "#2a2a2a",
+          border: "1px solid #444",
+          fontSize: "24px",
+          cursor: "pointer",
+          zIndex: 1000,
+          color: "#e0e0e0",
+          width: "50px",
+          height: "50px",
+          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#3a3a3a"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#2a2a2a"
+        }}
+      >
+        ☰
+      </button>
 
-      <div className="flex">
-        {/* Sidebar */}
-        <div
-          className={`${sidebarOpen ? "w-64" : "w-16"} transition-all duration-300 bg-black/30 backdrop-blur-sm border-r border-white/10 min-h-screen`}
-        >
-          <div className="p-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="w-full justify-start text-white hover:bg-white/10"
+      {/* Back Arrow - Top Left, next to hamburger */}
+      <button
+        onClick={handleBackToMain}
+        style={{
+          position: "fixed",
+          top: "20px",
+          left: "80px",
+          background: "#2a2a2a",
+          border: "1px solid #444",
+          fontSize: "24px",
+          cursor: "pointer",
+          zIndex: 1000,
+          color: "#e0e0e0",
+          width: "50px",
+          height: "50px",
+          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#3a3a3a"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#2a2a2a"
+        }}
+      >
+        ←
+      </button>
+
+      {/* Sidebar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? 0 : "-300px",
+          width: "300px",
+          height: "100vh",
+          backgroundColor: "#2a2a2a",
+          transition: "left 0.3s ease",
+          zIndex: 999,
+          padding: "20px",
+          borderRight: "1px solid #444",
+        }}
+      >
+        {/* Top section - Settings and Profile icons */}
+        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
+            <button
+              style={{
+                background: "#1a1a1a",
+                border: "1px solid #444",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              }}
             >
-              <BarChart3 className="h-4 w-4" />
-              {sidebarOpen && <span className="ml-2">Dashboard</span>}
-            </Button>
+              ⚙️
+            </button>
+            <button
+              style={{
+                background: "#1a1a1a",
+                border: "1px solid #444",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#e0e0e0",
+                width: "45px",
+                height: "45px",
+                clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))",
+              }}
+            >
+              👤
+            </button>
           </div>
-
-          <nav className="px-4 space-y-2">
-            <Link href="/team">
-              <Button variant="ghost" size="sm" className="w-full justify-start text-white hover:bg-white/10">
-                <Users className="h-4 w-4" />
-                {sidebarOpen && <span className="ml-2">Team</span>}
-              </Button>
-            </Link>
-            <Link href="/homebase/tasks">
-              <Button variant="ghost" size="sm" className="w-full justify-start text-white hover:bg-white/10">
-                <Target className="h-4 w-4" />
-                {sidebarOpen && <span className="ml-2">Tasks</span>}
-              </Button>
-            </Link>
-            <Link href="/command-deck">
-              <Button variant="ghost" size="sm" className="w-full justify-start text-white hover:bg-white/10">
-                <Zap className="h-4 w-4" />
-                {sidebarOpen && <span className="ml-2">Command Deck</span>}
-              </Button>
-            </Link>
-          </nav>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 p-6 overflow-y-auto max-h-screen">
-          <div className="max-w-6xl mx-auto">
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-4xl font-bold text-white mb-2">HOMEBASE</h1>
-              <p className="text-white/70">Your startup command center</p>
+        {/* Six vertically stacked buttons */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {[
+            { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
+            { label: "Command Deck", onClick: () => (window.location.href = "/command-deck"), active: false },
+            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
+            { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
+            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
+            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
+          ].map((item, index) => (
+            <button
+              key={index}
+              onClick={item.onClick}
+              style={{
+                padding: "18px",
+                fontSize: "16px",
+                cursor: "pointer",
+                border: "1px solid #444",
+                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
+                color: "#e0e0e0",
+                width: "100%",
+                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                letterSpacing: "0.05em",
+                fontWeight: "500",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#3a3a3a"
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#1a1a1a"
+                }
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div
+        style={{
+          marginTop: "0px",
+          padding: "100px 20px 40px",
+          color: "#e0e0e0",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "3rem",
+            color: "#666",
+            fontWeight: "bold",
+            marginBottom: "40px",
+            textAlign: "center",
+            letterSpacing: "0.1em",
+          }}
+        >
+          HOMEBASE
+        </h1>
+
+        {/* Scrollable Content Area */}
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            maxHeight: "calc(100vh - 200px)",
+            overflowY: "auto",
+            paddingRight: "10px",
+          }}
+        >
+          {/* Components Grid */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: "20px",
+              marginBottom: "30px",
+            }}
+          >
+            {components.map((component) => (
+              <div
+                key={component.id}
+                style={{
+                  backgroundColor: "#2a2a2a",
+                  border: "1px solid #444",
+                  borderRadius: "8px",
+                  padding: "20px",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  minHeight: "150px",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+                onClick={() => handleComponentClick(component)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#3a3a3a"
+                  e.currentTarget.style.transform = "translateY(-2px)"
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#2a2a2a"
+                  e.currentTarget.style.transform = "translateY(0px)"
+                  e.currentTarget.style.boxShadow = "none"
+                }}
+              >
+                <input
+                  type="text"
+                  value={component.title}
+                  onChange={(e) => {
+                    e.stopPropagation()
+                    updateComponentTitle(component.id, e.target.value)
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "none",
+                    color: "#fff",
+                    fontSize: "18px",
+                    fontWeight: "bold",
+                    marginBottom: "15px",
+                    outline: "none",
+                    width: "100%",
+                  }}
+                />
+                <div
+                  style={{
+                    color: "#ccc",
+                    fontSize: "14px",
+                    lineHeight: "1.5",
+                    flex: 1,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {component.id === "about-startup"
+                    ? (() => {
+                        try {
+                          const data = JSON.parse(component.content)
+                          return (
+                            <div>
+                              <div>
+                                <strong>Name:</strong> {data.basicInfo?.startupName || "Not specified"}
+                              </div>
+                              <div>
+                                <strong>Description:</strong> {data.basicInfo?.shortDescription || "Not specified"}
+                              </div>
+                              <div>
+                                <strong>Industry:</strong> {data.basicInfo?.industrySector || "Not specified"}
+                              </div>
+                              <div>
+                                <strong>Stage:</strong> {data.basicInfo?.stage || "Idea"}
+                              </div>
+                            </div>
+                          )
+                        } catch {
+                          return "Click to add your startup information"
+                        }
+                      })()
+                    : component.content}
+                </div>
+              </div>
+            ))}
+
+            {/* Command Deck Tasks Component */}
+            <div
+              style={{
+                backgroundColor: "#2a2a2a",
+                border: "1px solid #444",
+                borderRadius: "8px",
+                padding: "20px",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                minHeight: "150px",
+                display: "flex",
+                flexDirection: "column",
+              }}
+              onClick={() => (window.location.href = "/command-deck")}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#3a3a3a"
+                e.currentTarget.style.transform = "translateY(-2px)"
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#2a2a2a"
+                e.currentTarget.style.transform = "translateY(0px)"
+                e.currentTarget.style.boxShadow = "none"
+              }}
+            >
+              <h3 style={{ color: "#fff", fontSize: "18px", fontWeight: "bold", marginBottom: "15px" }}>
+                Command Deck Tasks
+              </h3>
+              <div style={{ color: "#ccc", fontSize: "14px", lineHeight: "1.5", flex: 1 }}>
+                {tasks.length > 0 ? (
+                  <div>
+                    <div>
+                      <strong>Active Tasks:</strong> {tasks.filter((t) => t.status === "pending").length}
+                    </div>
+                    <div>
+                      <strong>Total Tasks:</strong> {tasks.length}
+                    </div>
+                    <div style={{ marginTop: "10px", fontSize: "12px", color: "#888" }}>
+                      Recent:{" "}
+                      {tasks
+                        .slice(-2)
+                        .map((t) => t.title.substring(0, 30) + "...")
+                        .join(", ")}
+                    </div>
+                  </div>
+                ) : (
+                  "No tasks yet. Implement suggestions from Forecast to add tasks here."
+                )}
+              </div>
             </div>
 
-            {/* Component Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* About Your Startup */}
-              <Card className="bg-black/40 border-white/20 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    About Your Startup
-                  </CardTitle>
-                  <CardDescription className="text-white/70">Core information and metrics</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {components.map((component) => (
-                    <div key={component.id}>
-                      {component.id === "about-startup" && (
-                        <div>
-                          <div>
-                            <strong>Name:</strong>{" "}
-                            {JSON.parse(component.content).basicInfo?.startupName || "Not specified"}
-                          </div>
-                          <div>
-                            <strong>Description:</strong>{" "}
-                            {JSON.parse(component.content).basicInfo?.shortDescription || "Not specified"}
-                          </div>
-                          <div>
-                            <strong>Industry:</strong>{" "}
-                            {JSON.parse(component.content).basicInfo?.industrySector || "Not specified"}
-                          </div>
-                          <div>
-                            <strong>Stage:</strong> {JSON.parse(component.content).basicInfo?.stage || "Idea"}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  <div>
-                    <h4 className="text-sm font-medium text-white mb-2">Mission</h4>
-                    <p className="text-sm text-white/70">Building the future of AI-powered productivity tools</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-white mb-2">Stage</h4>
-                    <Badge variant="secondary" className="bg-purple-500/20 text-purple-300">
-                      MVP Development
-                    </Badge>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-white mb-2">Progress</h4>
-                    <Progress value={65} className="h-2" />
-                    <p className="text-xs text-white/50 mt-1">65% complete</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Command Deck Tasks */}
-              <Card className="bg-black/40 border-white/20 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    Command Deck Tasks
-                  </CardTitle>
-                  <CardDescription className="text-white/70">Active mission objectives</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {tasks.length > 0 ? (
-                    <div>
-                      <div>
-                        <strong>Active Tasks:</strong> {tasks.filter((t) => t.status === "pending").length}
-                      </div>
-                      <div>
-                        <strong>Total Tasks:</strong> {tasks.length}
-                      </div>
-                      <div style={{ marginTop: "10px", fontSize: "12px", color: "#888" }}>
-                        Recent:{" "}
-                        {tasks
-                          .slice(-2)
-                          .map((t) => t.title.substring(0, 30) + "...")
-                          .join(", ")}
-                      </div>
-                    </div>
-                  ) : (
-                    "No tasks yet. Implement suggestions from Forecast to add tasks here."
-                  )}
-                  <Link href="/command-deck">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full mt-3 border-white/20 text-white hover:bg-white/10 bg-transparent"
-                    >
-                      View All Tasks
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-
-              {/* Team Overview */}
-              <Card className="bg-black/40 border-white/20 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Team Overview
-                  </CardTitle>
-                  <CardDescription className="text-white/70">Your startup crew</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder-user.jpg" />
-                      <AvatarFallback>JD</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium text-white">John Doe</p>
-                      <p className="text-xs text-white/50">CEO & Founder</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder-user.jpg" />
-                      <AvatarFallback>JS</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium text-white">Jane Smith</p>
-                      <p className="text-xs text-white/50">CTO</p>
-                    </div>
-                  </div>
-                  <Link href="/team">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full mt-3 border-white/20 text-white hover:bg-white/10 bg-transparent"
-                    >
-                      View Team
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-
-              {/* Recent Activity */}
-              <Card className="bg-black/40 border-white/20 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5" />
-                    Recent Activity
-                  </CardTitle>
-                  <CardDescription className="text-white/70">Latest updates and notifications</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="text-sm text-white/70">
-                    <p className="font-medium text-white">Task completed</p>
-                    <p className="text-xs">Market research analysis finished</p>
-                    <p className="text-xs text-white/50">2 hours ago</p>
-                  </div>
-                  <div className="text-sm text-white/70">
-                    <p className="font-medium text-white">New team member</p>
-                    <p className="text-xs">Sarah joined as Product Designer</p>
-                    <p className="text-xs text-white/50">1 day ago</p>
-                  </div>
-                  <div className="text-sm text-white/70">
-                    <p className="font-medium text-white">Milestone reached</p>
-                    <p className="text-xs">MVP development 65% complete</p>
-                    <p className="text-xs text-white/50">3 days ago</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Performance Metrics */}
-              <Card className="bg-black/40 border-white/20 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Performance Metrics
-                  </CardTitle>
-                  <CardDescription className="text-white/70">Key performance indicators</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-white">User Acquisition</span>
-                      <span className="text-sm text-white">+12%</span>
-                    </div>
-                    <Progress value={78} className="h-2" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-white">Revenue Growth</span>
-                      <span className="text-sm text-white">+8%</span>
-                    </div>
-                    <Progress value={45} className="h-2" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-white">Product Development</span>
-                      <span className="text-sm text-white">65%</span>
-                    </div>
-                    <Progress value={65} className="h-2" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Add New Component */}
-              <Card className="bg-black/40 border-white/20 backdrop-blur-sm border-dashed">
-                <CardContent className="flex flex-col items-center justify-center h-full min-h-[200px]">
-                  <Button
-                    variant="ghost"
-                    onClick={addNewComponent}
-                    className="text-white hover:bg-white/10 flex flex-col items-center gap-2"
-                  >
-                    <Plus className="h-8 w-8" />
-                    <span>Add New Component</span>
-                  </Button>
-                </CardContent>
-              </Card>
+            {/* Add New Component Button */}
+            <div
+              onClick={addNewComponent}
+              style={{
+                backgroundColor: "#2a2a2a",
+                border: "2px dashed #666",
+                borderRadius: "8px",
+                padding: "20px",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                minHeight: "150px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "column",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#3a3a3a"
+                e.currentTarget.style.borderColor = "#888"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#2a2a2a"
+                e.currentTarget.style.borderColor = "#666"
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "48px",
+                  color: "#666",
+                  marginBottom: "10px",
+                }}
+              >
+                +
+              </div>
+              <div
+                style={{
+                  color: "#888",
+                  fontSize: "16px",
+                  textAlign: "center",
+                }}
+              >
+                Add New Component
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Overlay for sidebar */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.6)",
+            zIndex: 998,
+          }}
+        />
+      )}
     </div>
   )
 }

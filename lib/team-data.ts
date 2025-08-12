@@ -2,90 +2,49 @@ export interface TeamMember {
   id: string
   name: string
   role: string
-  email: string
-  skills: string[]
+  email?: string
+  avatar?: string
 }
 
-const defaultTeamMembers: TeamMember[] = [
-  {
-    id: "1",
-    name: "Alex Chen",
-    role: "CEO & Co-founder",
-    email: "alex@startup.com",
-    skills: ["Leadership", "Strategy", "Business Development", "Fundraising", "Product Vision"],
-  },
-  {
-    id: "2",
-    name: "Sarah Kim",
-    role: "CTO & Co-founder",
-    email: "sarah@startup.com",
-    skills: ["Development", "Architecture", "DevOps", "Technical Leadership", "AI/ML"],
-  },
-  {
-    id: "3",
-    name: "Marcus Johnson",
-    role: "Head of Design",
-    email: "marcus@startup.com",
-    skills: ["UI/UX Design", "Design", "Prototyping", "User Research", "Branding"],
-  },
-  {
-    id: "4",
-    name: "Emily Rodriguez",
-    role: "Head of Marketing",
-    email: "emily@startup.com",
-    skills: ["Marketing", "Content Creation", "Social Media", "SEO", "Analytics"],
-  },
-  {
-    id: "5",
-    name: "David Park",
-    role: "Senior Developer",
-    email: "david@startup.com",
-    skills: ["Development", "Frontend", "Backend", "Database", "Testing"],
-  },
-]
-
-export function getTeamMembers(): TeamMember[] {
-  if (typeof window === "undefined") {
-    return defaultTeamMembers
-  }
-
-  const stored = localStorage.getItem("teamMembers")
-  if (stored) {
-    return JSON.parse(stored)
-  }
-
-  // Initialize with default data
-  localStorage.setItem("teamMembers", JSON.stringify(defaultTeamMembers))
-  return defaultTeamMembers
+export const getTeamMembers = (): TeamMember[] => {
+  return [
+    {
+      id: "1",
+      name: "Sarah Chen",
+      role: "CEO & Founder",
+      email: "sarah@startup.com",
+    },
+    {
+      id: "2",
+      name: "Alex Johnson",
+      role: "CTO",
+      email: "alex@startup.com",
+    },
+    {
+      id: "3",
+      name: "Mike Rodriguez",
+      role: "Lead Developer",
+      email: "mike@startup.com",
+    },
+    {
+      id: "4",
+      name: "Emily Davis",
+      role: "Product Designer",
+      email: "emily@startup.com",
+    },
+    {
+      id: "5",
+      name: "James Wilson",
+      role: "Marketing Manager",
+      email: "james@startup.com",
+    },
+  ]
 }
 
-export function saveTeamMembers(members: TeamMember[]): void {
-  if (typeof window !== "undefined") {
-    localStorage.setItem("teamMembers", JSON.stringify(members))
-  }
+export const getTeamMemberById = (id: string): TeamMember | undefined => {
+  return getTeamMembers().find((member) => member.id === id)
 }
 
-export function addTeamMember(member: Omit<TeamMember, "id">): TeamMember {
-  const newMember: TeamMember = {
-    ...member,
-    id: Date.now().toString(),
-  }
-
-  const currentMembers = getTeamMembers()
-  const updatedMembers = [...currentMembers, newMember]
-  saveTeamMembers(updatedMembers)
-
-  return newMember
-}
-
-export function updateTeamMember(id: string, updates: Partial<TeamMember>): void {
-  const currentMembers = getTeamMembers()
-  const updatedMembers = currentMembers.map((member) => (member.id === id ? { ...member, ...updates } : member))
-  saveTeamMembers(updatedMembers)
-}
-
-export function removeTeamMember(id: string): void {
-  const currentMembers = getTeamMembers()
-  const updatedMembers = currentMembers.filter((member) => member.id !== id)
-  saveTeamMembers(updatedMembers)
+export const getTeamMemberByName = (name: string): TeamMember | undefined => {
+  return getTeamMembers().find((member) => member.name === name)
 }

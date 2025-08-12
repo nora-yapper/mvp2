@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { ChevronDown, FileText } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link"
 
 export default function ReportsPage() {
   const [currentView, setCurrentView] = useState<"history" | "form" | "generated">("history")
@@ -55,7 +57,71 @@ export default function ReportsPage() {
     setCurrentView("form")
   }
 
-  // Toggle Switch Component
+  const saveReport = () => {
+    const newReport = {
+      id: Date.now().toString(),
+      title: formData.title || "Untitled Report",
+      date: new Date().toLocaleDateString(),
+      content: "Executive Summary content...", // This would be the actual report content
+    }
+    setSavedReports((prev) => [newReport, ...prev])
+    alert("Report saved successfully!")
+  }
+
+  const downloadPDF = () => {
+    // Create a simple HTML content for the PDF
+    const reportContent = `
+      <html>
+        <head>
+          <title>Generated Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+            h1 { color: #007bff; margin-bottom: 30px; }
+            h2 { color: #333; margin-top: 30px; margin-bottom: 15px; }
+            h3 { color: #555; margin-top: 25px; margin-bottom: 10px; }
+            p { line-height: 1.6; margin-bottom: 15px; }
+            ul { margin-bottom: 20px; }
+            li { margin-bottom: 8px; }
+          </style>
+        </head>
+        <body>
+          <h1>Generated Report</h1>
+          <h2>Executive Summary</h2>
+          <p>This quarterly report provides a comprehensive overview of our progress across all major initiatives. We have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction.</p>
+          
+          <h3>Key Achievements</h3>
+          <ul>
+            <li>Completed major platform upgrade affecting 50,000+ users</li>
+            <li>Reduced system downtime by 65% through infrastructure improvements</li>
+            <li>Onboarded 3 new team members with full integration success</li>
+            <li>Achieved 94% customer satisfaction score in latest survey</li>
+          </ul>
+          
+          <h3>Current Challenges</h3>
+          <p>While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas.</p>
+          
+          <h3>Next Quarter Outlook</h3>
+          <p>Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement.</p>
+        </body>
+      </html>
+    `
+
+    // Create a blob with the HTML content
+    const blob = new Blob([reportContent], { type: "text/html" })
+    const url = URL.createObjectURL(blob)
+
+    // Create a temporary link and trigger download
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `stakeholder-report-${new Date().toISOString().split("T")[0]}.html`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    // Clean up the URL
+    URL.revokeObjectURL(url)
+  }
+
   const ToggleSwitch = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
     <button
       onClick={onChange}
@@ -85,64 +151,9 @@ export default function ReportsPage() {
     </button>
   )
 
-  // Hamburger Menu with Sidebar
-  const HamburgerMenu = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(false)
-
+  const HamburgerMenu = ({ sidebarOpen, setSidebarOpen }: { sidebarOpen: boolean; setSidebarOpen: () => void }) => {
     return (
       <>
-        <div style={{ position: "fixed", top: "20px", left: "20px", display: "flex", gap: "10px", zIndex: 1000 }}>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            style={{
-              background: "#2a2a2a",
-              border: "1px solid #444",
-              fontSize: "24px",
-              cursor: "pointer",
-              color: "#e0e0e0",
-              width: "50px",
-              height: "50px",
-              clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-              transition: "all 0.3s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#3a3a3a"
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#2a2a2a"
-            }}
-          >
-            ☰
-          </button>
-
-          <button
-            onClick={() => (window.location.href = "/main")}
-            style={{
-              background: "#2a2a2a",
-              border: "1px solid #444",
-              fontSize: "20px",
-              cursor: "pointer",
-              color: "#e0e0e0",
-              width: "50px",
-              height: "50px",
-              clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-              transition: "all 0.3s ease",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#3a3a3a"
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#2a2a2a"
-            }}
-            title="Back to Main"
-          >
-            ←
-          </button>
-        </div>
-
         {/* Sidebar */}
         <div
           style={{
@@ -252,75 +263,10 @@ export default function ReportsPage() {
     )
   }
 
-  const saveReport = () => {
-    const newReport = {
-      id: Date.now().toString(),
-      title: formData.title || "Untitled Report",
-      date: new Date().toLocaleDateString(),
-      content: "Executive Summary content...", // This would be the actual report content
-    }
-    setSavedReports((prev) => [newReport, ...prev])
-    alert("Report saved successfully!")
-  }
-
-  const downloadPDF = () => {
-    // Create a simple HTML content for the PDF
-    const reportContent = `
-      <html>
-        <head>
-          <title>Generated Report</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
-            h1 { color: #007bff; margin-bottom: 30px; }
-            h2 { color: #333; margin-top: 30px; margin-bottom: 15px; }
-            h3 { color: #555; margin-top: 25px; margin-bottom: 10px; }
-            p { line-height: 1.6; margin-bottom: 15px; }
-            ul { margin-bottom: 20px; }
-            li { margin-bottom: 8px; }
-          </style>
-        </head>
-        <body>
-          <h1>Generated Report</h1>
-          <h2>Executive Summary</h2>
-          <p>This quarterly report provides a comprehensive overview of our progress across all major initiatives. We have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction.</p>
-          
-          <h3>Key Achievements</h3>
-          <ul>
-            <li>Completed major platform upgrade affecting 50,000+ users</li>
-            <li>Reduced system downtime by 65% through infrastructure improvements</li>
-            <li>Onboarded 3 new team members with full integration success</li>
-            <li>Achieved 94% customer satisfaction score in latest survey</li>
-          </ul>
-          
-          <h3>Current Challenges</h3>
-          <p>While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas.</p>
-          
-          <h3>Next Quarter Outlook</h3>
-          <p>Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement.</p>
-        </body>
-      </html>
-    `
-
-    // Create a blob with the HTML content
-    const blob = new Blob([reportContent], { type: "text/html" })
-    const url = URL.createObjectURL(blob)
-
-    // Create a temporary link and trigger download
-    const link = document.createElement("a")
-    link.href = url
-    link.download = `stakeholder-report-${new Date().toISOString().split("T")[0]}.html`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
-    // Clean up the URL
-    URL.revokeObjectURL(url)
-  }
-
   if (currentView === "history") {
     return (
-      <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
-        <HamburgerMenu />
+      <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0", position: "relative" }}>
+        <HamburgerMenu sidebarOpen={false} setSidebarOpen={() => {}} />
 
         <div style={{ padding: "80px 40px 40px", textAlign: "center" }}>
           <h1
@@ -417,8 +363,8 @@ export default function ReportsPage() {
 
   if (currentView === "form") {
     return (
-      <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
-        <HamburgerMenu />
+      <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0", position: "relative" }}>
+        <HamburgerMenu sidebarOpen={false} setSidebarOpen={() => {}} />
 
         <div style={{ padding: "80px 40px 40px" }}>
           <div style={{ textAlign: "center", marginBottom: "60px" }}>
@@ -675,8 +621,8 @@ export default function ReportsPage() {
 
   if (currentView === "generated") {
     return (
-      <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
-        <HamburgerMenu />
+      <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0", position: "relative" }}>
+        <HamburgerMenu sidebarOpen={false} setSidebarOpen={() => {}} />
 
         <div style={{ padding: "80px 40px 40px" }}>
           <div style={{ textAlign: "center", marginBottom: "60px" }}>
@@ -847,5 +793,76 @@ export default function ReportsPage() {
     )
   }
 
-  return null
+  return (
+    <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0", position: "relative" }}>
+      {/* Hamburger Menu - Top Left */}
+      <button
+        onClick={() => setCurrentView("form")}
+        style={{
+          position: "fixed",
+          top: "20px",
+          left: "20px",
+          background: "#2a2a2a",
+          border: "1px solid #444",
+          fontSize: "24px",
+          cursor: "pointer",
+          zIndex: 1000,
+          color: "#e0e0e0",
+          width: "50px",
+          height: "50px",
+          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+          transition: "all 0.3s ease",
+        }}
+      >
+        ☰
+      </button>
+
+      {/* Back Arrow */}
+      <Link href="/main">
+        <button
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "80px",
+            background: "#2a2a2a",
+            border: "1px solid #444",
+            fontSize: "24px",
+            cursor: "pointer",
+            zIndex: 1000,
+            color: "#e0e0e0",
+            width: "50px",
+            height: "50px",
+            clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+            transition: "all 0.3s ease",
+          }}
+        >
+          ←
+        </button>
+      </Link>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: "0px", paddingTop: "80px" }}>
+        <header className="flex items-center justify-between p-6 border-b border-gray-700">
+          <h1 className="text-3xl font-bold text-gray-100">Reports</h1>
+        </header>
+
+        <main className="flex-1 overflow-auto p-6">
+          <div className="max-w-4xl mx-auto">
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-gray-100">Coming Soon</CardTitle>
+                <CardDescription className="text-gray-400">Reports functionality is under development</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300">
+                  This page will contain detailed analytics reports, performance metrics, and business intelligence
+                  dashboards.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    </div>
+  )
 }
