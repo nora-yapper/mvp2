@@ -8,7 +8,7 @@ export default function ResearchDetailPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedOptions, setSelectedOptions] = useState<string[]>([])
   const [currentStep, setCurrentStep] = useState<string>("questions")
-  const [unlockedSteps, setUnlockedSteps] = useState<string[]>(["overview", "questions"])
+  const [unlockedSteps, setUnlockedSteps] = useState<string[]>(["overview"])
   const [overviewContent, setOverviewContent] = useState<string | null>(null)
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function ResearchDetailPage() {
   }
 
   const isStepUnlocked = (stepId: string) => {
-    return stepId === "overview" || stepId === "questions" || unlockedSteps.includes(stepId)
+    return stepId === "overview" || unlockedSteps.includes(stepId)
   }
 
   const scrollToSection = (sectionId: string) => {
@@ -70,9 +70,21 @@ export default function ResearchDetailPage() {
     }
   }
 
+  const handleOverviewComplete = () => {
+    // Unlock the questions section
+    const newUnlockedSteps = [...unlockedSteps, "questions"]
+    setUnlockedSteps(newUnlockedSteps)
+    // Save to session storage
+    sessionStorage.setItem("researchUnlockedSteps", newUnlockedSteps.join(","))
+  }
+
   const handleTaskClick = (sectionId: string, taskId: string) => {
-    // Only allow clicks for Overview and Interview Questions
-    if (sectionId === "overview" || sectionId === "questions") {
+    if (sectionId === "overview") {
+      // Complete overview and unlock questions
+      handleOverviewComplete()
+      const optionsParam = selectedOptions.join(",")
+      window.location.href = `/research/task?section=${sectionId}&task=${taskId}&options=${optionsParam}`
+    } else if (sectionId === "questions" && unlockedSteps.includes("questions")) {
       const optionsParam = selectedOptions.join(",")
       window.location.href = `/research/task?section=${sectionId}&task=${taskId}&options=${optionsParam}`
     }

@@ -156,15 +156,16 @@ export default function ResearchPage() {
           </div>
         </div>
 
-        {/* Six vertically stacked buttons */}
+        {/* Seven vertically stacked buttons */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {[
-            { label: "Map", onClick: () => (window.location.href = "/main") },
-            { label: "Command Deck", onClick: () => {} },
-            { label: "Health Analysis", onClick: () => {} },
-            { label: "Forecast", onClick: () => {} },
-            { label: "Reports", onClick: () => {} },
-            { label: "Network", onClick: () => {} },
+            { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
+            { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: false },
+            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
+            { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
+            { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
+            { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
+            { label: "Team", onClick: () => (window.location.href = "/team"), active: false },
           ].map((item, index) => (
             <button
               key={index}
@@ -174,7 +175,7 @@ export default function ResearchPage() {
                 fontSize: "16px",
                 cursor: "pointer",
                 border: "1px solid #444",
-                backgroundColor: "#1a1a1a",
+                backgroundColor: item.active ? "#007bff" : "#1a1a1a",
                 color: "#e0e0e0",
                 width: "100%",
                 clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
@@ -183,10 +184,14 @@ export default function ResearchPage() {
                 transition: "all 0.3s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#3a3a3a"
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#3a3a3a"
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#1a1a1a"
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = "#1a1a1a"
+                }
               }}
             >
               {item.label}
