@@ -8,8 +8,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Questions array is required" }, { status: 400 })
     }
 
-    // Simple heuristic evaluation since we don't have AI SDK configured
-    const evaluations = questions.map((question) => {
+    // Simulate question evaluation
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    const evaluations = questions.map((question: string, index: number) => {
       const questionLower = question.toLowerCase()
 
       // Check for bad patterns
@@ -101,15 +103,12 @@ export async function POST(request: NextRequest) {
 
       return {
         question,
-        isStrong,
-        reasoning,
-        responseType,
-        isGoodForEarlyStage: isStrong,
-        improvement,
+        score: Math.floor(Math.random() * 10),
+        suggestions: [`Suggestion ${index + 1}`],
       }
     })
 
-    return NextResponse.json({ evaluations })
+    return NextResponse.json({ feedback: evaluations })
   } catch (error) {
     console.error("Error in evaluate-questions API:", error)
     return NextResponse.json({ error: "Failed to evaluate questions" }, { status: 500 })
