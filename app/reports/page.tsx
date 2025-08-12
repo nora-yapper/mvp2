@@ -1,10 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronDown, FileText } from "lucide-react"
+import { ChevronDown, FileText, ArrowLeft, Plus, Eye, Download, Send, Edit3, Save, X } from "lucide-react"
 
 export default function ReportsPage() {
-  const [currentView, setCurrentView] = useState<"history" | "form" | "generated">("history")
+  const [currentView, setCurrentView] = useState<"history" | "form" | "generated" | "viewing" | "editing">("history")
+  const [viewingReport, setViewingReport] = useState<any>(null)
+  const [editingContent, setEditingContent] = useState<any>({})
   const [formData, setFormData] = useState({
     title: "",
     period: "",
@@ -25,7 +27,19 @@ export default function ReportsPage() {
       id: string
       title: string
       date: string
-      content: string
+      period: string
+      audience: string
+      sections: any
+      notes: string
+      content: {
+        startupDescription?: string
+        progressOverview?: string
+        tractionMilestones?: string[]
+        risksBottlenecks?: string
+        productStrategy?: string
+        forecastPriorities?: string
+        additionalNotes?: string
+      }
     }>
   >([])
 
@@ -55,31 +69,98 @@ export default function ReportsPage() {
     setCurrentView("form")
   }
 
+  const viewReport = (report: any) => {
+    setViewingReport(report)
+    setCurrentView("viewing")
+  }
+
+  const backToHistory = () => {
+    setViewingReport(null)
+    setCurrentView("history")
+  }
+
+  const editReport = (report: any) => {
+    setViewingReport(report)
+    setEditingContent({
+      title: report.title,
+      startupDescription:
+        report.content?.startupDescription ||
+        "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction.",
+      progressOverview:
+        report.content?.progressOverview ||
+        "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter.",
+      tractionMilestones: report.content?.tractionMilestones || [
+        "Completed major platform upgrade affecting 50,000+ users",
+        "Reduced system downtime by 65% through infrastructure improvements",
+        "Onboarded 3 new team members with full integration success",
+        "Achieved 94% customer satisfaction score in latest survey",
+      ],
+      risksBottlenecks:
+        report.content?.risksBottlenecks ||
+        "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention.",
+      productStrategy:
+        report.content?.productStrategy ||
+        "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization.",
+      forecastPriorities:
+        report.content?.forecastPriorities ||
+        "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase.",
+      additionalNotes: report.content?.additionalNotes || report.notes || "",
+    })
+    setCurrentView("editing")
+  }
+
+  const saveEditedReport = () => {
+    const updatedReport = {
+      ...viewingReport,
+      title: editingContent.title,
+      content: {
+        startupDescription: editingContent.startupDescription,
+        progressOverview: editingContent.progressOverview,
+        tractionMilestones: editingContent.tractionMilestones,
+        risksBottlenecks: editingContent.risksBottlenecks,
+        productStrategy: editingContent.productStrategy,
+        forecastPriorities: editingContent.forecastPriorities,
+        additionalNotes: editingContent.additionalNotes,
+      },
+    }
+
+    setSavedReports((prev) => prev.map((report) => (report.id === viewingReport.id ? updatedReport : report)))
+
+    setViewingReport(updatedReport)
+    setCurrentView("viewing")
+    alert("Report updated successfully!")
+  }
+
+  const cancelEdit = () => {
+    setCurrentView("viewing")
+  }
+
   // Toggle Switch Component
   const ToggleSwitch = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
     <button
       onClick={onChange}
       style={{
-        width: "60px",
-        height: "30px",
-        backgroundColor: checked ? "#007bff" : "#444",
-        border: "1px solid #555",
-        borderRadius: "15px",
+        width: "52px",
+        height: "28px",
+        backgroundColor: checked ? "#007bff" : "#3a3a3a",
+        border: "2px solid " + (checked ? "#0056b3" : "#555"),
+        borderRadius: "14px",
         position: "relative",
         cursor: "pointer",
-        transition: "all 0.3s ease",
+        transition: "all 0.2s ease",
       }}
     >
       <div
         style={{
-          width: "24px",
-          height: "24px",
+          width: "20px",
+          height: "20px",
           backgroundColor: "#fff",
           borderRadius: "50%",
           position: "absolute",
           top: "2px",
-          left: checked ? "32px" : "2px",
-          transition: "all 0.3s ease",
+          left: checked ? "28px" : "2px",
+          transition: "all 0.2s ease",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
         }}
       />
     </button>
@@ -258,46 +339,260 @@ export default function ReportsPage() {
       id: Date.now().toString(),
       title: formData.title || "Untitled Report",
       date: new Date().toLocaleDateString(),
-      content: "Executive Summary content...", // This would be the actual report content
+      period: formData.period,
+      audience: formData.audience,
+      sections: formData.sections,
+      notes: formData.notes,
+      content: {
+        startupDescription: formData.sections.startupDescription
+          ? "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."
+          : undefined,
+        progressOverview: formData.sections.progressOverview
+          ? "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."
+          : undefined,
+        tractionMilestones: formData.sections.tractionMilestones
+          ? [
+              "Completed major platform upgrade affecting 50,000+ users",
+              "Reduced system downtime by 65% through infrastructure improvements",
+              "Onboarded 3 new team members with full integration success",
+              "Achieved 94% customer satisfaction score in latest survey",
+            ]
+          : undefined,
+        risksBottlenecks: formData.sections.risksBottlenecks
+          ? "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."
+          : undefined,
+        productStrategy: formData.sections.productStrategy
+          ? "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."
+          : undefined,
+        forecastPriorities: formData.sections.forecastPriorities
+          ? "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."
+          : undefined,
+        additionalNotes: formData.notes || undefined,
+      },
     }
     setSavedReports((prev) => [newReport, ...prev])
     alert("Report saved successfully!")
   }
 
-  const downloadPDF = () => {
-    // Create a simple HTML content for the PDF
-    const reportContent = `
+  const downloadPDF = (report?: any) => {
+    const reportToDownload = report ||
+      viewingReport || {
+        title: formData.title || "Generated Report",
+        period: formData.period,
+        audience: formData.audience,
+        date: new Date().toLocaleDateString(),
+        sections: formData.sections,
+        content: {
+          startupDescription: formData.sections.startupDescription
+            ? "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."
+            : undefined,
+          progressOverview: formData.sections.progressOverview
+            ? "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."
+            : undefined,
+          tractionMilestones: formData.sections.tractionMilestones
+            ? [
+                "Completed major platform upgrade affecting 50,000+ users",
+                "Reduced system downtime by 65% through infrastructure improvements",
+                "Onboarded 3 new team members with full integration success",
+                "Achieved 94% customer satisfaction score in latest survey",
+              ]
+            : undefined,
+          risksBottlenecks: formData.sections.risksBottlenecks
+            ? "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."
+            : undefined,
+          productStrategy: formData.sections.productStrategy
+            ? "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."
+            : undefined,
+          forecastPriorities: formData.sections.forecastPriorities
+            ? "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."
+            : undefined,
+          additionalNotes: formData.notes || undefined,
+        },
+        notes: formData.notes,
+      }
+
+    // Create comprehensive HTML content for the PDF
+    let reportContent = `
       <html>
         <head>
-          <title>Generated Report</title>
+          <title>${reportToDownload.title}</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
-            h1 { color: #007bff; margin-bottom: 30px; }
-            h2 { color: #333; margin-top: 30px; margin-bottom: 15px; }
-            h3 { color: #555; margin-top: 25px; margin-bottom: 10px; }
-            p { line-height: 1.6; margin-bottom: 15px; }
-            ul { margin-bottom: 20px; }
-            li { margin-bottom: 8px; }
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              margin: 40px; 
+              color: #333; 
+              line-height: 1.6;
+              background: #fff;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 40px;
+              padding-bottom: 20px;
+              border-bottom: 2px solid #007bff;
+            }
+            h1 { 
+              color: #007bff; 
+              margin-bottom: 10px; 
+              font-size: 32px;
+              font-weight: 600;
+            }
+            .meta-info {
+              color: #666;
+              font-size: 14px;
+              margin-bottom: 10px;
+            }
+            h2 { 
+              color: #333; 
+              margin-top: 40px; 
+              margin-bottom: 20px; 
+              font-size: 24px;
+              font-weight: 600;
+              border-left: 4px solid #007bff;
+              padding-left: 15px;
+            }
+            h3 { 
+              color: #555; 
+              margin-top: 30px; 
+              margin-bottom: 15px; 
+              font-size: 20px;
+              font-weight: 500;
+            }
+            p { 
+              line-height: 1.8; 
+              margin-bottom: 20px; 
+              text-align: justify;
+            }
+            ul { 
+              margin-bottom: 25px; 
+              padding-left: 25px;
+            }
+            li { 
+              margin-bottom: 10px; 
+              line-height: 1.6;
+            }
+            .section {
+              margin-bottom: 35px;
+              padding: 20px;
+              background: #f8f9fa;
+              border-radius: 8px;
+              border-left: 4px solid #007bff;
+            }
+            .footer {
+              margin-top: 50px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
+              text-align: center;
+              color: #666;
+              font-size: 12px;
+            }
           </style>
         </head>
         <body>
-          <h1>Generated Report</h1>
-          <h2>Executive Summary</h2>
-          <p>This quarterly report provides a comprehensive overview of our progress across all major initiatives. We have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction.</p>
-          
-          <h3>Key Achievements</h3>
+          <div class="header">
+            <h1>${reportToDownload.title}</h1>
+            <div class="meta-info">
+              ${reportToDownload.period ? `Report Period: ${new Date(reportToDownload.period).toLocaleDateString()}` : ""}
+              ${reportToDownload.period && reportToDownload.audience ? " • " : ""}
+              ${reportToDownload.audience ? `Audience: ${reportToDownload.audience.charAt(0).toUpperCase() + reportToDownload.audience.slice(1)}` : ""}
+            </div>
+            <div class="meta-info">Generated on ${reportToDownload.date}</div>
+          </div>
+    `
+
+    // Add sections based on what's included
+    if (
+      reportToDownload.content?.startupDescription ||
+      (reportToDownload.sections?.startupDescription && currentView === "generated")
+    ) {
+      reportContent += `
+        <div class="section">
+          <h2>Startup Description</h2>
+          <p>${reportToDownload.content?.startupDescription || "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."}</p>
+        </div>
+      `
+    }
+
+    if (
+      reportToDownload.content?.progressOverview ||
+      (reportToDownload.sections?.progressOverview && currentView === "generated")
+    ) {
+      reportContent += `
+        <div class="section">
+          <h2>Progress Overview</h2>
+          <p>${reportToDownload.content?.progressOverview || "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."}</p>
+        </div>
+      `
+    }
+
+    if (
+      reportToDownload.content?.tractionMilestones ||
+      (reportToDownload.sections?.tractionMilestones && currentView === "generated")
+    ) {
+      const milestones = reportToDownload.content?.tractionMilestones || [
+        "Completed major platform upgrade affecting 50,000+ users",
+        "Reduced system downtime by 65% through infrastructure improvements",
+        "Onboarded 3 new team members with full integration success",
+        "Achieved 94% customer satisfaction score in latest survey",
+      ]
+      reportContent += `
+        <div class="section">
+          <h2>Traction & Milestones</h2>
           <ul>
-            <li>Completed major platform upgrade affecting 50,000+ users</li>
-            <li>Reduced system downtime by 65% through infrastructure improvements</li>
-            <li>Onboarded 3 new team members with full integration success</li>
-            <li>Achieved 94% customer satisfaction score in latest survey</li>
+            ${Array.isArray(milestones) ? milestones.map((milestone) => `<li>${milestone}</li>`).join("") : `<li>${milestones}</li>`}
           </ul>
-          
-          <h3>Current Challenges</h3>
-          <p>While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas.</p>
-          
-          <h3>Next Quarter Outlook</h3>
-          <p>Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement.</p>
+        </div>
+      `
+    }
+
+    if (
+      reportToDownload.content?.risksBottlenecks ||
+      (reportToDownload.sections?.risksBottlenecks && currentView === "generated")
+    ) {
+      reportContent += `
+        <div class="section">
+          <h2>Risks & Bottlenecks</h2>
+          <p>${reportToDownload.content?.risksBottlenecks || "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."}</p>
+        </div>
+      `
+    }
+
+    if (
+      reportToDownload.content?.productStrategy ||
+      (reportToDownload.sections?.productStrategy && currentView === "generated")
+    ) {
+      reportContent += `
+        <div class="section">
+          <h2>Product & Strategy Snapshot</h2>
+          <p>${reportToDownload.content?.productStrategy || "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."}</p>
+        </div>
+      `
+    }
+
+    if (
+      reportToDownload.content?.forecastPriorities ||
+      (reportToDownload.sections?.forecastPriorities && currentView === "generated")
+    ) {
+      reportContent += `
+        <div class="section">
+          <h2>Forecast & Priorities</h2>
+          <p>${reportToDownload.content?.forecastPriorities || "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."}</p>
+        </div>
+      `
+    }
+
+    if (reportToDownload.content?.additionalNotes || reportToDownload.notes) {
+      reportContent += `
+        <div class="section">
+          <h2>Additional Notes</h2>
+          <p>${reportToDownload.content?.additionalNotes || reportToDownload.notes}</p>
+        </div>
+      `
+    }
+
+    reportContent += `
+          <div class="footer">
+            <p>This report was generated using the Stakeholder Reports system on ${new Date().toLocaleDateString()}</p>
+          </div>
         </body>
       </html>
     `
@@ -309,7 +604,7 @@ export default function ReportsPage() {
     // Create a temporary link and trigger download
     const link = document.createElement("a")
     link.href = url
-    link.download = `stakeholder-report-${new Date().toISOString().split("T")[0]}.html`
+    link.download = `${reportToDownload.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}-${new Date().toISOString().split("T")[0]}.html`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -318,41 +613,795 @@ export default function ReportsPage() {
     URL.revokeObjectURL(url)
   }
 
+  // Main Header Component
+  const MainHeader = () => (
+    <div style={{ textAlign: "center", marginBottom: "40px" }}>
+      <h1
+        style={{
+          fontSize: "42px",
+          fontWeight: "300",
+          marginBottom: "12px",
+          letterSpacing: "0.02em",
+          color: "#ffffff",
+        }}
+      >
+        Stakeholder Reports
+      </h1>
+      <p style={{ fontSize: "18px", color: "#999", lineHeight: "1.5" }}>
+        Generate comprehensive reports for your investors, mentors, and stakeholders
+      </p>
+    </div>
+  )
+
+  // Navigation Tabs Component
+  const NavigationTabs = () => (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        marginBottom: "40px",
+        gap: "4px",
+        backgroundColor: "#2a2a2a",
+        padding: "6px",
+        borderRadius: "12px",
+        border: "1px solid #444",
+        maxWidth: "400px",
+        margin: "0 auto 40px auto",
+      }}
+    >
+      <button
+        onClick={() => setCurrentView("history")}
+        style={{
+          padding: "12px 24px",
+          fontSize: "15px",
+          backgroundColor: currentView === "history" ? "#007bff" : "transparent",
+          color: currentView === "history" ? "#fff" : "#ccc",
+          border: "none",
+          cursor: "pointer",
+          borderRadius: "8px",
+          fontWeight: "500",
+          letterSpacing: "0.02em",
+          transition: "all 0.2s ease",
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+        }}
+        onMouseEnter={(e) => {
+          if (currentView !== "history") {
+            e.currentTarget.style.backgroundColor = "#3a3a3a"
+            e.currentTarget.style.color = "#fff"
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (currentView !== "history") {
+            e.currentTarget.style.backgroundColor = "transparent"
+            e.currentTarget.style.color = "#ccc"
+          }
+        }}
+      >
+        <FileText size={16} />
+        History
+      </button>
+      <button
+        onClick={() => setCurrentView("form")}
+        style={{
+          padding: "12px 24px",
+          fontSize: "15px",
+          backgroundColor: currentView === "form" ? "#007bff" : "transparent",
+          color: currentView === "form" ? "#fff" : "#ccc",
+          border: "none",
+          cursor: "pointer",
+          borderRadius: "8px",
+          fontWeight: "500",
+          letterSpacing: "0.02em",
+          transition: "all 0.2s ease",
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+        }}
+        onMouseEnter={(e) => {
+          if (currentView !== "form") {
+            e.currentTarget.style.backgroundColor = "#3a3a3a"
+            e.currentTarget.style.color = "#fff"
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (currentView !== "form") {
+            e.currentTarget.style.backgroundColor = "transparent"
+            e.currentTarget.style.color = "#ccc"
+          }
+        }}
+      >
+        <Plus size={16} />
+        Create Report
+      </button>
+    </div>
+  )
+
+  if (currentView === "editing" && viewingReport) {
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
+        <HamburgerMenu />
+
+        <div style={{ padding: "100px 20px 40px", maxWidth: "1000px", margin: "0 auto" }}>
+          <div style={{ marginBottom: "40px" }}>
+            <button
+              onClick={cancelEdit}
+              style={{
+                padding: "12px 20px",
+                fontSize: "15px",
+                backgroundColor: "#2a2a2a",
+                color: "#e0e0e0",
+                border: "1px solid #444",
+                cursor: "pointer",
+                borderRadius: "8px",
+                fontWeight: "500",
+                letterSpacing: "0.02em",
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "30px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#3a3a3a"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#2a2a2a"
+              }}
+            >
+              <X size={16} />
+              Cancel Edit
+            </button>
+
+            <div style={{ textAlign: "center", marginBottom: "40px" }}>
+              <input
+                type="text"
+                value={editingContent.title}
+                onChange={(e) => setEditingContent((prev) => ({ ...prev, title: e.target.value }))}
+                style={{
+                  fontSize: "36px",
+                  fontWeight: "400",
+                  marginBottom: "16px",
+                  letterSpacing: "0.02em",
+                  color: "#ffffff",
+                  backgroundColor: "transparent",
+                  border: "2px solid #444",
+                  borderRadius: "8px",
+                  padding: "12px 16px",
+                  textAlign: "center",
+                  width: "100%",
+                  maxWidth: "600px",
+                  outline: "none",
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "#007bff"
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "#444"
+                }}
+              />
+              <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginBottom: "12px" }}>
+                {viewingReport.period && (
+                  <span style={{ fontSize: "16px", color: "#999" }}>
+                    {new Date(viewingReport.period).toLocaleDateString()}
+                  </span>
+                )}
+                {viewingReport.audience && (
+                  <span style={{ fontSize: "16px", color: "#999" }}>
+                    {viewingReport.audience.charAt(0).toUpperCase() + viewingReport.audience.slice(1)}
+                  </span>
+                )}
+              </div>
+              <p style={{ fontSize: "14px", color: "#666" }}>Generated on {viewingReport.date}</p>
+            </div>
+          </div>
+
+          {/* Editable Report Content */}
+          <div
+            style={{
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              borderRadius: "16px",
+              padding: "40px",
+              marginBottom: "30px",
+            }}
+          >
+            {viewingReport.sections?.startupDescription && (
+              <div style={{ marginBottom: "40px" }}>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Startup Description
+                </h3>
+                <textarea
+                  value={editingContent.startupDescription}
+                  onChange={(e) => setEditingContent((prev) => ({ ...prev, startupDescription: e.target.value }))}
+                  style={{
+                    width: "100%",
+                    minHeight: "120px",
+                    padding: "16px",
+                    backgroundColor: "#1a1a1a",
+                    border: "1px solid #444",
+                    borderRadius: "8px",
+                    color: "#e0e0e0",
+                    fontSize: "16px",
+                    lineHeight: "1.7",
+                    fontFamily: "inherit",
+                    resize: "vertical",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "#007bff"
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "#444"
+                  }}
+                />
+              </div>
+            )}
+
+            {viewingReport.sections?.progressOverview && (
+              <div style={{ marginBottom: "40px" }}>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Progress Overview
+                </h3>
+                <textarea
+                  value={editingContent.progressOverview}
+                  onChange={(e) => setEditingContent((prev) => ({ ...prev, progressOverview: e.target.value }))}
+                  style={{
+                    width: "100%",
+                    minHeight: "120px",
+                    padding: "16px",
+                    backgroundColor: "#1a1a1a",
+                    border: "1px solid #444",
+                    borderRadius: "8px",
+                    color: "#e0e0e0",
+                    fontSize: "16px",
+                    lineHeight: "1.7",
+                    fontFamily: "inherit",
+                    resize: "vertical",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "#007bff"
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "#444"
+                  }}
+                />
+              </div>
+            )}
+
+            {viewingReport.sections?.tractionMilestones && (
+              <div style={{ marginBottom: "40px" }}>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Traction & Milestones
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {editingContent.tractionMilestones?.map((milestone: string, index: number) => (
+                    <div key={index} style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                      <span style={{ color: "#999", fontSize: "14px", minWidth: "20px" }}>•</span>
+                      <input
+                        type="text"
+                        value={milestone}
+                        onChange={(e) => {
+                          const newMilestones = [...editingContent.tractionMilestones]
+                          newMilestones[index] = e.target.value
+                          setEditingContent((prev) => ({ ...prev, tractionMilestones: newMilestones }))
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: "12px 16px",
+                          backgroundColor: "#1a1a1a",
+                          border: "1px solid #444",
+                          borderRadius: "6px",
+                          color: "#e0e0e0",
+                          fontSize: "16px",
+                          outline: "none",
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = "#007bff"
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = "#444"
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {viewingReport.sections?.risksBottlenecks && (
+              <div style={{ marginBottom: "40px" }}>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Risks & Bottlenecks
+                </h3>
+                <textarea
+                  value={editingContent.risksBottlenecks}
+                  onChange={(e) => setEditingContent((prev) => ({ ...prev, risksBottlenecks: e.target.value }))}
+                  style={{
+                    width: "100%",
+                    minHeight: "120px",
+                    padding: "16px",
+                    backgroundColor: "#1a1a1a",
+                    border: "1px solid #444",
+                    borderRadius: "8px",
+                    color: "#e0e0e0",
+                    fontSize: "16px",
+                    lineHeight: "1.7",
+                    fontFamily: "inherit",
+                    resize: "vertical",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "#007bff"
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "#444"
+                  }}
+                />
+              </div>
+            )}
+
+            {viewingReport.sections?.productStrategy && (
+              <div style={{ marginBottom: "40px" }}>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Product & Strategy Snapshot
+                </h3>
+                <textarea
+                  value={editingContent.productStrategy}
+                  onChange={(e) => setEditingContent((prev) => ({ ...prev, productStrategy: e.target.value }))}
+                  style={{
+                    width: "100%",
+                    minHeight: "120px",
+                    padding: "16px",
+                    backgroundColor: "#1a1a1a",
+                    border: "1px solid #444",
+                    borderRadius: "8px",
+                    color: "#e0e0e0",
+                    fontSize: "16px",
+                    lineHeight: "1.7",
+                    fontFamily: "inherit",
+                    resize: "vertical",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "#007bff"
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "#444"
+                  }}
+                />
+              </div>
+            )}
+
+            {viewingReport.sections?.forecastPriorities && (
+              <div style={{ marginBottom: "40px" }}>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Forecast & Priorities
+                </h3>
+                <textarea
+                  value={editingContent.forecastPriorities}
+                  onChange={(e) => setEditingContent((prev) => ({ ...prev, forecastPriorities: e.target.value }))}
+                  style={{
+                    width: "100%",
+                    minHeight: "120px",
+                    padding: "16px",
+                    backgroundColor: "#1a1a1a",
+                    border: "1px solid #444",
+                    borderRadius: "8px",
+                    color: "#e0e0e0",
+                    fontSize: "16px",
+                    lineHeight: "1.7",
+                    fontFamily: "inherit",
+                    resize: "vertical",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "#007bff"
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "#444"
+                  }}
+                />
+              </div>
+            )}
+
+            {(viewingReport.notes || editingContent.additionalNotes) && (
+              <div style={{ marginBottom: "40px" }}>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Additional Notes
+                </h3>
+                <textarea
+                  value={editingContent.additionalNotes}
+                  onChange={(e) => setEditingContent((prev) => ({ ...prev, additionalNotes: e.target.value }))}
+                  style={{
+                    width: "100%",
+                    minHeight: "120px",
+                    padding: "16px",
+                    backgroundColor: "#1a1a1a",
+                    border: "1px solid #444",
+                    borderRadius: "8px",
+                    color: "#e0e0e0",
+                    fontSize: "16px",
+                    lineHeight: "1.7",
+                    fontFamily: "inherit",
+                    resize: "vertical",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "#007bff"
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "#444"
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div
+            style={{
+              display: "flex",
+              gap: "16px",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <button
+              onClick={saveEditedReport}
+              style={{
+                padding: "16px 32px",
+                fontSize: "16px",
+                backgroundColor: "#28a745",
+                color: "#fff",
+                border: "none",
+                cursor: "pointer",
+                borderRadius: "8px",
+                fontWeight: "500",
+                letterSpacing: "0.02em",
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#1e7e34"
+                e.currentTarget.style.transform = "translateY(-2px)"
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(40,167,69,0.3)"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#28a745"
+                e.currentTarget.style.transform = "translateY(0px)"
+                e.currentTarget.style.boxShadow = "none"
+              }}
+            >
+              <Save size={16} />
+              Save Changes
+            </button>
+
+            <button
+              onClick={cancelEdit}
+              style={{
+                padding: "16px 32px",
+                fontSize: "16px",
+                backgroundColor: "#6c757d",
+                color: "#fff",
+                border: "none",
+                cursor: "pointer",
+                borderRadius: "8px",
+                fontWeight: "500",
+                letterSpacing: "0.02em",
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#545b62"
+                e.currentTarget.style.transform = "translateY(-2px)"
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#6c757d"
+                e.currentTarget.style.transform = "translateY(0px)"
+                e.currentTarget.style.boxShadow = "none"
+              }}
+            >
+              <X size={16} />
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (currentView === "viewing" && viewingReport) {
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
+        <HamburgerMenu />
+
+        <div style={{ padding: "100px 20px 40px", maxWidth: "1000px", margin: "0 auto" }}>
+          <div style={{ marginBottom: "40px" }}>
+            <button
+              onClick={backToHistory}
+              style={{
+                padding: "12px 20px",
+                fontSize: "15px",
+                backgroundColor: "#2a2a2a",
+                color: "#e0e0e0",
+                border: "1px solid #444",
+                cursor: "pointer",
+                borderRadius: "8px",
+                fontWeight: "500",
+                letterSpacing: "0.02em",
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "30px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#3a3a3a"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#2a2a2a"
+              }}
+            >
+              <ArrowLeft size={16} />
+              Back to History
+            </button>
+
+            <div style={{ textAlign: "center" }}>
+              <h1
+                style={{
+                  fontSize: "36px",
+                  fontWeight: "400",
+                  marginBottom: "16px",
+                  letterSpacing: "0.02em",
+                  color: "#ffffff",
+                }}
+              >
+                {viewingReport.title}
+              </h1>
+              <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginBottom: "12px" }}>
+                {viewingReport.period && (
+                  <span style={{ fontSize: "16px", color: "#999" }}>
+                    {new Date(viewingReport.period).toLocaleDateString()}
+                  </span>
+                )}
+                {viewingReport.audience && (
+                  <span style={{ fontSize: "16px", color: "#999" }}>
+                    {viewingReport.audience.charAt(0).toUpperCase() + viewingReport.audience.slice(1)}
+                  </span>
+                )}
+              </div>
+              <p style={{ fontSize: "14px", color: "#666" }}>Generated on {viewingReport.date}</p>
+            </div>
+          </div>
+
+          {/* Report Content */}
+          <div
+            style={{
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              borderRadius: "16px",
+              padding: "40px",
+              marginBottom: "30px",
+            }}
+          >
+            {viewingReport.sections?.startupDescription && (
+              <>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Startup Description
+                </h3>
+                <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
+                  {viewingReport.content?.startupDescription ||
+                    "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."}
+                </p>
+              </>
+            )}
+
+            {viewingReport.sections?.progressOverview && (
+              <>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Progress Overview
+                </h3>
+                <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
+                  {viewingReport.content?.progressOverview ||
+                    "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."}
+                </p>
+              </>
+            )}
+
+            {viewingReport.sections?.tractionMilestones && (
+              <>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Traction & Milestones
+                </h3>
+                <ul
+                  style={{
+                    fontSize: "16px",
+                    lineHeight: "1.8",
+                    color: "#e0e0e0",
+                    marginBottom: "32px",
+                    paddingLeft: "20px",
+                  }}
+                >
+                  {(
+                    viewingReport.content?.tractionMilestones || [
+                      "Completed major platform upgrade affecting 50,000+ users",
+                      "Reduced system downtime by 65% through infrastructure improvements",
+                      "Onboarded 3 new team members with full integration success",
+                      "Achieved 94% customer satisfaction score in latest survey",
+                    ]
+                  ).map((milestone: string, index: number) => (
+                    <li key={index} style={{ marginBottom: "8px" }}>
+                      {milestone}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {viewingReport.sections?.risksBottlenecks && (
+              <>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Risks & Bottlenecks
+                </h3>
+                <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
+                  {viewingReport.content?.risksBottlenecks ||
+                    "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."}
+                </p>
+              </>
+            )}
+
+            {viewingReport.sections?.productStrategy && (
+              <>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Product & Strategy Snapshot
+                </h3>
+                <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
+                  {viewingReport.content?.productStrategy ||
+                    "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."}
+                </p>
+              </>
+            )}
+
+            {viewingReport.sections?.forecastPriorities && (
+              <>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Forecast & Priorities
+                </h3>
+                <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
+                  {viewingReport.content?.forecastPriorities ||
+                    "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."}
+                </p>
+              </>
+            )}
+
+            {(viewingReport.content?.additionalNotes || viewingReport.notes) && (
+              <>
+                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                  Additional Notes
+                </h3>
+                <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
+                  {viewingReport.content?.additionalNotes || viewingReport.notes}
+                </p>
+              </>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div
+            style={{
+              display: "flex",
+              gap: "16px",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            {[
+              {
+                label: "Send Report",
+                icon: <Send size={16} />,
+                action: () => alert("Send functionality would be implemented here"),
+                color: "#28a745",
+              },
+              {
+                label: "Download PDF",
+                icon: <Download size={16} />,
+                action: () => downloadPDF(viewingReport),
+                color: "#007bff",
+              },
+              {
+                label: "Edit Report",
+                icon: <Edit3 size={16} />,
+                action: () => editReport(viewingReport),
+                color: "#ffc107",
+              },
+            ].map((button, index) => (
+              <button
+                key={index}
+                onClick={button.action}
+                style={{
+                  padding: "14px 24px",
+                  fontSize: "15px",
+                  backgroundColor: button.color,
+                  color: "#fff",
+                  border: "none",
+                  cursor: "pointer",
+                  borderRadius: "8px",
+                  fontWeight: "500",
+                  letterSpacing: "0.02em",
+                  transition: "all 0.2s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)"
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0px)"
+                  e.currentTarget.style.boxShadow = "none"
+                }}
+              >
+                {button.icon}
+                {button.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (currentView === "history") {
     return (
       <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
         <HamburgerMenu />
 
-        <div style={{ padding: "80px 40px 40px", textAlign: "center" }}>
-          <h1
-            style={{
-              fontSize: "48px",
-              fontWeight: "300",
-              marginBottom: "60px",
-              letterSpacing: "0.05em",
-            }}
-          >
-            Report History
-          </h1>
+        <div style={{ padding: "100px 20px 40px", maxWidth: "1000px", margin: "0 auto" }}>
+          <MainHeader />
+          <NavigationTabs />
 
-          <div
-            style={{
-              maxWidth: "800px",
-              margin: "0 auto",
-              backgroundColor: "#2a2a2a",
-              border: "1px solid #444",
-              clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
-              padding: "80px 40px",
-              textAlign: "center",
-            }}
-          >
+          <div style={{ maxWidth: "800px", margin: "0 auto" }}>
             {savedReports.length === 0 ? (
-              <>
-                <FileText size={80} style={{ color: "#666", marginBottom: "30px" }} />
-                <h2 style={{ fontSize: "32px", fontWeight: "400", marginBottom: "20px", color: "#e0e0e0" }}>
+              <div
+                style={{
+                  backgroundColor: "#2a2a2a",
+                  border: "1px solid #444",
+                  borderRadius: "16px",
+                  padding: "60px 40px",
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                    backgroundColor: "#3a3a3a",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "0 auto 24px auto",
+                  }}
+                >
+                  <FileText size={36} style={{ color: "#666" }} />
+                </div>
+                <h2 style={{ fontSize: "28px", fontWeight: "400", marginBottom: "16px", color: "#fff" }}>
                   No Reports Generated Yet
                 </h2>
-                <p style={{ fontSize: "18px", color: "#999", marginBottom: "40px", lineHeight: "1.6" }}>
+                <p style={{ fontSize: "16px", color: "#999", marginBottom: "32px", lineHeight: "1.6" }}>
                   Once you generate your first stakeholder report, it will appear here for easy access and reference.
                 </p>
                 <button
@@ -362,52 +1411,139 @@ export default function ReportsPage() {
                     fontSize: "16px",
                     backgroundColor: "#007bff",
                     color: "#fff",
-                    border: "1px solid #0056b3",
+                    border: "none",
                     cursor: "pointer",
-                    clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                    borderRadius: "8px",
                     fontWeight: "500",
-                    letterSpacing: "0.05em",
-                    transition: "all 0.3s ease",
+                    letterSpacing: "0.02em",
+                    transition: "all 0.2s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    margin: "0 auto",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)"
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,123,255,0.3)"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0px)"
+                    e.currentTarget.style.boxShadow = "none"
                   }}
                 >
+                  <Plus size={18} />
                   Create Your First Report
                 </button>
-              </>
+              </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {savedReports.map((report) => (
                   <div
                     key={report.id}
                     style={{
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid #555",
-                      clipPath:
-                        "polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))",
-                      padding: "20px",
+                      backgroundColor: "#2a2a2a",
+                      border: "1px solid #444",
+                      borderRadius: "12px",
+                      padding: "24px",
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
+                      transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#333"
+                      e.currentTarget.style.borderColor = "#555"
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "#2a2a2a"
+                      e.currentTarget.style.borderColor = "#444"
                     }}
                   >
-                    <div>
-                      <h3 style={{ fontSize: "18px", fontWeight: "500", marginBottom: "5px" }}>{report.title}</h3>
-                      <p style={{ fontSize: "14px", color: "#999" }}>Generated on {report.date}</p>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ fontSize: "18px", fontWeight: "500", marginBottom: "8px", color: "#fff" }}>
+                        {report.title}
+                      </h3>
+                      <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+                        <span style={{ fontSize: "14px", color: "#999" }}>Generated on {report.date}</span>
+                        {report.audience && (
+                          <span
+                            style={{
+                              fontSize: "12px",
+                              color: "#007bff",
+                              backgroundColor: "#1a3a5c",
+                              padding: "4px 8px",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {report.audience.charAt(0).toUpperCase() + report.audience.slice(1)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <button
+                      onClick={() => viewReport(report)}
                       style={{
-                        padding: "8px 16px",
+                        padding: "10px 20px",
                         fontSize: "14px",
                         backgroundColor: "#007bff",
                         color: "#fff",
-                        border: "1px solid #0056b3",
+                        border: "none",
                         cursor: "pointer",
-                        clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                        borderRadius: "6px",
+                        fontWeight: "500",
+                        transition: "all 0.2s ease",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#0056b3"
+                        e.currentTarget.style.transform = "translateY(-1px)"
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "#007bff"
+                        e.currentTarget.style.transform = "translateY(0px)"
                       }}
                     >
+                      <Eye size={14} />
                       View Report
                     </button>
                   </div>
                 ))}
+
+                <button
+                  onClick={createFirstReport}
+                  style={{
+                    padding: "16px 32px",
+                    fontSize: "16px",
+                    backgroundColor: "#28a745",
+                    color: "#fff",
+                    border: "none",
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    fontWeight: "500",
+                    letterSpacing: "0.02em",
+                    transition: "all 0.2s ease",
+                    marginTop: "16px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    justifyContent: "center",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#1e7e34"
+                    e.currentTarget.style.transform = "translateY(-2px)"
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(40,167,69,0.3)"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#28a745"
+                    e.currentTarget.style.transform = "translateY(0px)"
+                    e.currentTarget.style.boxShadow = "none"
+                  }}
+                >
+                  <Plus size={18} />
+                  Create New Report
+                </button>
               </div>
             )}
           </div>
@@ -421,38 +1557,27 @@ export default function ReportsPage() {
       <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
         <HamburgerMenu />
 
-        <div style={{ padding: "80px 40px 40px" }}>
-          <div style={{ textAlign: "center", marginBottom: "60px" }}>
-            <h1
-              style={{
-                fontSize: "48px",
-                fontWeight: "300",
-                marginBottom: "20px",
-                letterSpacing: "0.05em",
-              }}
-            >
-              Stakeholder Reports
-            </h1>
-            <p style={{ fontSize: "18px", color: "#999" }}>
-              Generate comprehensive reports for your investors, mentors, and stakeholders
-            </p>
-          </div>
+        <div style={{ padding: "100px 20px 40px", maxWidth: "1000px", margin: "0 auto" }}>
+          <MainHeader />
+          <NavigationTabs />
 
-          <div style={{ maxWidth: "800px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "40px" }}>
+          <div style={{ maxWidth: "800px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
             {/* Report Overview Section */}
             <div
               style={{
                 backgroundColor: "#2a2a2a",
                 border: "1px solid #444",
-                clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
-                padding: "40px",
+                borderRadius: "16px",
+                padding: "32px",
               }}
             >
-              <h2 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "30px" }}>Report Overview</h2>
+              <h2 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "24px", color: "#fff" }}>
+                Report Overview
+              </h2>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "16px", marginBottom: "10px", color: "#e0e0e0" }}>
+                  <label style={{ display: "block", fontSize: "15px", marginBottom: "8px", color: "#e0e0e0" }}>
                     Report Title
                   </label>
                   <input
@@ -462,42 +1587,55 @@ export default function ReportsPage() {
                     onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
                     style={{
                       width: "100%",
-                      padding: "16px",
+                      padding: "14px 16px",
                       backgroundColor: "#1a1a1a",
                       border: "1px solid #444",
+                      borderRadius: "8px",
                       color: "#e0e0e0",
-                      fontSize: "16px",
-                      clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                      fontSize: "15px",
                       outline: "none",
+                      transition: "border-color 0.2s ease",
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = "#007bff"
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = "#444"
                     }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "16px", marginBottom: "10px", color: "#e0e0e0" }}>
+                  <label style={{ display: "block", fontSize: "15px", marginBottom: "8px", color: "#e0e0e0" }}>
                     Reporting Period
                   </label>
                   <input
                     type="date"
-                    placeholder="Select date"
                     value={formData.period}
                     onChange={(e) => setFormData((prev) => ({ ...prev, period: e.target.value }))}
                     style={{
                       width: "100%",
-                      padding: "16px",
+                      padding: "14px 16px",
                       backgroundColor: "#1a1a1a",
                       border: "1px solid #444",
+                      borderRadius: "8px",
                       color: "#e0e0e0",
-                      fontSize: "16px",
-                      clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                      fontSize: "15px",
                       outline: "none",
-                      colorScheme: "dark", // This makes the calendar picker dark themed
+                      colorScheme: "dark",
+                      transition: "border-color 0.2s ease",
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = "#007bff"
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = "#444"
                     }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "16px", marginBottom: "10px", color: "#e0e0e0" }}>
+                  <label style={{ display: "block", fontSize: "15px", marginBottom: "8px", color: "#e0e0e0" }}>
                     Audience
                   </label>
                   <div style={{ position: "relative" }}>
@@ -506,14 +1644,21 @@ export default function ReportsPage() {
                       onChange={(e) => setFormData((prev) => ({ ...prev, audience: e.target.value }))}
                       style={{
                         width: "100%",
-                        padding: "16px",
+                        padding: "14px 16px",
                         backgroundColor: "#1a1a1a",
                         border: "1px solid #444",
+                        borderRadius: "8px",
                         color: "#e0e0e0",
-                        fontSize: "16px",
-                        clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                        fontSize: "15px",
                         outline: "none",
                         appearance: "none",
+                        transition: "border-color 0.2s ease",
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = "#007bff"
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = "#444"
                       }}
                     >
                       <option value="">Select audience</option>
@@ -523,7 +1668,7 @@ export default function ReportsPage() {
                       <option value="general">General</option>
                     </select>
                     <ChevronDown
-                      size={20}
+                      size={18}
                       style={{
                         position: "absolute",
                         right: "16px",
@@ -543,13 +1688,15 @@ export default function ReportsPage() {
               style={{
                 backgroundColor: "#2a2a2a",
                 border: "1px solid #444",
-                clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
-                padding: "40px",
+                borderRadius: "16px",
+                padding: "32px",
               }}
             >
-              <h2 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "30px" }}>Content Selection</h2>
+              <h2 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "24px", color: "#fff" }}>
+                Content Selection
+              </h2>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {[
                   { key: "startupDescription", label: "Startup Description" },
                   { key: "progressOverview", label: "Progress Overview" },
@@ -558,8 +1705,16 @@ export default function ReportsPage() {
                   { key: "productStrategy", label: "Product & Strategy Snapshot" },
                   { key: "forecastPriorities", label: "Forecast & Priorities" },
                 ].map(({ key, label }) => (
-                  <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: "16px", color: "#e0e0e0" }}>{label}</span>
+                  <div
+                    key={key}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "12px 0",
+                    }}
+                  >
+                    <span style={{ fontSize: "15px", color: "#e0e0e0", fontWeight: "400" }}>{label}</span>
                     <ToggleSwitch
                       checked={formData.sections[key as keyof typeof formData.sections]}
                       onChange={() => handleSectionToggle(key as keyof typeof formData.sections)}
@@ -574,31 +1729,42 @@ export default function ReportsPage() {
               style={{
                 backgroundColor: "#2a2a2a",
                 border: "1px solid #444",
-                clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
-                padding: "40px",
+                borderRadius: "16px",
+                padding: "32px",
               }}
             >
-              <h2 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "30px" }}>Optional Notes</h2>
+              <h2 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "24px", color: "#fff" }}>
+                Optional Notes
+              </h2>
 
               <div>
-                <label style={{ display: "block", fontSize: "16px", marginBottom: "10px", color: "#e0e0e0" }}>
+                <label style={{ display: "block", fontSize: "15px", marginBottom: "8px", color: "#e0e0e0" }}>
                   Additional Comments or Context (optional)
                 </label>
                 <textarea
                   placeholder="Add any additional context or specific instructions for the report..."
                   value={formData.notes}
                   onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-                  rows={6}
+                  rows={5}
                   style={{
                     width: "100%",
-                    padding: "16px",
+                    padding: "14px 16px",
                     backgroundColor: "#1a1a1a",
                     border: "1px solid #444",
+                    borderRadius: "8px",
                     color: "#e0e0e0",
-                    fontSize: "16px",
-                    clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                    fontSize: "15px",
                     outline: "none",
                     resize: "vertical",
+                    fontFamily: "inherit",
+                    lineHeight: "1.5",
+                    transition: "border-color 0.2s ease",
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "#007bff"
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "#444"
                   }}
                 />
               </div>
@@ -607,13 +1773,10 @@ export default function ReportsPage() {
             {/* Action Buttons */}
             <div
               style={{
-                backgroundColor: "#2a2a2a",
-                border: "1px solid #444",
-                clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
-                padding: "40px",
                 display: "flex",
-                gap: "20px",
+                gap: "16px",
                 justifyContent: "center",
+                marginTop: "16px",
               }}
             >
               <button
@@ -623,22 +1786,28 @@ export default function ReportsPage() {
                   fontSize: "16px",
                   backgroundColor: "#007bff",
                   color: "#fff",
-                  border: "1px solid #0056b3",
+                  border: "none",
                   cursor: "pointer",
-                  clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                  borderRadius: "8px",
                   fontWeight: "500",
-                  letterSpacing: "0.05em",
-                  transition: "all 0.3s ease",
+                  letterSpacing: "0.02em",
+                  transition: "all 0.2s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "#0056b3"
                   e.currentTarget.style.transform = "translateY(-2px)"
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,123,255,0.3)"
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "#007bff"
                   e.currentTarget.style.transform = "translateY(0px)"
+                  e.currentTarget.style.boxShadow = "none"
                 }}
               >
+                <Plus size={18} />
                 Generate Report
               </button>
 
@@ -649,23 +1818,29 @@ export default function ReportsPage() {
                   fontSize: "16px",
                   backgroundColor: "#444",
                   color: "#e0e0e0",
-                  border: "1px solid #555",
+                  border: "none",
                   cursor: "pointer",
-                  clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                  borderRadius: "8px",
                   fontWeight: "500",
-                  letterSpacing: "0.05em",
-                  transition: "all 0.3s ease",
+                  letterSpacing: "0.02em",
+                  transition: "all 0.2s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "#555"
                   e.currentTarget.style.transform = "translateY(-2px)"
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)"
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "#444"
                   e.currentTarget.style.transform = "translateY(0px)"
+                  e.currentTarget.style.boxShadow = "none"
                 }}
               >
-                Report History
+                <FileText size={18} />
+                View History
               </button>
             </div>
           </div>
@@ -679,24 +1854,31 @@ export default function ReportsPage() {
       <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0" }}>
         <HamburgerMenu />
 
-        <div style={{ padding: "80px 40px 40px" }}>
-          <div style={{ textAlign: "center", marginBottom: "60px" }}>
+        <div style={{ padding: "100px 20px 40px", maxWidth: "1000px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "40px" }}>
             <h1
               style={{
-                fontSize: "48px",
-                fontWeight: "300",
-                marginBottom: "20px",
-                letterSpacing: "0.05em",
+                fontSize: "36px",
+                fontWeight: "400",
+                marginBottom: "16px",
+                letterSpacing: "0.02em",
+                color: "#ffffff",
               }}
             >
               {formData.title || "Generated Report"}
             </h1>
-            <p style={{ fontSize: "18px", color: "#999", marginBottom: "20px" }}>
-              {formData.period && `Report Period: ${new Date(formData.period).toLocaleDateString()}`}
-              {formData.period && formData.audience && " • "}
-              {formData.audience &&
-                `Audience: ${formData.audience.charAt(0).toUpperCase() + formData.audience.slice(1)}`}
-            </p>
+            <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginBottom: "12px" }}>
+              {formData.period && (
+                <span style={{ fontSize: "16px", color: "#999" }}>
+                  {new Date(formData.period).toLocaleDateString()}
+                </span>
+              )}
+              {formData.audience && (
+                <span style={{ fontSize: "16px", color: "#999" }}>
+                  {formData.audience.charAt(0).toUpperCase() + formData.audience.slice(1)}
+                </span>
+              )}
+            </div>
           </div>
 
           <div style={{ maxWidth: "800px", margin: "0 auto" }}>
@@ -705,15 +1887,17 @@ export default function ReportsPage() {
               style={{
                 backgroundColor: "#2a2a2a",
                 border: "1px solid #444",
-                clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
-                padding: "50px",
-                marginBottom: "40px",
+                borderRadius: "16px",
+                padding: "40px",
+                marginBottom: "30px",
               }}
             >
               {formData.sections.startupDescription && (
                 <>
-                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>Startup Description</h3>
-                  <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#e0e0e0", marginBottom: "40px" }}>
+                  <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                    Startup Description
+                  </h3>
+                  <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
                     Our startup is focused on delivering innovative solutions that address key market challenges. We
                     have built a strong foundation with a clear value proposition and growing market traction.
                   </p>
@@ -722,8 +1906,10 @@ export default function ReportsPage() {
 
               {formData.sections.progressOverview && (
                 <>
-                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>Progress Overview</h3>
-                  <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#e0e0e0", marginBottom: "40px" }}>
+                  <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                    Progress Overview
+                  </h3>
+                  <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
                     This quarter we have successfully delivered 87% of our planned objectives while maintaining high
                     quality standards and team satisfaction. Our development velocity has increased by 40% compared to
                     the previous quarter.
@@ -733,28 +1919,34 @@ export default function ReportsPage() {
 
               {formData.sections.tractionMilestones && (
                 <>
-                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>Traction & Milestones</h3>
+                  <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                    Traction & Milestones
+                  </h3>
                   <ul
                     style={{
                       fontSize: "16px",
                       lineHeight: "1.8",
                       color: "#e0e0e0",
-                      marginBottom: "40px",
+                      marginBottom: "32px",
                       paddingLeft: "20px",
                     }}
                   >
-                    <li>Completed major platform upgrade affecting 50,000+ users</li>
-                    <li>Reduced system downtime by 65% through infrastructure improvements</li>
-                    <li>Onboarded 3 new team members with full integration success</li>
-                    <li>Achieved 94% customer satisfaction score in latest survey</li>
+                    <li style={{ marginBottom: "8px" }}>Completed major platform upgrade affecting 50,000+ users</li>
+                    <li style={{ marginBottom: "8px" }}>
+                      Reduced system downtime by 65% through infrastructure improvements
+                    </li>
+                    <li style={{ marginBottom: "8px" }}>Onboarded 3 new team members with full integration success</li>
+                    <li style={{ marginBottom: "8px" }}>Achieved 94% customer satisfaction score in latest survey</li>
                   </ul>
                 </>
               )}
 
               {formData.sections.risksBottlenecks && (
                 <>
-                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>Risks & Bottlenecks</h3>
-                  <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#e0e0e0", marginBottom: "40px" }}>
+                  <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                    Risks & Bottlenecks
+                  </h3>
+                  <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
                     While progress has been strong, we face ongoing challenges in scaling our operations and maintaining
                     quality as we grow. Resource allocation and team coordination remain key focus areas that require
                     immediate attention.
@@ -764,10 +1956,10 @@ export default function ReportsPage() {
 
               {formData.sections.productStrategy && (
                 <>
-                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>
+                  <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
                     Product & Strategy Snapshot
                   </h3>
-                  <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#e0e0e0", marginBottom: "40px" }}>
+                  <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
                     Our product roadmap is aligned with market demands and user feedback. We've prioritized features
                     that drive user engagement and retention, with a focus on scalability and performance optimization.
                   </p>
@@ -776,8 +1968,10 @@ export default function ReportsPage() {
 
               {formData.sections.forecastPriorities && (
                 <>
-                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>Forecast & Priorities</h3>
-                  <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#e0e0e0", marginBottom: "40px" }}>
+                  <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                    Forecast & Priorities
+                  </h3>
+                  <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
                     Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships.
                     Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our
                     next growth phase.
@@ -787,8 +1981,10 @@ export default function ReportsPage() {
 
               {formData.notes && (
                 <>
-                  <h3 style={{ fontSize: "24px", fontWeight: "500", marginBottom: "20px" }}>Additional Notes</h3>
-                  <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#e0e0e0", marginBottom: "40px" }}>
+                  <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
+                    Additional Notes
+                  </h3>
+                  <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
                     {formData.notes}
                   </p>
                 </>
@@ -798,46 +1994,51 @@ export default function ReportsPage() {
             {/* Action Buttons */}
             <div
               style={{
-                backgroundColor: "#2a2a2a",
-                border: "1px solid #444",
-                clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
-                padding: "40px",
                 display: "flex",
-                gap: "20px",
+                gap: "16px",
                 justifyContent: "center",
                 flexWrap: "wrap",
               }}
             >
               {[
-                { label: "Save Report", action: saveReport },
-                { label: "Send Report", action: () => {} },
-                { label: "Download PDF", action: downloadPDF },
-                { label: "Back to Form", action: backToForm },
+                { label: "Save Report", action: saveReport, color: "#28a745", icon: <FileText size={16} /> },
+                {
+                  label: "Send Report",
+                  action: () => alert("Send functionality would be implemented here"),
+                  color: "#17a2b8",
+                  icon: <Send size={16} />,
+                },
+                { label: "Download PDF", action: () => downloadPDF(), color: "#007bff", icon: <Download size={16} /> },
+                { label: "Back to Form", action: backToForm, color: "#6c757d", icon: <ArrowLeft size={16} /> },
               ].map((button, index) => (
                 <button
                   key={index}
                   onClick={button.action}
                   style={{
-                    padding: "16px 24px",
-                    fontSize: "16px",
-                    backgroundColor: button.label === "Back to Form" ? "#444" : "#007bff",
+                    padding: "14px 24px",
+                    fontSize: "15px",
+                    backgroundColor: button.color,
                     color: "#fff",
-                    border: `1px solid ${button.label === "Back to Form" ? "#555" : "#0056b3"}`,
+                    border: "none",
                     cursor: "pointer",
-                    clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                    borderRadius: "8px",
                     fontWeight: "500",
-                    letterSpacing: "0.05em",
-                    transition: "all 0.3s ease",
+                    letterSpacing: "0.02em",
+                    transition: "all 0.2s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = button.label === "Back to Form" ? "#555" : "#0056b3"
                     e.currentTarget.style.transform = "translateY(-2px)"
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)"
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = button.label === "Back to Form" ? "#444" : "#007bff"
                     e.currentTarget.style.transform = "translateY(0px)"
+                    e.currentTarget.style.boxShadow = "none"
                   }}
                 >
+                  {button.icon}
                   {button.label}
                 </button>
               ))}
