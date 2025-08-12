@@ -4,10 +4,10 @@ import { openai } from "@ai-sdk/openai"
 
 export async function POST(request: NextRequest) {
   try {
-    const { mission, teamMembers } = await request.json()
+    const { mission, teamMembers, timeframe, resources } = await request.json()
 
-    if (!mission || typeof mission !== "string") {
-      return NextResponse.json({ error: "Mission is required and must be a string" }, { status: 400 })
+    if (!mission) {
+      return NextResponse.json({ error: "Mission is required" }, { status: 400 })
     }
 
     // Validate that the mission is startup/business related
@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
       You are a startup advisor helping to break down a mission into actionable steps.
       
       Mission: "${mission}"
+      ${timeframe ? `Timeframe: ${timeframe}` : ""}
+      ${resources ? `Available Resources: ${resources}` : ""}
       
       Available team members:
       ${teamMembers.map((member: any) => `- ${member.name} (${member.role})`).join("\n")}
@@ -46,6 +48,11 @@ export async function POST(request: NextRequest) {
       3. Be assigned to an appropriate team member based on their role
       4. Have a clear priority level
       5. Include a relevant category
+      6. Specify required resources
+      7. Define success criteria and milestones
+      8. Identify potential obstacles and solutions
+      9. Outline dependencies between steps
+      10. Provide key performance indicators
       
       Return ONLY a JSON array with this exact structure:
       [
@@ -55,7 +62,12 @@ export async function POST(request: NextRequest) {
           "assignee": "Team member name from the list above",
           "deadline": "YYYY-MM-DD format",
           "priority": "High" | "Medium" | "Low",
-          "category": "Category name"
+          "category": "Category name",
+          "resources": "Required resources for the step",
+          "successCriteria": "Success criteria and milestones",
+          "obstacles": "Potential obstacles and solutions",
+          "dependencies": "Dependencies between steps",
+          "kpi": "Key performance indicators"
         }
       ]
       
