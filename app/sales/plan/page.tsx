@@ -34,19 +34,23 @@ export default function SalesPlanPage() {
 
   const stepLabels: { [key: string]: string } = {
     "value-proposition": "Value Proposition Canvas",
-    "short-pitches": "Short Pitches",
+    "benefit-list": "Benefit List",
+    "60-second-pitch": "60-Second Pitch",
+    "1-sentence-description": "1-Sentence Startup Description",
   }
 
   // Calculate positions for checkpoints in a network layout
   const getCheckpointPosition = (index: number, total: number, stepId: string) => {
     // Position Value Proposition Canvas on the left as the starting point
     if (stepId === "value-proposition") {
-      return { x: 30, y: 50 }
+      return { x: 20, y: 50 }
     }
 
-    // Arrange other checkpoints in a flowing network pattern
+    // Arrange other checkpoints in a flowing network pattern with proper spacing
     const positions = [
-      { x: 70, y: 50 }, // Short Pitches
+      { x: 50, y: 30 }, // Benefit List
+      { x: 80, y: 50 }, // 60-Second Pitch
+      { x: 50, y: 70 }, // 1-Sentence Description
     ]
 
     return positions[index - 1] || { x: 50, y: 50 }
@@ -130,7 +134,7 @@ export default function SalesPlanPage() {
             letterSpacing: "0.05em",
           }}
         >
-          Sales Strategy
+          Idea Description
         </h2>
       </div>
 

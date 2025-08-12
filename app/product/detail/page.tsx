@@ -37,10 +37,9 @@ export default function ProductDetailPage() {
   }, [])
 
   // Always include Action Table as mandatory, plus Overview
-  const allSections = ["overview", "action-table", ...selectedOptions.filter((opt) => opt !== "action-table")]
+  const allSections = ["action-table", ...selectedOptions.filter((opt) => opt !== "action-table")]
 
   const sectionLabels: { [key: string]: string } = {
-    overview: "Overview",
     "action-table": "Action Table",
     features: "Features",
     wireframes: "Wireframes & User Flow",
@@ -48,7 +47,7 @@ export default function ProductDetailPage() {
   }
 
   const isStepUnlocked = (stepId: string) => {
-    return stepId === "overview" || unlockedSteps.includes(stepId)
+    return stepId === "action-table" || unlockedSteps.includes(stepId)
   }
 
   const scrollToSection = (sectionId: string) => {
@@ -202,11 +201,10 @@ export default function ProductDetailPage() {
                 textAlign: "center",
               }}
             >
-              PRIORITY TASKS
+              ACTION TABLE PART 01
             </h3>
             <p style={{ fontSize: "14px", lineHeight: "1.5" }}>
-              Identify and prioritize the most critical tasks for your product development. Focus on high-impact
-              activities that drive results.
+              Turn your interview insights into early product ideas and note any possible issues or risks each idea could bring.
             </p>
           </GeometricCard>
         </div>
@@ -223,15 +221,11 @@ export default function ProductDetailPage() {
                 textAlign: "center",
               }}
             >
-              DEVELOPMENT PLAN
+              ACTION TABLE PART 02
             </h3>
             <div style={{ fontSize: "14px", lineHeight: "1.6" }}>
               <p style={{ marginBottom: "15px" }}>
-                Create a detailed development plan with timelines, milestones, and resource allocation. Break down
-                complex features into manageable tasks.
-              </p>
-              <p>
-                Establish clear deliverables and success metrics for each phase of your product development process.
+                Now turn those early product ideas into actual features. Define their relevance and priority.
               </p>
             </div>
           </GeometricCard>
@@ -375,8 +369,6 @@ export default function ProductDetailPage() {
 
     const sectionContent = () => {
       switch (section) {
-        case "overview":
-          return <OverviewSection />
         case "action-table":
           return <ActionTableSection isUnlocked={isUnlocked} />
         case "features":
@@ -552,6 +544,7 @@ export default function ProductDetailPage() {
             Map
           </button>
           <button
+          
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -573,9 +566,10 @@ export default function ProductDetailPage() {
               width: "100%",
             }}
           >
-            Health Analysis
+            Health Check
           </button>
           <button
+          onClick={() => (window.location.href = "/health-check")}
             style={{
               padding: "15px",
               fontSize: "16px",
