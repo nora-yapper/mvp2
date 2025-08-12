@@ -338,13 +338,7 @@ export default function MainPage() {
       )}
 
       {/* Main Content */}
-      <div style={{ padding: "100px 60px 60px", textAlign: "center" }}>
-        <h1 style={{ fontSize: "48px", fontWeight: "400", margin: "0 0 16px 0", color: "#e0e0e0" }}>
-          Startup Command Center
-        </h1>
-        <p style={{ fontSize: "18px", color: "#999", margin: "0 0 60px 0" }}>
-          Navigate your startup journey with precision and insight.
-        </p>
+      <div style={{ padding: "270px 60px 60px", textAlign: "center" }}>
 
         {/* Geometric Button Grid */}
         <div
