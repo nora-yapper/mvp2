@@ -1,5 +1,3 @@
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
@@ -34,7 +32,7 @@ export async function POST(request: NextRequest) {
     // Create team context
     const teamContext =
       teamMembers.length > 0
-        ? `Team members: ${teamMembers.map((m) => `${m.name} (${m.role})`).join(", ")}`
+        ? `Team members: ${teamMembers.map((m: any) => `${m.name} (${m.role})`).join(", ")}`
         : "Small startup team"
 
     const prompt = `You are a startup advisor helping create actionable implementation steps.
@@ -66,11 +64,25 @@ IMPORTANT: Respond with ONLY raw JSON, no markdown formatting, no code blocks, n
   ]
 }`
 
-    const { text } = await generateText({
-      model: openai("gpt-4o"),
-      prompt: prompt,
-      temperature: 0.7,
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+      }),
     })
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const text = data.choices[0].message.content
 
     // Clean the response text and try to parse JSON
     let steps
@@ -104,7 +116,7 @@ IMPORTANT: Respond with ONLY raw JSON, no markdown formatting, no code blocks, n
     }
 
     // Validate and clean up steps
-    const validSteps = steps.map((step, index) => ({
+    const validSteps = steps.map((step: any, index: number) => ({
       task: step.task || `Complete action for: ${suggestion.title}`,
       assignee: step.assignee || (teamMembers.length > 0 ? teamMembers[0].name : "Founder"),
       deadline: step.deadline || getDefaultDeadline(index + 1),
@@ -123,7 +135,7 @@ function createFallbackSteps(suggestion: any, teamMembers: any[]) {
 
     if (preferredRole) {
       const member = teamMembers.find(
-        (m) =>
+        (m: any) =>
           m.role.toLowerCase().includes(preferredRole.toLowerCase()) ||
           m.skills?.some((skill: string) => skill.toLowerCase().includes(preferredRole.toLowerCase())),
       )
