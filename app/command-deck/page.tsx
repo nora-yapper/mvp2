@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Clock, Calendar, Kanban, TableIcon, Loader2, Edit, Save, X } from "lucide-react"
+import { Plus, Clock, Calendar, Kanban, TableIcon, Loader2, Edit, Save, X, AlertCircle } from "lucide-react"
 import { getTeamMembers } from "@/lib/team-data"
 
 interface Task {
@@ -47,12 +47,16 @@ export default function CommandDeck() {
   const [filterStatus, setFilterStatus] = useState("all")
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false)
   const [mission, setMission] = useState("")
+  const [timeframe, setTimeframe] = useState("")
+  const [accomplished, setAccomplished] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedSteps, setGeneratedSteps] = useState<GeneratedStep[]>([])
   const [isStepsModalOpen, setIsStepsModalOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [editingStepIndex, setEditingStepIndex] = useState<number | null>(null)
   const [editingStep, setEditingStep] = useState<GeneratedStep | null>(null)
+  const [apiSource, setApiSource] = useState<string>("")
+  const [errorMessage, setErrorMessage] = useState<string>("")
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -158,28 +162,94 @@ export default function CommandDeck() {
     if (!mission.trim()) return
 
     setIsGenerating(true)
+    setApiSource("")
+    setErrorMessage("")
+
     try {
+      // Parse accomplished items from textarea
+      const accomplishedList = accomplished
+        .split("\n")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
+
+      console.log("Sending request to generate mission steps...")
+
       const response = await fetch("/api/generate-mission-steps", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ mission, teamMembers }),
+        body: JSON.stringify({
+          mission,
+          timeframe: timeframe || undefined,
+          accomplished: accomplishedList.length > 0 ? accomplishedList : undefined,
+        }),
       })
 
+      console.log("Response status:", response.status)
+
       if (!response.ok) {
-        throw new Error("Failed to generate steps")
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
+        throw new Error(errorData.error || `HTTP ${response.status}`)
       }
 
       const data = await response.json()
-      setGeneratedSteps(data.steps)
+      console.log("Received data:", data)
+
+      if (!data.steps || !Array.isArray(data.steps)) {
+        throw new Error("Invalid response format: missing steps array")
+      }
+
+      // Transform API response to match UI expectations
+      const transformedSteps = data.steps.map((step: any) => ({
+        title: step.title || "Untitled Step",
+        description: step.description || "No description provided",
+        assignee: teamMembers[Math.floor(Math.random() * teamMembers.length)]?.name || "Unassigned",
+        deadline: getDefaultDeadline(step.duration || "2 weeks"),
+        priority: capitalizeFirst(step.priority || "medium") as "High" | "Medium" | "Low",
+        category: "Mission Critical",
+      }))
+
+      setGeneratedSteps(transformedSteps)
+      setApiSource(data.source || "unknown")
       setIsStepsModalOpen(true)
+
+      console.log("Successfully generated", transformedSteps.length, "steps")
     } catch (error) {
       console.error("Error generating mission steps:", error)
-      alert("Failed to generate mission steps. Please try again.")
+      const errorMsg = error instanceof Error ? error.message : "Unknown error occurred"
+      setErrorMessage(`Failed to generate steps: ${errorMsg}`)
+
+      // Show error for 5 seconds then clear
+      setTimeout(() => {
+        setErrorMessage("")
+      }, 5000)
     } finally {
       setIsGenerating(false)
     }
+  }
+
+  const getDefaultDeadline = (duration: string) => {
+    const today = new Date()
+    let daysToAdd = 14 // default 2 weeks
+
+    if (duration.includes("1 week")) daysToAdd = 7
+    else if (duration.includes("2 week")) daysToAdd = 14
+    else if (duration.includes("3 week")) daysToAdd = 21
+    else if (duration.includes("4 week")) daysToAdd = 28
+    else if (duration.includes("1-2 week")) daysToAdd = 10
+    else if (duration.includes("2-3 week")) daysToAdd = 17
+    else if (duration.includes("3-4 week")) daysToAdd = 24
+    else if (duration.includes("4-6 week")) daysToAdd = 35
+    else if (duration.includes("4-8 week")) daysToAdd = 42
+    else if (duration.includes("6-8 week")) daysToAdd = 49
+
+    const deadline = new Date(today.getTime() + daysToAdd * 24 * 60 * 60 * 1000)
+    return deadline.toISOString().split("T")[0]
+  }
+
+  const capitalizeFirst = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
   }
 
   const handleImplementSteps = () => {
@@ -198,6 +268,8 @@ export default function CommandDeck() {
     setIsStepsModalOpen(false)
     setGeneratedSteps([])
     setMission("")
+    setTimeframe("")
+    setAccomplished("")
   }
 
   const handleEditStep = (index: number) => {
@@ -636,12 +708,47 @@ export default function CommandDeck() {
             <div>
               <h2 className="text-2xl font-semibold text-gray-100 mb-4">Set Your Mission</h2>
               <div className="space-y-4">
-                <Textarea
-                  placeholder="Describe your big goal..."
-                  value={mission}
-                  onChange={(e) => setMission(e.target.value)}
-                  className="min-h-[120px] bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-400 text-lg"
-                />
+                <div>
+                  <label className="text-sm font-medium text-gray-200 mb-2 block">Your Big Goal (Mission)</label>
+                  <Textarea
+                    placeholder="Describe your startup mission or big goal..."
+                    value={mission}
+                    onChange={(e) => setMission(e.target.value)}
+                    className="min-h-[120px] bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-400 text-lg"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-200 mb-2 block">Timeline/Deadline (Optional)</label>
+                    <Input
+                      placeholder="e.g., 3 months, by Q2 2024, 12 weeks..."
+                      value={timeframe}
+                      onChange={(e) => setTimeframe(e.target.value)}
+                      className="bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-200 mb-2 block">
+                      Already Accomplished (Optional)
+                    </label>
+                    <Textarea
+                      placeholder="List things you've already done (one per line)..."
+                      value={accomplished}
+                      onChange={(e) => setAccomplished(e.target.value)}
+                      className="min-h-[80px] bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Error Message */}
+                {errorMessage && (
+                  <div className="flex items-center gap-2 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+                    <AlertCircle className="h-4 w-4 text-red-400" />
+                    <p className="text-sm text-red-300">{errorMessage}</p>
+                  </div>
+                )}
+
                 <Button
                   onClick={handleGenerateMissionSteps}
                   disabled={!mission.trim() || isGenerating}
@@ -650,10 +757,10 @@ export default function CommandDeck() {
                   {isGenerating ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating Plan...
+                      Analyzing Mission...
                     </>
                   ) : (
-                    "Generate Plan"
+                    "Generate Startup Action Plan"
                   )}
                 </Button>
               </div>
@@ -894,13 +1001,37 @@ export default function CommandDeck() {
       <Dialog open={isStepsModalOpen} onOpenChange={setIsStepsModalOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-gray-800 border-gray-700">
           <DialogHeader>
-            <DialogTitle className="text-gray-100">Generated Action Plan</DialogTitle>
-            <p className="text-sm text-gray-300">Mission: {mission}</p>
+            <DialogTitle className="text-gray-100">Generated Startup Action Plan</DialogTitle>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-gray-300">Mission: {mission}</p>
+              {apiSource && (
+                <Badge
+                  variant="outline"
+                  className={`text-xs ${
+                    apiSource === "myai"
+                      ? "border-green-500 text-green-400"
+                      : apiSource === "fallback"
+                        ? "border-yellow-500 text-yellow-400"
+                        : apiSource === "no_api_key"
+                          ? "border-blue-500 text-blue-400"
+                          : "border-red-500 text-red-400"
+                  }`}
+                >
+                  {apiSource === "myai"
+                    ? "🤖 MyAI"
+                    : apiSource === "fallback"
+                      ? "⚠️ API Fallback"
+                      : apiSource === "no_api_key"
+                        ? "🔧 Smart Fallback"
+                        : "❌ Error Fallback"}
+                </Badge>
+              )}
+            </div>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-gray-300">
-              Here are the actionable steps to achieve your mission. You can edit, delete, or modify these steps before
-              implementing them:
+              Here are the startup-focused actionable steps to achieve your mission. You can edit, delete, or modify
+              these steps before implementing them:
             </p>
             <div className="space-y-3">
               {generatedSteps.map((step, index) => (
