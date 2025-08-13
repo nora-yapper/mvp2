@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
+import { earnTokensForStep } from "@/lib/token-integration"
 
 export default function SalesDetailPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -142,6 +143,14 @@ export default function SalesDetailPage() {
         ...prev,
         [field]: value,
       }))
+    }
+
+    const handleSaveChanges = () => {
+      // Save the changes to local storage or a database
+      console.log("Saving changes:", canvasData)
+
+      // Award tokens for completing value proposition canvas
+      earnTokensForStep("SALES_VALUE_PROPOSITION")
     }
 
     return (
@@ -565,6 +574,23 @@ export default function SalesDetailPage() {
                 </ul>
               </div>
             </div>
+
+            {/* Save Changes Button */}
+            <button
+              onClick={handleSaveChanges}
+              style={{
+                marginTop: "20px",
+                padding: "12px 24px",
+                backgroundColor: "#4CAF50",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "16px",
+              }}
+            >
+              Save Changes
+            </button>
           </div>
         )}
       </div>

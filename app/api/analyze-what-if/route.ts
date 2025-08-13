@@ -1,112 +1,61 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { generateText } from "ai"
+import { openai } from "@ai-sdk/openai"
 
 export async function POST(request: NextRequest) {
   try {
-    const { scenario, currentContext } = await request.json()
+    const { scenario, context } = await request.json()
 
     if (!scenario) {
       return NextResponse.json({ error: "Scenario is required" }, { status: 400 })
     }
 
-    const prompt = `You are a startup advisor analyzing a what-if scenario. 
+    const prompt = `
+You are a strategic business advisor analyzing a "what-if" scenario for a startup.
 
-Current startup context:
-- Stage: ${currentContext?.stage || "early-stage"}
-- Team size: ${currentContext?.team_size || "small team"}
-- Runway: ${currentContext?.runway_days || "limited"} days
-- Current priorities: ${currentContext?.current_priorities?.join(", ") || "MVP development, user acquisition"}
+Context: ${context || "No additional context provided"}
 
-Scenario to analyze: "${scenario}"
+Scenario to Analyze: "${scenario}"
 
-Provide a comprehensive analysis covering these areas (respond in plain text without markdown formatting):
+Please provide a comprehensive analysis with:
 
-Timeline: How this scenario affects project timelines and milestones
-Resources: Impact on budget, runway, and resource allocation
-Team: Effects on team dynamics, workload, and morale
-Market: How this affects market positioning and competitive advantage
-Investors: Impact on investor relations and fundraising prospects
-Recommendations: Specific actionable steps to handle this scenario
+## Immediate Impact Assessment
+- What would happen in the first 30-90 days?
+- Which areas of the business would be most affected?
+- What resources would be required?
 
-Format your response as a JSON object with these exact keys: timeline, resources, team, market, investors, recommendations. Each value should be a clear, concise paragraph without any markdown formatting or special characters.`
+## Strategic Implications
+- How does this align with or conflict with current strategy?
+- What new opportunities might emerge?
+- What existing plans might need to change?
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-      }),
+## Risk Analysis
+- What are the primary risks of this scenario?
+- What could go wrong and how likely is it?
+- What safeguards or contingencies should be considered?
+
+## Implementation Considerations
+- What would need to happen to make this scenario reality?
+- What are the key dependencies and bottlenecks?
+- What skills, resources, or partnerships would be needed?
+
+## Recommendation
+- Should this scenario be pursued? Why or why not?
+- If yes, what should be the first steps?
+- What metrics should be tracked to measure success?
+
+Provide specific, actionable insights that help with strategic decision-making.
+`
+
+    const { text } = await generateText({
+      model: openai("gpt-4o"),
+      prompt,
+      maxTokens: 1800,
     })
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-    const text = data.choices[0].message.content
-
-    // Try to parse as JSON first
-    try {
-      const analysis = JSON.parse(text)
-      return NextResponse.json({ analysis })
-    } catch (parseError) {
-      // If JSON parsing fails, try to extract sections manually
-      const sections = {
-        timeline: extractSection(text, "Timeline:"),
-        resources: extractSection(text, "Resources:"),
-        team: extractSection(text, "Team:"),
-        market: extractSection(text, "Market:"),
-        investors: extractSection(text, "Investors:"),
-        recommendations: extractSection(text, "Recommendations:"),
-      }
-
-      return NextResponse.json({ analysis: sections })
-    }
+    return NextResponse.json({ analysis: text })
   } catch (error) {
-    console.error("What-if analysis error:", error)
+    console.error("Error analyzing what-if scenario:", error)
     return NextResponse.json({ error: "Failed to analyze scenario" }, { status: 500 })
   }
-}
-
-function extractSection(text: string, sectionName: string): string {
-  const lines = text.split("\n")
-  let capturing = false
-  const content = []
-
-  for (const line of lines) {
-    if (line.includes(sectionName)) {
-      capturing = true
-      const afterColon = line.split(sectionName)[1]
-      if (afterColon && afterColon.trim()) {
-        content.push(afterColon.trim())
-      }
-      continue
-    }
-
-    if (capturing) {
-      if (
-        line.includes(":") &&
-        (line.includes("Timeline:") ||
-          line.includes("Resources:") ||
-          line.includes("Team:") ||
-          line.includes("Market:") ||
-          line.includes("Investors:") ||
-          line.includes("Recommendations:"))
-      ) {
-        break
-      }
-      if (line.trim()) {
-        content.push(line.trim())
-      }
-    }
-  }
-
-  return (
-    content.join(" ").replace(/\*\*/g, "").replace(/\*/g, "").trim() ||
-    `Analysis for ${sectionName.replace(":", "")} will be provided based on your specific scenario.`
-  )
 }

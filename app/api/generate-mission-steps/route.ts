@@ -1,3 +1,5 @@
+import { spendTokensForAI, hasEnoughTokens } from "@/lib/token-integration"
+
 export async function POST(request: Request) {
   try {
     const { mission, timeframe, accomplished } = await request.json()
@@ -5,6 +7,19 @@ export async function POST(request: Request) {
     if (!mission || mission.trim().length === 0) {
       return Response.json({ error: "Mission is required" }, { status: 400 })
     }
+
+    // Check if user has enough tokens
+    if (!hasEnoughTokens("MISSION_STEPS")) {
+      return Response.json(
+        {
+          error: "Insufficient tokens. You need 20 tokens for mission step generation.",
+        },
+        { status: 402 },
+      )
+    }
+
+    // Spend tokens for AI generation
+    spendTokensForAI("MISSION_STEPS")
 
     // Check if OpenAI API key is available
     if (!process.env.OPENAI_API_KEY) {

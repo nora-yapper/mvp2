@@ -180,7 +180,7 @@ export default function CommandDeckTasksPage() {
             Map
           </button>
           <button
-            onClick={() => (window.location.href = "/homebase/workspace")}
+            onClick={() => (window.location.href = "/command-deck")}
             style={{
               padding: "15px",
               fontSize: "16px",

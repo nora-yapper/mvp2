@@ -196,6 +196,7 @@ export default function HomebaseWorkspacePage() {
             Map
           </button>
           <button
+            onClick={() => (window.location.href = "/command-deck")}
             style={{
               padding: "15px",
               fontSize: "16px",

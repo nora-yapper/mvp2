@@ -1,116 +1,237 @@
 "use client"
 
 import { useState, useEffect } from "react"
-
-interface HomebaseComponent {
-  id: string
-  title: string
-  content: string
-}
-
-interface StartupData {
-  basicInfo: {
-    startupName: string
-    shortDescription: string
-    industrySector: string
-    stage: string
-    teamMembers: string
-  }
-  motivation: string
-  assets: {
-    website: string
-    pitchDeck: string
-    otherWorkspaces: string
-  }
-}
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { earnTokensForStep } from "@/lib/token-integration"
 
 export default function HomebaseTaskPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [currentComponent, setCurrentComponent] = useState<HomebaseComponent | null>(null)
-  const [editedContent, setEditedContent] = useState("")
-  const [startupData, setStartupData] = useState<StartupData | null>(null)
+  const [currentTask, setCurrentTask] = useState<string>("")
+
+  // Startup Info Form State
+  const [startupInfo, setStartupInfo] = useState({
+    companyName: "",
+    industry: "",
+    stage: "",
+    teamSize: "",
+    targetMarket: "",
+    problemStatement: "",
+    currentRevenue: "",
+    fundingStatus: "",
+  })
+
+  const [isSaved, setIsSaved] = useState(false)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const componentId = params.get("component")
+    const task = params.get("task") || ""
+    setCurrentTask(task)
 
-    if (componentId) {
-      // Load components from session storage
-      const storedComponents = sessionStorage.getItem("homebaseComponents")
-      if (storedComponents) {
-        const components: HomebaseComponent[] = JSON.parse(storedComponents)
-        const component = components.find((c) => c.id === componentId)
-        if (component) {
-          setCurrentComponent(component)
-
-          // Handle structured data for "About Your Startup"
-          if (component.id === "about-startup") {
-            try {
-              const parsedData = JSON.parse(component.content)
-              setStartupData(parsedData)
-            } catch {
-              // Initialize with empty structure if parsing fails
-              const emptyData: StartupData = {
-                basicInfo: {
-                  startupName: "",
-                  shortDescription: "",
-                  industrySector: "",
-                  stage: "Idea",
-                  teamMembers: "",
-                },
-                motivation: "",
-                assets: {
-                  website: "",
-                  pitchDeck: "",
-                  otherWorkspaces: "",
-                },
-              }
-              setStartupData(emptyData)
-            }
-          } else {
-            setEditedContent(component.content)
-          }
-        }
-      }
+    // Load saved startup info
+    const savedInfo = sessionStorage.getItem("startupInfo")
+    if (savedInfo) {
+      setStartupInfo(JSON.parse(savedInfo))
+      setIsSaved(true)
     }
   }, [])
 
+  const handleInputChange = (field: string, value: string) => {
+    setStartupInfo((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+    setIsSaved(false)
+  }
+
   const handleSave = () => {
-    if (!currentComponent) return
+    // Check if required fields are filled
+    const requiredFields = ["companyName", "industry", "stage", "problemStatement"]
+    const isComplete = requiredFields.every((field) => startupInfo[field as keyof typeof startupInfo].trim() !== "")
 
-    // Load current components
-    const storedComponents = sessionStorage.getItem("homebaseComponents")
-    if (storedComponents) {
-      const components: HomebaseComponent[] = JSON.parse(storedComponents)
+    // Save to session storage
+    sessionStorage.setItem("startupInfo", JSON.stringify(startupInfo))
+    setIsSaved(true)
 
-      let updatedComponents
-      if (currentComponent.id === "about-startup" && startupData) {
-        // Save structured data as JSON string
-        updatedComponents = components.map((c) =>
-          c.id === currentComponent.id ? { ...c, content: JSON.stringify(startupData) } : c,
-        )
-        setCurrentComponent({ ...currentComponent, content: JSON.stringify(startupData) })
-      } else {
-        // Save regular text content
-        updatedComponents = components.map((c) => (c.id === currentComponent.id ? { ...c, content: editedContent } : c))
-        setCurrentComponent({ ...currentComponent, content: editedContent })
-      }
-
-      // Save back to session storage
-      sessionStorage.setItem("homebaseComponents", JSON.stringify(updatedComponents))
+    // Award tokens for completing startup info (only first time)
+    const hasCompletedBefore = sessionStorage.getItem("hasCompletedStartupInfo")
+    if (isComplete && !hasCompletedBefore) {
+      earnTokensForStep("HOMEBASE_STARTUP_INFO")
+      sessionStorage.setItem("hasCompletedStartupInfo", "true")
     }
+
+    alert("Startup information saved successfully!")
   }
 
-  const handleBack = () => {
-    window.location.href = "/homebase/workspace"
-  }
+  const renderStartupInfoTask = () => (
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="mb-6">
+        <Button onClick={() => window.history.back()} variant="outline" className="mb-4">
+          ← Back to Homebase
+        </Button>
+        <h1 className="text-3xl font-bold mb-2">Startup Information</h1>
+        <p className="text-gray-600">Tell us about your startup to get personalized insights and recommendations.</p>
+      </div>
 
-  if (!currentComponent) {
-    return <div>Loading...</div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Basic Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label htmlFor="companyName">Company Name *</Label>
+              <Input
+                id="companyName"
+                value={startupInfo.companyName}
+                onChange={(e) => handleInputChange("companyName", e.target.value)}
+                placeholder="Enter your company name"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="industry">Industry *</Label>
+              <Input
+                id="industry"
+                value={startupInfo.industry}
+                onChange={(e) => handleInputChange("industry", e.target.value)}
+                placeholder="e.g., SaaS, E-commerce, FinTech"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="stage">Stage *</Label>
+              <select
+                id="stage"
+                value={startupInfo.stage}
+                onChange={(e) => handleInputChange("stage", e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Select stage</option>
+                <option value="idea">Idea Stage</option>
+                <option value="mvp">MVP Development</option>
+                <option value="early-traction">Early Traction</option>
+                <option value="growth">Growth Stage</option>
+                <option value="scale">Scale Stage</option>
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="teamSize">Team Size</Label>
+              <select
+                id="teamSize"
+                value={startupInfo.teamSize}
+                onChange={(e) => handleInputChange("teamSize", e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Select team size</option>
+                <option value="solo">Solo founder</option>
+                <option value="2-3">2-3 people</option>
+                <option value="4-10">4-10 people</option>
+                <option value="11-25">11-25 people</option>
+                <option value="25+">25+ people</option>
+              </select>
+            </div>
+
+            <div className="md:col-span-2">
+              <Label htmlFor="targetMarket">Target Market</Label>
+              <Input
+                id="targetMarket"
+                value={startupInfo.targetMarket}
+                onChange={(e) => handleInputChange("targetMarket", e.target.value)}
+                placeholder="Describe your target customers"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <Label htmlFor="problemStatement">Problem Statement *</Label>
+              <Textarea
+                id="problemStatement"
+                value={startupInfo.problemStatement}
+                onChange={(e) => handleInputChange("problemStatement", e.target.value)}
+                placeholder="What problem are you solving?"
+                className="min-h-[100px]"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="currentRevenue">Current Monthly Revenue</Label>
+              <select
+                id="currentRevenue"
+                value={startupInfo.currentRevenue}
+                onChange={(e) => handleInputChange("currentRevenue", e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Select revenue range</option>
+                <option value="0">$0 (Pre-revenue)</option>
+                <option value="1-1000">$1 - $1,000</option>
+                <option value="1000-5000">$1,000 - $5,000</option>
+                <option value="5000-10000">$5,000 - $10,000</option>
+                <option value="10000-50000">$10,000 - $50,000</option>
+                <option value="50000+">$50,000+</option>
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="fundingStatus">Funding Status</Label>
+              <select
+                id="fundingStatus"
+                value={startupInfo.fundingStatus}
+                onChange={(e) => handleInputChange("fundingStatus", e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Select funding status</option>
+                <option value="bootstrapped">Bootstrapped</option>
+                <option value="seeking-pre-seed">Seeking Pre-seed</option>
+                <option value="pre-seed">Pre-seed Funded</option>
+                <option value="seeking-seed">Seeking Seed</option>
+                <option value="seed">Seed Funded</option>
+                <option value="series-a+">Series A+</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-between items-center">
+            <div className="text-sm text-gray-500">* Required fields</div>
+            <div className="flex gap-2">
+              {isSaved && <span className="text-green-600 text-sm flex items-center">✓ Saved</span>}
+              <Button onClick={handleSave}>Save Information</Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderTaskContent = () => {
+    if (currentTask === "startup-info") {
+      return renderStartupInfoTask()
+    }
+
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="mb-6">
+          <Button onClick={() => window.history.back()} variant="outline" className="mb-4">
+            ← Back to Homebase
+          </Button>
+          <h1 className="text-3xl font-bold mb-2">Task: {currentTask}</h1>
+        </div>
+
+        <Alert>
+          <AlertDescription>
+            This task is coming soon! We're working on building out all the homebase tools.
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
   }
 
   return (
-    <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
+    <div style={{ minHeight: "100vh", position: "relative" }}>
       {/* Top Bar */}
       <div
         style={{
@@ -127,7 +248,6 @@ export default function HomebaseTaskPage() {
           zIndex: 1000,
         }}
       >
-        {/* Sidebar Toggle */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           style={{
@@ -140,22 +260,6 @@ export default function HomebaseTaskPage() {
         >
           ☰
         </button>
-
-        {/* Back Arrow */}
-        <button
-          onClick={handleBack}
-          style={{
-            background: "none",
-            border: "none",
-            fontSize: "24px",
-            cursor: "pointer",
-          }}
-        >
-          ←
-        </button>
-
-        {/* Component Title */}
-        <h2 style={{ marginLeft: "20px", fontSize: "18px", color: "#333" }}>{currentComponent.title}</h2>
       </div>
 
       {/* Sidebar */}
@@ -172,7 +276,6 @@ export default function HomebaseTaskPage() {
           padding: "20px",
         }}
       >
-        {/* Top section - Settings and Profile icons */}
         <div style={{ marginTop: "0px", marginBottom: "30px" }}>
           <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
             <button
@@ -198,7 +301,6 @@ export default function HomebaseTaskPage() {
           </div>
         </div>
 
-                {/* Seven vertically stacked buttons */}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <button
             onClick={() => (window.location.href = "/main")}
@@ -214,7 +316,7 @@ export default function HomebaseTaskPage() {
             Map
           </button>
           <button
-          onClick={() => (window.location.href = "/command-deck")}
+            onClick={() => (window.location.href = "/command-deck")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -227,7 +329,6 @@ export default function HomebaseTaskPage() {
             Command Deck
           </button>
           <button
-          onClick={() => (window.location.href = "/health-check")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -237,10 +338,9 @@ export default function HomebaseTaskPage() {
               width: "100%",
             }}
           >
-            Health Check
+            Health Analysis
           </button>
           <button
-          onClick={() => (window.location.href = "/forecast")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -253,7 +353,6 @@ export default function HomebaseTaskPage() {
             Forecast
           </button>
           <button
-          onClick={() => (window.location.href = "/reports")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -266,7 +365,6 @@ export default function HomebaseTaskPage() {
             Reports
           </button>
           <button
-          onClick={() => (window.location.href = "/network")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -278,449 +376,11 @@ export default function HomebaseTaskPage() {
           >
             Network
           </button>
-          <button
-          onClick={() => (window.location.href = "/team")}
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Team
-          </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div
-        style={{
-          marginTop: "60px",
-          padding: "40px 20px",
-          color: "#e0e0e0",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "3rem",
-            color: "#666",
-            fontWeight: "bold",
-            marginBottom: "40px",
-            textAlign: "center",
-            letterSpacing: "0.1em",
-          }}
-        >
-          {currentComponent.title.toUpperCase()}
-        </h1>
-
-        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-          <div
-            style={{
-              backgroundColor: "#2a2a2a",
-              color: "#e0e0e0",
-              padding: "40px",
-              borderRadius: "8px",
-              marginBottom: "30px",
-            }}
-          >
-            {currentComponent.id === "about-startup" && startupData ? (
-              // Structured form for "About Your Startup"
-              <div>
-                <h3 style={{ fontSize: "24px", marginBottom: "30px", color: "#fff" }}>About Your Startup</h3>
-
-                {/* Basic Info Section */}
-                <div style={{ marginBottom: "40px" }}>
-                  <h4
-                    style={{
-                      fontSize: "20px",
-                      marginBottom: "20px",
-                      color: "#fff",
-                      borderBottom: "1px solid #444",
-                      paddingBottom: "10px",
-                    }}
-                  >
-                    Basic Info
-                  </h4>
-
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold", color: "#ccc" }}>
-                      Startup Name
-                    </label>
-                    <p style={{ fontSize: "14px", color: "#888", marginBottom: "8px" }}>
-                      What are you calling your startup (for now)?
-                    </p>
-                    <input
-                      type="text"
-                      value={startupData.basicInfo.startupName}
-                      onChange={(e) =>
-                        setStartupData({
-                          ...startupData,
-                          basicInfo: { ...startupData.basicInfo, startupName: e.target.value },
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        backgroundColor: "#1a1a1a",
-                        color: "#e0e0e0",
-                        border: "1px solid #444",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                      }}
-                      placeholder="Enter your startup name"
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold", color: "#ccc" }}>
-                      Short Description
-                    </label>
-                    <p style={{ fontSize: "14px", color: "#888", marginBottom: "8px" }}>
-                      A one-liner that explains what your startup does - think simple and clear. (e.g. "A tool that
-                      helps freelancers track payments.")
-                    </p>
-                    <textarea
-                      value={startupData.basicInfo.shortDescription}
-                      onChange={(e) =>
-                        setStartupData({
-                          ...startupData,
-                          basicInfo: { ...startupData.basicInfo, shortDescription: e.target.value },
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        minHeight: "80px",
-                        padding: "12px",
-                        backgroundColor: "#1a1a1a",
-                        color: "#e0e0e0",
-                        border: "1px solid #444",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                        resize: "vertical",
-                      }}
-                      placeholder="Describe what your startup does in one line"
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold", color: "#ccc" }}>
-                      Industry / Sector
-                    </label>
-                    <p style={{ fontSize: "14px", color: "#888", marginBottom: "8px" }}>
-                      What space are you working in? (e.g. fintech, health, edtech, mobility)
-                    </p>
-                    <input
-                      type="text"
-                      value={startupData.basicInfo.industrySector}
-                      onChange={(e) =>
-                        setStartupData({
-                          ...startupData,
-                          basicInfo: { ...startupData.basicInfo, industrySector: e.target.value },
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        backgroundColor: "#1a1a1a",
-                        color: "#e0e0e0",
-                        border: "1px solid #444",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                      }}
-                      placeholder="e.g. fintech, health, edtech, mobility"
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold", color: "#ccc" }}>
-                      Stage
-                    </label>
-                    <p style={{ fontSize: "14px", color: "#888", marginBottom: "8px" }}>How far along are you?</p>
-                    <select
-                      value={startupData.basicInfo.stage}
-                      onChange={(e) =>
-                        setStartupData({
-                          ...startupData,
-                          basicInfo: { ...startupData.basicInfo, stage: e.target.value },
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        backgroundColor: "#1a1a1a",
-                        color: "#e0e0e0",
-                        border: "1px solid #444",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                      }}
-                    >
-                      <option value="Idea">Idea</option>
-                      <option value="MVP">MVP</option>
-                      <option value="Beta">Beta</option>
-                      <option value="Launched">Launched</option>
-                      <option value="Revenue-Generating">Revenue-Generating</option>
-                    </select>
-                  </div>
-
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold", color: "#ccc" }}>
-                      Team Members
-                    </label>
-                    <p style={{ fontSize: "14px", color: "#888", marginBottom: "8px" }}>
-                      Who's building this? Add names and roles. (e.g. "Sara - Product, Mike - Tech")
-                    </p>
-                    <textarea
-                      value={startupData.basicInfo.teamMembers}
-                      onChange={(e) =>
-                        setStartupData({
-                          ...startupData,
-                          basicInfo: { ...startupData.basicInfo, teamMembers: e.target.value },
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        minHeight: "80px",
-                        padding: "12px",
-                        backgroundColor: "#1a1a1a",
-                        color: "#e0e0e0",
-                        border: "1px solid #444",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                        resize: "vertical",
-                      }}
-                      placeholder="List team members and their roles"
-                    />
-                  </div>
-                </div>
-
-                {/* Motivation Section */}
-                <div style={{ marginBottom: "40px" }}>
-                  <h4
-                    style={{
-                      fontSize: "20px",
-                      marginBottom: "20px",
-                      color: "#fff",
-                      borderBottom: "1px solid #444",
-                      paddingBottom: "10px",
-                    }}
-                  >
-                    Motivation
-                  </h4>
-
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold", color: "#ccc" }}>
-                      What's your motivation?
-                    </label>
-                    <p style={{ fontSize: "14px", color: "#888", marginBottom: "8px" }}>
-                      Why do you want to build this? What drives you?
-                    </p>
-                    <textarea
-                      value={startupData.motivation}
-                      onChange={(e) =>
-                        setStartupData({
-                          ...startupData,
-                          motivation: e.target.value,
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        minHeight: "120px",
-                        padding: "12px",
-                        backgroundColor: "#1a1a1a",
-                        color: "#e0e0e0",
-                        border: "1px solid #444",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                        resize: "vertical",
-                      }}
-                      placeholder="Explain what drives you to build this startup"
-                    />
-                  </div>
-                </div>
-
-                {/* Assets Section */}
-                <div style={{ marginBottom: "30px" }}>
-                  <h4
-                    style={{
-                      fontSize: "20px",
-                      marginBottom: "20px",
-                      color: "#fff",
-                      borderBottom: "1px solid #444",
-                      paddingBottom: "10px",
-                    }}
-                  >
-                    Assets (Optional)
-                  </h4>
-
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold", color: "#ccc" }}>
-                      Website
-                    </label>
-                    <p style={{ fontSize: "14px", color: "#888", marginBottom: "8px" }}>
-                      Drop a link if you already have a landing page or site.
-                    </p>
-                    <input
-                      type="url"
-                      value={startupData.assets.website}
-                      onChange={(e) =>
-                        setStartupData({
-                          ...startupData,
-                          assets: { ...startupData.assets, website: e.target.value },
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        backgroundColor: "#1a1a1a",
-                        color: "#e0e0e0",
-                        border: "1px solid #444",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                      }}
-                      placeholder="https://your-website.com"
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold", color: "#ccc" }}>
-                      Pitch Deck
-                    </label>
-                    <p style={{ fontSize: "14px", color: "#888", marginBottom: "8px" }}>
-                      Upload your current deck or paste a link - even a rough version helps.
-                    </p>
-                    <input
-                      type="url"
-                      value={startupData.assets.pitchDeck}
-                      onChange={(e) =>
-                        setStartupData({
-                          ...startupData,
-                          assets: { ...startupData.assets, pitchDeck: e.target.value },
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        backgroundColor: "#1a1a1a",
-                        color: "#e0e0e0",
-                        border: "1px solid #444",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                      }}
-                      placeholder="Link to your pitch deck"
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold", color: "#ccc" }}>
-                      Other Workspaces
-                    </label>
-                    <p style={{ fontSize: "14px", color: "#888", marginBottom: "8px" }}>
-                      Share links to Notion, Miro, Figma, or anything else you're using.
-                    </p>
-                    <textarea
-                      value={startupData.assets.otherWorkspaces}
-                      onChange={(e) =>
-                        setStartupData({
-                          ...startupData,
-                          assets: { ...startupData.assets, otherWorkspaces: e.target.value },
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        minHeight: "80px",
-                        padding: "12px",
-                        backgroundColor: "#1a1a1a",
-                        color: "#e0e0e0",
-                        border: "1px solid #444",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                        resize: "vertical",
-                      }}
-                      placeholder="Links to Notion, Miro, Figma, etc."
-                    />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              // Regular textarea for other components
-              <div>
-                <h3 style={{ fontSize: "24px", marginBottom: "20px", color: "#fff" }}>Edit Content</h3>
-                <p style={{ marginBottom: "20px", lineHeight: "1.6" }}>
-                  Use this space to add detailed information. You can include any relevant details or notes.
-                </p>
-
-                <div style={{ marginBottom: "30px" }}>
-                  <label style={{ display: "block", marginBottom: "10px", fontWeight: "bold" }}>Content</label>
-                  <textarea
-                    value={editedContent}
-                    onChange={(e) => setEditedContent(e.target.value)}
-                    style={{
-                      width: "100%",
-                      minHeight: "300px",
-                      padding: "15px",
-                      backgroundColor: "#1a1a1a",
-                      color: "#e0e0e0",
-                      border: "1px solid #444",
-                      borderRadius: "4px",
-                      fontSize: "14px",
-                      lineHeight: "1.6",
-                      fontFamily: "inherit",
-                      resize: "vertical",
-                    }}
-                    placeholder="Enter your content here..."
-                  />
-                </div>
-              </div>
-            )}
-
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button
-                onClick={handleSave}
-                style={{
-                  padding: "12px 24px",
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "16px",
-                  cursor: "pointer",
-                }}
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-
-          {/* Preview Section - only show for regular components */}
-          {currentComponent.id !== "about-startup" && (
-            <div
-              style={{
-                backgroundColor: "#2a2a2a",
-                color: "#e0e0e0",
-                padding: "40px",
-                borderRadius: "8px",
-              }}
-            >
-              <h3 style={{ fontSize: "24px", marginBottom: "20px", color: "#fff" }}>Preview</h3>
-              <div
-                style={{
-                  backgroundColor: "#1a1a1a",
-                  padding: "20px",
-                  borderRadius: "4px",
-                  border: "1px solid #444",
-                  minHeight: "100px",
-                  whiteSpace: "pre-wrap",
-                  lineHeight: "1.6",
-                }}
-              >
-                {editedContent || "Your content will appear here..."}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <div style={{ marginTop: "60px" }}>{renderTaskContent()}</div>
 
       {/* Overlay for sidebar */}
       {sidebarOpen && (
