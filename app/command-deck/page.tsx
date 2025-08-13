@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -62,6 +62,9 @@ export default function CommandDeck() {
     category: "General",
   })
 
+  // Use ref to track if we're loading from storage to prevent infinite loops
+  const isLoadingFromStorage = useRef(false)
+
   const teamMembers = getTeamMembers()
 
   // Mock team workload data
@@ -72,6 +75,50 @@ export default function CommandDeck() {
     { name: "Emily Davis", workload: 68, status: "Balanced" },
     { name: "James Wilson", workload: 34, status: "Underloaded" },
   ]
+
+  // Load tasks from localStorage on component mount
+  useEffect(() => {
+    const loadTasks = () => {
+      const savedTasks = localStorage.getItem("commandDeckTasks")
+      if (savedTasks) {
+        try {
+          const parsedTasks = JSON.parse(savedTasks)
+          isLoadingFromStorage.current = true
+          setTasks(parsedTasks)
+          // Reset the flag after a brief delay to allow state update to complete
+          setTimeout(() => {
+            isLoadingFromStorage.current = false
+          }, 0)
+        } catch (error) {
+          console.error("Error parsing saved tasks:", error)
+          isLoadingFromStorage.current = true
+          setTasks([])
+          setTimeout(() => {
+            isLoadingFromStorage.current = false
+          }, 0)
+        }
+      }
+    }
+
+    loadTasks()
+
+    // Listen for storage changes (from forecast page implementations)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "commandDeckTasks") {
+        loadTasks()
+      }
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    return () => window.removeEventListener("storage", handleStorageChange)
+  }, [])
+
+  // Save tasks to localStorage whenever tasks change (but not when loading from storage)
+  useEffect(() => {
+    if (!isLoadingFromStorage.current && tasks.length >= 0) {
+      localStorage.setItem("commandDeckTasks", JSON.stringify(tasks))
+    }
+  }, [tasks])
 
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
@@ -180,6 +227,10 @@ export default function CommandDeck() {
 
   const updateTaskStatus = (taskId: string, newStatus: "To Do" | "In Progress" | "Done") => {
     setTasks(tasks.map((task) => (task.id === taskId ? { ...task, status: newStatus } : task)))
+  }
+
+  const deleteTask = (taskId: string) => {
+    setTasks(tasks.filter((task) => task.id !== taskId))
   }
 
   const getPriorityColor = (priority: string) => {
@@ -291,9 +342,17 @@ export default function CommandDeck() {
                     <Badge className={`text-xs text-white ${getStatusColor(task.status)}`}>{task.status}</Badge>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex flex-col gap-2">
                   <p className="text-sm font-medium text-gray-100">{task.deadline}</p>
                   <p className="text-xs text-gray-400">{task.category}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => deleteTask(task.id)}
+                    className="text-red-400 border-red-400 hover:bg-red-400 hover:text-white"
+                  >
+                    Delete
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -320,7 +379,17 @@ export default function CommandDeck() {
                     className="cursor-pointer hover:shadow-md transition-shadow bg-gray-600 border-gray-500"
                   >
                     <CardContent className="p-3">
-                      <h4 className="font-medium text-sm text-gray-100">{task.title}</h4>
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium text-sm text-gray-100">{task.title}</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteTask(task.id)}
+                          className="text-red-400 hover:bg-red-400 hover:text-white h-6 w-6 p-0"
+                        >
+                          <X size={12} />
+                        </Button>
+                      </div>
                       <p className="text-xs text-gray-300 mt-1">{task.description}</p>
                       <div className="flex items-center justify-between mt-2">
                         <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
@@ -352,6 +421,7 @@ export default function CommandDeck() {
             <TableHead className="text-gray-200">Status</TableHead>
             <TableHead className="text-gray-200">Deadline</TableHead>
             <TableHead className="text-gray-200">Category</TableHead>
+            <TableHead className="text-gray-200">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -394,6 +464,16 @@ export default function CommandDeck() {
               </TableCell>
               <TableCell className="text-gray-200">{task.deadline}</TableCell>
               <TableCell className="text-gray-200">{task.category}</TableCell>
+              <TableCell>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => deleteTask(task.id)}
+                  className="text-red-400 border-red-400 hover:bg-red-400 hover:text-white"
+                >
+                  Delete
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -496,7 +576,7 @@ export default function CommandDeck() {
           </div>
         </div>
 
-        {/* Six vertically stacked buttons */}
+        {/* Seven vertically stacked buttons */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {[
             { label: "Map", onClick: () => (window.location.href = "/main"), active: false },

@@ -1,43 +1,99 @@
+import { generateText } from "ai"
+import { openai } from "@ai-sdk/openai"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const { scenario, context } = await request.json()
+    const { scenario, currentContext } = await request.json()
 
     if (!scenario) {
-      return NextResponse.json({ error: "Scenario description is required" }, { status: 400 })
+      return NextResponse.json({ error: "Scenario is required" }, { status: 400 })
     }
 
-    // Mock response instead of AI SDK
-    const analysis = {
-      scenario,
-      context: context || "general",
-      probability: Math.floor(Math.random() * 60) + 20,
-      impact_level: ["High", "Medium", "Low"][Math.floor(Math.random() * 3)],
-      potential_outcomes: [
-        "Increased market share",
-        "Higher customer satisfaction",
-        "Improved operational efficiency",
-        "Enhanced competitive position",
-      ].slice(0, Math.floor(Math.random() * 3) + 1),
-      risks: [
-        "Resource allocation challenges",
-        "Market timing issues",
-        "Competitive response",
-        "Technical implementation hurdles",
-      ].slice(0, Math.floor(Math.random() * 3) + 1),
-      mitigation_strategies: [
-        "Phased implementation approach",
-        "Continuous market monitoring",
-        "Flexible resource planning",
-        "Regular stakeholder communication",
-      ],
-      confidence_score: Math.floor(Math.random() * 30) + 60,
-    }
+    const prompt = `You are a startup advisor analyzing a what-if scenario. 
 
-    return NextResponse.json({ analysis })
+Current startup context:
+- Stage: ${currentContext?.stage || "early-stage"}
+- Team size: ${currentContext?.team_size || "small team"}
+- Runway: ${currentContext?.runway_days || "limited"} days
+- Current priorities: ${currentContext?.current_priorities?.join(", ") || "MVP development, user acquisition"}
+
+Scenario to analyze: "${scenario}"
+
+Provide a comprehensive analysis covering these areas (respond in plain text without markdown formatting):
+
+Timeline: How this scenario affects project timelines and milestones
+Resources: Impact on budget, runway, and resource allocation
+Team: Effects on team dynamics, workload, and morale
+Market: How this affects market positioning and competitive advantage
+Investors: Impact on investor relations and fundraising prospects
+Recommendations: Specific actionable steps to handle this scenario
+
+Format your response as a JSON object with these exact keys: timeline, resources, team, market, investors, recommendations. Each value should be a clear, concise paragraph without any markdown formatting or special characters.`
+
+    const { text } = await generateText({
+      model: openai("gpt-4o"),
+      prompt: prompt,
+    })
+
+    // Try to parse as JSON first
+    try {
+      const analysis = JSON.parse(text)
+      return NextResponse.json({ analysis })
+    } catch (parseError) {
+      // If JSON parsing fails, try to extract sections manually
+      const sections = {
+        timeline: extractSection(text, "Timeline:"),
+        resources: extractSection(text, "Resources:"),
+        team: extractSection(text, "Team:"),
+        market: extractSection(text, "Market:"),
+        investors: extractSection(text, "Investors:"),
+        recommendations: extractSection(text, "Recommendations:"),
+      }
+
+      return NextResponse.json({ analysis: sections })
+    }
   } catch (error) {
-    console.error("Error analyzing what-if scenario:", error)
+    console.error("What-if analysis error:", error)
     return NextResponse.json({ error: "Failed to analyze scenario" }, { status: 500 })
   }
+}
+
+function extractSection(text: string, sectionName: string): string {
+  const lines = text.split("\n")
+  let capturing = false
+  const content = []
+
+  for (const line of lines) {
+    if (line.includes(sectionName)) {
+      capturing = true
+      const afterColon = line.split(sectionName)[1]
+      if (afterColon && afterColon.trim()) {
+        content.push(afterColon.trim())
+      }
+      continue
+    }
+
+    if (capturing) {
+      if (
+        line.includes(":") &&
+        (line.includes("Timeline:") ||
+          line.includes("Resources:") ||
+          line.includes("Team:") ||
+          line.includes("Market:") ||
+          line.includes("Investors:") ||
+          line.includes("Recommendations:"))
+      ) {
+        break
+      }
+      if (line.trim()) {
+        content.push(line.trim())
+      }
+    }
+  }
+
+  return (
+    content.join(" ").replace(/\*\*/g, "").replace(/\*/g, "").trim() ||
+    `Analysis for ${sectionName.replace(":", "")} will be provided based on your specific scenario.`
+  )
 }

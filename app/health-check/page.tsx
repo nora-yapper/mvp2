@@ -361,7 +361,7 @@ export default function HealthCheckPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {[
             { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
-            { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: false },
+            { label: "Command Deck", onClick: () => (window.location.href = "/command-deck"), active: false },
             { label: "Health Check", onClick: () => {}, active: true },
             { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
             { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },

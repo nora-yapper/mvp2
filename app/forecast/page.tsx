@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ArrowUp, X, Edit2, Check, Clock, User } from "lucide-react"
+import { ArrowUp, X, Edit2, Check, Clock, User, Trash2 } from "lucide-react"
 import { getTeamMembers, type TeamMember } from "@/lib/team-data"
 
 interface ActionStep {
@@ -92,7 +92,8 @@ export default function ForecastPage() {
       })
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`)
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`API error: ${response.status} - ${errorData.error || "Unknown error"}`)
       }
 
       const data = await response.json()
@@ -265,25 +266,37 @@ export default function ForecastPage() {
     setActionSteps((prev) => prev.map((step) => (step.id === stepId ? { ...step, assignee: newAssignee } : step)))
   }
 
+  const handleRemoveStep = (stepId: string) => {
+    setActionSteps((prev) => prev.filter((step) => step.id !== stepId))
+  }
+
   const addTasksToCommandDeck = (steps: ActionStep[]) => {
-    // Get existing tasks from localStorage
+    // Get existing tasks from localStorage (Command Deck format)
     const existingTasks = JSON.parse(localStorage.getItem("commandDeckTasks") || "[]")
 
     // Convert action steps to command deck task format
     const newTasks = steps.map((step, index) => ({
       id: `forecast-${Date.now()}-${index}`,
       title: step.task,
+      description: `Generated from forecast suggestion: ${selectedSuggestion?.title}`,
       assignee: step.assignee,
       deadline: step.deadline,
-      status: "pending",
-      priority: "medium",
-      source: "forecast",
-      createdAt: new Date().toISOString(),
+      priority: selectedSuggestion?.type === "warning" ? "High" : "Medium",
+      status: "To Do",
+      category: "Forecast Implementation",
     }))
 
     // Combine and save
     const allTasks = [...existingTasks, ...newTasks]
     localStorage.setItem("commandDeckTasks", JSON.stringify(allTasks))
+
+    // Trigger storage event for other tabs/components (simplified)
+    window.dispatchEvent(
+      new StorageEvent("storage", {
+        key: "commandDeckTasks",
+        newValue: JSON.stringify(allTasks),
+      }),
+    )
   }
 
   const handleConfirmImplementation = () => {
@@ -300,8 +313,13 @@ export default function ForecastPage() {
     setSelectedSuggestion(null)
     setActionSteps([])
 
-    // Show success message
-    alert(`${actionSteps.length} tasks have been added to your Command Deck!`)
+    // Show success message with navigation option
+    const goToCommandDeck = confirm(
+      `${actionSteps.length} tasks have been added to your Command Deck!\n\nWould you like to go to Command Deck to view them?`,
+    )
+    if (goToCommandDeck) {
+      window.location.href = "/command-deck"
+    }
   }
 
   const handleAnalyzeWhatIf = async () => {
@@ -429,7 +447,7 @@ export default function ForecastPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {[
               { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
-              { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: false },
+              { label: "Command Deck", onClick: () => (window.location.href = "/command-deck"), active: false },
               { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
               { label: "Forecast", onClick: () => {}, active: true },
               { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
@@ -1411,19 +1429,33 @@ export default function ForecastPage() {
                                   >
                                     {step.task}
                                   </p>
-                                  <button
-                                    onClick={() => handleEditStep(step.id, step.task)}
-                                    style={{
-                                      background: "transparent",
-                                      border: "none",
-                                      color: "#999",
-                                      cursor: "pointer",
-                                      padding: "4px",
-                                      marginLeft: "12px",
-                                    }}
-                                  >
-                                    <Edit2 size={16} />
-                                  </button>
+                                  <div style={{ display: "flex", gap: "4px", marginLeft: "12px" }}>
+                                    <button
+                                      onClick={() => handleEditStep(step.id, step.task)}
+                                      style={{
+                                        background: "transparent",
+                                        border: "none",
+                                        color: "#999",
+                                        cursor: "pointer",
+                                        padding: "4px",
+                                      }}
+                                    >
+                                      <Edit2 size={16} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleRemoveStep(step.id)}
+                                      style={{
+                                        background: "transparent",
+                                        border: "none",
+                                        color: "#ef4444",
+                                        cursor: "pointer",
+                                        padding: "4px",
+                                      }}
+                                      title="Remove step"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             )}

@@ -322,7 +322,7 @@ export default function NetworkPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {[
             { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
-            { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: false },
+            { label: "Command Deck", onClick: () => (window.location.href = "/command-deck"), active: false },
             { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
             { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
             { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
@@ -1207,6 +1207,39 @@ export default function NetworkPage() {
                       </button>
                     </div>
                   )}
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          `Are you sure you want to delete ${selectedContact.name}? This action cannot be undone.`,
+                        )
+                      ) {
+                        const updatedContacts = contactsList.filter((contact) => contact.id !== selectedContact.id)
+                        setContactsList(updatedContacts)
+                        closeSidebar()
+                      }
+                    }}
+                    style={{
+                      padding: "16px 24px",
+                      backgroundColor: "#ef4444",
+                      border: "1px solid #dc2626",
+                      color: "white",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                      clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                      fontWeight: "500",
+                      transition: "background-color 0.3s ease",
+                      width: "100%",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#dc2626"
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "#ef4444"
+                    }}
+                  >
+                    Delete Contact
+                  </button>
                 </>
               )}
             </div>

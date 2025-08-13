@@ -445,7 +445,7 @@ export default function SalesTaskPage() {
           </div>
         </div>
 
-        {/* Six vertically stacked buttons */}
+        {/* Seven vertically stacked buttons */}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <button
             onClick={() => (window.location.href = "/main")}
@@ -461,6 +461,7 @@ export default function SalesTaskPage() {
             Map
           </button>
           <button
+          onClick={() => (window.location.href = "/command-deck")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -473,6 +474,7 @@ export default function SalesTaskPage() {
             Command Deck
           </button>
           <button
+          onClick={() => (window.location.href = "/health-check")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -482,9 +484,10 @@ export default function SalesTaskPage() {
               width: "100%",
             }}
           >
-            Health Analysis
+            Health Check
           </button>
           <button
+          onClick={() => (window.location.href = "/forecast")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -497,6 +500,7 @@ export default function SalesTaskPage() {
             Forecast
           </button>
           <button
+          onClick={() => (window.location.href = "/reports")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -509,6 +513,7 @@ export default function SalesTaskPage() {
             Reports
           </button>
           <button
+          onClick={() => (window.location.href = "/network")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -519,6 +524,19 @@ export default function SalesTaskPage() {
             }}
           >
             Network
+          </button>
+          <button
+          onClick={() => (window.location.href = "/team")}
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Team
           </button>
         </div>
       </div>

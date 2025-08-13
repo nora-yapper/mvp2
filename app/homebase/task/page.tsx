@@ -198,7 +198,7 @@ export default function HomebaseTaskPage() {
           </div>
         </div>
 
-        {/* Six vertically stacked buttons */}
+                {/* Seven vertically stacked buttons */}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <button
             onClick={() => (window.location.href = "/main")}
@@ -214,6 +214,7 @@ export default function HomebaseTaskPage() {
             Map
           </button>
           <button
+          onClick={() => (window.location.href = "/command-deck")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -226,6 +227,7 @@ export default function HomebaseTaskPage() {
             Command Deck
           </button>
           <button
+          onClick={() => (window.location.href = "/health-check")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -235,9 +237,10 @@ export default function HomebaseTaskPage() {
               width: "100%",
             }}
           >
-            Health Analysis
+            Health Check
           </button>
           <button
+          onClick={() => (window.location.href = "/forecast")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -250,6 +253,7 @@ export default function HomebaseTaskPage() {
             Forecast
           </button>
           <button
+          onClick={() => (window.location.href = "/reports")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -262,6 +266,7 @@ export default function HomebaseTaskPage() {
             Reports
           </button>
           <button
+          onClick={() => (window.location.href = "/network")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -272,6 +277,19 @@ export default function HomebaseTaskPage() {
             }}
           >
             Network
+          </button>
+          <button
+          onClick={() => (window.location.href = "/team")}
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Team
           </button>
         </div>
       </div>

@@ -544,7 +544,7 @@ export default function ProductDetailPage() {
             Map
           </button>
           <button
-          
+           onClick={() => (window.location.href = "/command-deck")}
             style={{
               padding: "15px",
               fontSize: "16px",
