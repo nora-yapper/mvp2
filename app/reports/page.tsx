@@ -276,7 +276,7 @@ export default function ReportsPage() {
             {[
               { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
               { label: "Command Deck", onClick: () => (window.location.href = "/homebase"), active: false },
-              { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
+              { label: "Health Check", onClick: () => (window.location.href = "/health-check"), active: false },
               { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
               { label: "Reports", onClick: () => {}, active: true },
               { label: "Network", onClick: () => (window.location.href = "/network"), active: false },

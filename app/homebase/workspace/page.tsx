@@ -218,7 +218,7 @@ export default function HomebaseWorkspacePage() {
               width: "100%",
             }}
           >
-            Health Analysis
+            Health Check
           </button>
           <button
             style={{

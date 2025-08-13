@@ -448,7 +448,7 @@ export default function ForecastPage() {
             {[
               { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
               { label: "Command Deck", onClick: () => (window.location.href = "/command-deck"), active: false },
-              { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
+              { label: "Health Check", onClick: () => (window.location.href = "/health-check"), active: false },
               { label: "Forecast", onClick: () => {}, active: true },
               { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
               { label: "Network", onClick: () => (window.location.href = "/network"), active: false },

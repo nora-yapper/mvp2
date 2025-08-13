@@ -755,7 +755,7 @@ export default function CommandDeck() {
           {[
             { label: "Map", onClick: () => (window.location.href = "/main"), active: false },
             { label: "Command Deck", onClick: () => (window.location.href = "/command-deck"), active: true },
-            { label: "Health Analysis", onClick: () => (window.location.href = "/health-check"), active: false },
+            { label: "Health Check", onClick: () => (window.location.href = "/health-check"), active: false },
             { label: "Forecast", onClick: () => (window.location.href = "/forecast"), active: false },
             { label: "Reports", onClick: () => (window.location.href = "/reports"), active: false },
             { label: "Network", onClick: () => (window.location.href = "/network"), active: false },
@@ -799,9 +799,6 @@ export default function CommandDeck() {
         {/* Header */}
         <header className="flex items-center justify-between p-6 border-b border-gray-700">
           <h1 className="text-3xl font-bold text-gray-100">Command Deck</h1>
-          <Button variant="outline" className="border-gray-600 text-gray-200 hover:bg-gray-700 bg-transparent">
-            Recalibrate
-          </Button>
         </header>
 
         <main className="flex-1 overflow-auto p-6 space-y-8">

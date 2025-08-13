@@ -914,7 +914,7 @@ export default function SalesDetailPage() {
               width: "100%",
             }}
           >
-            Health Analysis
+            Health Check
           </button>
           <button
             style={{
