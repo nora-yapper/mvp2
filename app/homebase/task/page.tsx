@@ -1,44 +1,338 @@
-import { earnTokensForStep } from "@/lib/token-integration"
-import type { HomebaseComponent } from "@/types/homebase" // Assuming HomebaseComponent is defined in this file or imported from another file
+"use client"
 
-// Declare variables before using them
-const currentComponent: HomebaseComponent | null = null
-const startupData: any = null
-const editedContent = ""
-const setCurrentComponent: (component: HomebaseComponent | null) => void = () => {}
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { ArrowLeft, Building2, Check, Save } from "lucide-react"
 
-// Assuming the rest of the code is here, including the handleSave function
-const handleSave = () => {
-  if (!currentComponent) return
-
-  // Load current components
-  const storedComponents = sessionStorage.getItem("homebaseComponents")
-  if (storedComponents) {
-    const components: HomebaseComponent[] = JSON.parse(storedComponents)
-
-    let updatedComponents
-    if (currentComponent.id === "about-startup" && startupData) {
-      // Save structured data as JSON string
-      updatedComponents = components.map((c) =>
-        c.id === currentComponent.id ? { ...c, content: JSON.stringify(startupData) } : c,
-      )
-      setCurrentComponent({ ...currentComponent, content: JSON.stringify(startupData) })
-
-      // Award tokens for completing startup info (only once)
-      earnTokensForStep("HOMEBASE_STARTUP_INFO")
-    } else {
-      // Save regular text content
-      updatedComponents = components.map((c) => (c.id === currentComponent.id ? { ...c, content: editedContent } : c))
-      setCurrentComponent({ ...currentComponent, content: editedContent })
-    }
-
-    // Save back to session storage
-    sessionStorage.setItem("homebaseComponents", JSON.stringify(updatedComponents))
-  }
+interface StartupInfo {
+  companyName: string
+  industry: string
+  stage: string
+  description: string
+  targetMarket: string
+  keyProblem: string
+  solution: string
+  businessModel: string
+  teamSize: string
+  funding: string
 }
 
-// The rest of the code would follow here
-export default function TaskPage() {
-  // Example implementation of TaskPage component
-  return <div>{/* Task page content */}</div>
+export default function HomebaseTaskPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const task = searchParams.get("task")
+  const component = searchParams.get("component")
+
+  const [startupInfo, setStartupInfo] = useState<StartupInfo>({
+    companyName: "",
+    industry: "",
+    stage: "",
+    description: "",
+    targetMarket: "",
+    keyProblem: "",
+    solution: "",
+    businessModel: "",
+    teamSize: "",
+    funding: "",
+  })
+
+  const [isSaved, setIsSaved] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    // Load existing startup info
+    const saved = localStorage.getItem("startupInfo")
+    if (saved) {
+      setStartupInfo(JSON.parse(saved))
+    }
+  }, [])
+
+  const handleSave = async () => {
+    setIsLoading(true)
+
+    // Save to localStorage
+    localStorage.setItem("startupInfo", JSON.stringify(startupInfo))
+
+    // Update homebase components
+    const homebaseComponents = JSON.parse(localStorage.getItem("homebaseComponents") || "[]")
+    const updatedComponents = homebaseComponents.map((comp: any) => {
+      if (comp.id === "about-startup") {
+        return {
+          ...comp,
+          preview: startupInfo.companyName || "Click to add startup details",
+          completed: true,
+        }
+      }
+      return comp
+    })
+    localStorage.setItem("homebaseComponents", JSON.stringify(updatedComponents))
+
+    // Simulate save delay
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    setIsSaved(true)
+    setIsLoading(false)
+
+    // Reset saved state after 2 seconds
+    setTimeout(() => setIsSaved(false), 2000)
+  }
+
+  const handleInputChange = (field: keyof StartupInfo, value: string) => {
+    setStartupInfo((prev) => ({ ...prev, [field]: value }))
+    setIsSaved(false)
+  }
+
+  if (task === "startup-info" || component === "about-startup") {
+    return (
+      <div className="min-h-screen bg-gray-900">
+        {/* Navigation Bar */}
+        <div className="fixed top-0 left-0 right-0 bg-gray-800 border-b border-gray-700 z-50">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push("/homebase")}
+                className="text-gray-300 hover:text-white hover:bg-gray-700"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Homebase
+              </Button>
+              <div className="flex items-center gap-2 text-gray-300">
+                <Building2 className="h-5 w-5" />
+                <span className="font-medium">Startup Information</span>
+              </div>
+            </div>
+            <Button onClick={handleSave} disabled={isLoading} className="bg-blue-600 hover:bg-blue-700 text-white">
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Saving...
+                </>
+              ) : isSaved ? (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Saved
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="pt-20 px-6 pb-8">
+          <div className="max-w-4xl mx-auto">
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader className="border-b border-gray-700">
+                <CardTitle className="text-xl font-semibold text-white">About Your Startup</CardTitle>
+                <p className="text-gray-400 mt-2">
+                  Tell us about your startup to get personalized insights and recommendations.
+                </p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Company Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="companyName" className="text-gray-300 font-medium">
+                      Company Name *
+                    </Label>
+                    <Input
+                      id="companyName"
+                      value={startupInfo.companyName}
+                      onChange={(e) => handleInputChange("companyName", e.target.value)}
+                      placeholder="Enter your company name"
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Industry */}
+                  <div className="space-y-2">
+                    <Label htmlFor="industry" className="text-gray-300 font-medium">
+                      Industry *
+                    </Label>
+                    <Input
+                      id="industry"
+                      value={startupInfo.industry}
+                      onChange={(e) => handleInputChange("industry", e.target.value)}
+                      placeholder="e.g., FinTech, HealthTech, SaaS"
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Stage */}
+                  <div className="space-y-2">
+                    <Label htmlFor="stage" className="text-gray-300 font-medium">
+                      Stage *
+                    </Label>
+                    <Input
+                      id="stage"
+                      value={startupInfo.stage}
+                      onChange={(e) => handleInputChange("stage", e.target.value)}
+                      placeholder="e.g., Idea, MVP, Growth, Scale"
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Target Market */}
+                  <div className="space-y-2">
+                    <Label htmlFor="targetMarket" className="text-gray-300 font-medium">
+                      Target Market
+                    </Label>
+                    <Input
+                      id="targetMarket"
+                      value={startupInfo.targetMarket}
+                      onChange={(e) => handleInputChange("targetMarket", e.target.value)}
+                      placeholder="Who are your customers?"
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Team Size */}
+                  <div className="space-y-2">
+                    <Label htmlFor="teamSize" className="text-gray-300 font-medium">
+                      Team Size
+                    </Label>
+                    <Input
+                      id="teamSize"
+                      value={startupInfo.teamSize}
+                      onChange={(e) => handleInputChange("teamSize", e.target.value)}
+                      placeholder="e.g., 1-5, 6-10, 11-25"
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Funding */}
+                  <div className="space-y-2">
+                    <Label htmlFor="funding" className="text-gray-300 font-medium">
+                      Funding Status
+                    </Label>
+                    <Input
+                      id="funding"
+                      value={startupInfo.funding}
+                      onChange={(e) => handleInputChange("funding", e.target.value)}
+                      placeholder="e.g., Bootstrapped, Pre-seed, Seed"
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Full-width fields */}
+                <div className="mt-6 space-y-6">
+                  {/* Description */}
+                  <div className="space-y-2">
+                    <Label htmlFor="description" className="text-gray-300 font-medium">
+                      Company Description *
+                    </Label>
+                    <Textarea
+                      id="description"
+                      value={startupInfo.description}
+                      onChange={(e) => handleInputChange("description", e.target.value)}
+                      placeholder="Briefly describe what your company does..."
+                      rows={3}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Key Problem */}
+                  <div className="space-y-2">
+                    <Label htmlFor="keyProblem" className="text-gray-300 font-medium">
+                      Key Problem You're Solving
+                    </Label>
+                    <Textarea
+                      id="keyProblem"
+                      value={startupInfo.keyProblem}
+                      onChange={(e) => handleInputChange("keyProblem", e.target.value)}
+                      placeholder="What problem does your startup solve?"
+                      rows={3}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Solution */}
+                  <div className="space-y-2">
+                    <Label htmlFor="solution" className="text-gray-300 font-medium">
+                      Your Solution
+                    </Label>
+                    <Textarea
+                      id="solution"
+                      value={startupInfo.solution}
+                      onChange={(e) => handleInputChange("solution", e.target.value)}
+                      placeholder="How does your product/service solve the problem?"
+                      rows={3}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Business Model */}
+                  <div className="space-y-2">
+                    <Label htmlFor="businessModel" className="text-gray-300 font-medium">
+                      Business Model
+                    </Label>
+                    <Textarea
+                      id="businessModel"
+                      value={startupInfo.businessModel}
+                      onChange={(e) => handleInputChange("businessModel", e.target.value)}
+                      placeholder="How do you make money?"
+                      rows={3}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Save Button */}
+                <div className="mt-8 flex justify-end">
+                  <Button
+                    onClick={handleSave}
+                    disabled={isLoading}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        Saving...
+                      </>
+                    ) : isSaved ? (
+                      <>
+                        <Check className="h-4 w-4 mr-2" />
+                        Saved Successfully
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Information
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Default fallback
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-white mb-4">Task Not Found</h1>
+        <p className="text-gray-400 mb-6">The requested task could not be found.</p>
+        <Button onClick={() => router.push("/homebase")} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Homebase
+        </Button>
+      </div>
+    </div>
+  )
 }

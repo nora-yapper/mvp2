@@ -8,6 +8,30 @@ interface HomebaseComponent {
   content: string
 }
 
+// Utility function to get startup context for AI API calls
+export const getStartupContext = () => {
+  try {
+    const startupInfo = JSON.parse(sessionStorage.getItem("startupInfo") || "{}")
+    if (startupInfo.companyName) {
+      return {
+        companyName: startupInfo.companyName,
+        industry: startupInfo.industry,
+        stage: startupInfo.stage,
+        description: startupInfo.description,
+        targetMarket: startupInfo.targetMarket,
+        keyProblem: startupInfo.keyProblem,
+        solution: startupInfo.solution,
+        businessModel: startupInfo.businessModel,
+        teamSize: startupInfo.teamSize,
+        funding: startupInfo.funding,
+      }
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
 export default function HomebasePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [components, setComponents] = useState<HomebaseComponent[]>([])
@@ -70,6 +94,31 @@ export default function HomebasePage() {
     return () => window.removeEventListener("storage", handleStorageChange)
   }, [])
 
+  // Listen for startup info changes and update component preview
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "startupInfo") {
+        // Force re-render by updating components state
+        setComponents((prev) => [...prev])
+      }
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+
+    // Also listen for changes in the same tab
+    const interval = setInterval(() => {
+      const currentStartupInfo = sessionStorage.getItem("startupInfo")
+      if (currentStartupInfo) {
+        setComponents((prev) => [...prev])
+      }
+    }, 1000)
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange)
+      clearInterval(interval)
+    }
+  }, [])
+
   const addNewComponent = () => {
     const newComponent: HomebaseComponent = {
       id: `component-${Date.now()}`,
@@ -84,7 +133,11 @@ export default function HomebasePage() {
   }
 
   const handleComponentClick = (component: HomebaseComponent) => {
-    window.location.href = `/homebase/task?component=${component.id}`
+    if (component.id === "about-startup") {
+      window.location.href = `/homebase/task?task=startup-info`
+    } else {
+      window.location.href = `/homebase/task?component=${component.id}`
+    }
   }
 
   const handleBackToMain = () => {
@@ -340,6 +393,31 @@ export default function HomebasePage() {
                   {component.id === "about-startup"
                     ? (() => {
                         try {
+                          // First try to get data from startupInfo (new format)
+                          const startupInfo = JSON.parse(sessionStorage.getItem("startupInfo") || "{}")
+                          if (startupInfo.companyName) {
+                            return (
+                              <div>
+                                <div>
+                                  <strong>Name:</strong> {startupInfo.companyName}
+                                </div>
+                                <div>
+                                  <strong>Industry:</strong> {startupInfo.industry || "Not specified"}
+                                </div>
+                                <div>
+                                  <strong>Stage:</strong> {startupInfo.stage || "Not specified"}
+                                </div>
+                                <div>
+                                  <strong>Description:</strong>{" "}
+                                  {startupInfo.description
+                                    ? startupInfo.description.substring(0, 100) + "..."
+                                    : "Not specified"}
+                                </div>
+                              </div>
+                            )
+                          }
+
+                          // Fallback to old format
                           const data = JSON.parse(component.content)
                           return (
                             <div>
