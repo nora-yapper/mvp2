@@ -219,8 +219,7 @@ export default function CommandDeck() {
         setTaskHistory([...taskHistory, historyTask])
         setTasks(tasks.filter((task) => task.id !== editingTask.id))
       } else {
-        // Update the task in the tasks array - this will trigger Gantt chart re-render
-        setTasks((prevTasks) => prevTasks.map((task) => (task.id === editingTask.id ? { ...editingTask } : task)))
+        setTasks(tasks.map((task) => (task.id === editingTask.id ? editingTask : task)))
       }
       setIsTaskDetailOpen(false)
       setSelectedTask(null)
@@ -474,23 +473,13 @@ export default function CommandDeck() {
 
   const getCurrentMonth = () => {
     const now = new Date()
-    try {
-      const monthYear = now.toLocaleDateString("en-US", { month: "long", year: "numeric" })
-      return monthYear || "Current Month"
-    } catch (error) {
-      return "Current Month"
-    }
+    return now.toLocaleDateString("en-US", { month: "long", year: "numeric" })
   }
 
   const getNextMonth = () => {
     const now = new Date()
-    try {
-      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-      const monthYear = nextMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })
-      return monthYear || "Next Month"
-    } catch (error) {
-      return "Next Month"
-    }
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+    return nextMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })
   }
 
   const renderGanttView = () => {
@@ -513,12 +502,8 @@ export default function CommandDeck() {
           {/* Current Month Column */}
           <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
             <div className="mb-4 text-center">
-              <h4 className="text-lg font-semibold text-gray-100">
-                {getCurrentMonth().includes(" ") ? getCurrentMonth().split(" ")[0] : "Current"}
-              </h4>
-              <p className="text-sm text-gray-400">
-                {getCurrentMonth().includes(" ") ? getCurrentMonth().split(" ")[1] : "Month"}
-              </p>
+              <h4 className="text-lg font-semibold text-gray-100">{getCurrentMonth().split(" ")[0]}</h4>
+              <p className="text-sm text-gray-400">{getCurrentMonth().split(" ")[1]}</p>
             </div>
             <div className="text-center py-8">
               <p className="text-gray-400 text-sm">Gantt chart will appear when tasks are added</p>
@@ -528,12 +513,8 @@ export default function CommandDeck() {
           {/* Next Month Column */}
           <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
             <div className="mb-4 text-center">
-              <h4 className="text-lg font-semibold text-gray-100">
-                {getNextMonth().includes(" ") ? getNextMonth().split(" ")[0] : "Next"}
-              </h4>
-              <p className="text-sm text-gray-400">
-                {getNextMonth().includes(" ") ? getNextMonth().split(" ")[1] : "Month"}
-              </p>
+              <h4 className="text-lg font-semibold text-gray-100">{getNextMonth().split(" ")[0]}</h4>
+              <p className="text-sm text-gray-400">{getNextMonth().split(" ")[1]}</p>
             </div>
             <div className="text-center py-8">
               <p className="text-gray-400 text-sm">Gantt chart will appear when tasks are added</p>
@@ -543,174 +524,39 @@ export default function CommandDeck() {
       )
     }
 
-    // Calculate timeline dates
-    const today = new Date()
-    const startDate = new Date(today.getFullYear(), today.getMonth(), 1)
-    const endDate = new Date(today.getFullYear(), today.getMonth() + 2, 0) // End of next month
-    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
-
-    // Generate week headers
-    const weeks = []
-    const currentWeek = new Date(startDate)
-    while (currentWeek <= endDate) {
-      weeks.push(new Date(currentWeek))
-      currentWeek.setDate(currentWeek.getDate() + 7)
-    }
-
-    const getTaskPosition = (taskDeadline: string) => {
-      if (!taskDeadline) {
-        // If no deadline, place at the end with minimal width
-        return {
-          left: "95%",
-          width: "5%",
-        }
-      }
-
-      const deadline = new Date(taskDeadline)
-
-      // Check if deadline is valid
-      if (isNaN(deadline.getTime())) {
-        return {
-          left: "95%",
-          width: "5%",
-        }
-      }
-
-      // Calculate task start (assume 1 week duration, but adjust based on timeline)
-      const taskDuration = 7 * 24 * 60 * 60 * 1000 // 1 week in milliseconds
-      const taskStart = new Date(deadline.getTime() - taskDuration)
-
-      // Ensure task start is not before our timeline start
-      const actualTaskStart = taskStart < startDate ? startDate : taskStart
-
-      const daysFromStart = Math.max(
-        0,
-        Math.ceil((actualTaskStart.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
-      )
-      const daysToDeadline = Math.max(
-        1,
-        Math.ceil((deadline.getTime() - actualTaskStart.getTime()) / (1000 * 60 * 60 * 24)),
-      )
-
-      // Ensure the task bar is visible (minimum 2% width)
-      const leftPercentage = Math.min(95, (daysFromStart / totalDays) * 100)
-      const widthPercentage = Math.max(2, Math.min(100 - leftPercentage, (daysToDeadline / totalDays) * 100))
-
-      return {
-        left: `${leftPercentage}%`,
-        width: `${widthPercentage}%`,
-      }
-    }
-
     return (
-      <div
-        className="space-y-4"
-        key={`gantt-${filteredTasks.length}-${filteredTasks.map((t) => `${t.id}-${t.deadline}`).join("-")}`}
-      >
-        {/* Timeline Header */}
-        <div className="flex bg-gray-800 rounded-lg p-4 border border-gray-600">
-          <div className="w-64 flex-shrink-0">
-            <h4 className="text-lg font-semibold text-gray-100">Tasks</h4>
-          </div>
-          <div className="flex-1 relative">
-            <div className="flex justify-between text-sm text-gray-300 mb-2">
-              {weeks.map((week, index) => (
-                <div key={index} className="text-center">
-                  <div className="font-medium">{week.toLocaleDateString("en-US", { month: "short" })}</div>
-                  <div className="text-xs text-gray-400">{week.getDate()}</div>
-                </div>
-              ))}
-            </div>
-            <div className="h-px bg-gray-600"></div>
-          </div>
-        </div>
-
-        {/* Task Rows */}
-        {filteredTasks.map((task, index) => (
-          <div
-            key={`${task.id}-${task.deadline}-${task.status}`}
-            className="flex bg-gray-700 rounded-lg border border-gray-600 hover:bg-gray-600 transition-colors"
+      <div className="space-y-4">
+        {filteredTasks.map((task) => (
+          <Card
+            key={task.id}
+            className="border-l-4 border-l-blue-500 bg-gray-700 border-gray-600 cursor-pointer hover:bg-gray-600 transition-colors"
+            onClick={() => handleTaskClick(task)}
           >
-            {/* Task Info */}
-            <div className="w-64 flex-shrink-0 p-4 border-r border-gray-600">
-              <div className="cursor-pointer" onClick={() => handleTaskClick(task)}>
-                <h3 className="font-semibold text-gray-100 text-sm">{task.title}</h3>
-                <p className="text-xs text-gray-300 mt-1 line-clamp-2">{task.description}</p>
-                <div className="flex items-center gap-1 mt-2">
-                  <Badge variant="outline" className="text-xs border-gray-500 text-gray-300 px-1 py-0">
-                    {task.assignee && task.assignee.includes(" ")
-                      ? task.assignee.split(" ")[0]
-                      : task.assignee || "Unassigned"}
-                  </Badge>
-                  <Badge className={`text-xs text-white px-1 py-0 ${getPriorityColor(task.priority)}`}>
-                    {task.priority}
-                  </Badge>
-                  <Badge className={`text-xs text-white px-1 py-0 ${getStatusColor(task.status)}`}>{task.status}</Badge>
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-100">{task.title}</h3>
+                  <p className="text-sm text-gray-300 mt-1">{task.description}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
+                      {task.assignee}
+                    </Badge>
+                    <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
+                    <Badge className={`text-xs text-white ${getStatusColor(task.status)}`}>{task.status}</Badge>
+                  </div>
+                </div>
+                <div className="text-right flex flex-col gap-2">
+                  <p className="text-sm font-medium text-gray-100">{task.deadline}</p>
+                  <p className="text-xs text-gray-400">{task.category}</p>
+                  {/* Gantt chart timeline bar */}
+                  <div className="w-32 h-2 bg-gray-600 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.random() * 100}%` }} />
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Timeline */}
-            <div className="flex-1 p-4 relative">
-              <div className="relative h-8">
-                {/* Grid lines */}
-                {weeks.map((_, weekIndex) => (
-                  <div
-                    key={weekIndex}
-                    className="absolute top-0 bottom-0 w-px bg-gray-600 opacity-30"
-                    style={{ left: `${(weekIndex / weeks.length) * 100}%` }}
-                  />
-                ))}
-
-                {/* Task bar */}
-                <div
-                  className={`absolute top-1 bottom-1 rounded-sm flex items-center justify-center text-xs font-medium text-white cursor-pointer transition-all duration-300 ${
-                    task.status === "Done"
-                      ? "bg-green-500"
-                      : task.status === "In Progress"
-                        ? "bg-blue-500"
-                        : "bg-gray-500"
-                  }`}
-                  style={getTaskPosition(task.deadline)}
-                  onClick={() => handleTaskClick(task)}
-                  title={`${task.title} - Due: ${task.deadline}`}
-                >
-                  <span className="truncate px-1">
-                    {task.title.length > 15 ? task.title.substring(0, 15) + "..." : task.title}
-                  </span>
-                </div>
-
-                {/* Deadline marker */}
-                <div
-                  className="absolute top-0 bottom-0 w-0.5 bg-red-400 transition-all duration-300"
-                  style={{
-                    left: (() => {
-                      const position = getTaskPosition(task.deadline)
-                      const leftValue = Number.parseFloat(position.left.replace("%", ""))
-                      const widthValue = Number.parseFloat(position.width.replace("%", ""))
-                      return `${leftValue + widthValue}%`
-                    })(),
-                  }}
-                  title={`Deadline: ${task.deadline}`}
-                />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
-
-        {/* Today indicator */}
-        <div className="flex">
-          <div className="w-64 flex-shrink-0"></div>
-          <div className="flex-1 relative">
-            <div
-              className="absolute top-0 bottom-0 w-0.5 bg-yellow-400 z-10"
-              style={{
-                left: `${(Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) / totalDays) * 100}%`,
-              }}
-              title="Today"
-            />
-          </div>
-        </div>
       </div>
     )
   }

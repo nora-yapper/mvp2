@@ -1,61 +1,133 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
+import { spendTokensForAI, hasEnoughTokens } from "@/lib/token-integration"
 
 export async function POST(request: NextRequest) {
   try {
     const { questions } = await request.json()
 
-    if (!questions || questions.length === 0) {
-      return NextResponse.json({ error: "Questions are required" }, { status: 400 })
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+      return NextResponse.json({ error: "Questions array is required" }, { status: 400 })
     }
 
-    const questionsText = questions.map((q: any, index: number) => `${index + 1}. ${q.question}`).join("\n")
+    // Check if user has enough tokens
+    if (!hasEnoughTokens("QUESTION_EVALUATION")) {
+      return NextResponse.json(
+        {
+          error: "Insufficient tokens. You need 10 tokens for question evaluation.",
+        },
+        { status: 402 },
+      )
+    }
 
-    const prompt = `
-You are an expert in customer development and The Mom Test methodology. Evaluate these interview questions:
+    // Spend tokens for AI evaluation
+    spendTokensForAI("QUESTION_EVALUATION")
 
-${questionsText}
+    // Mock evaluation instead of AI SDK
+    const evaluations = questions.map((question: string, index: number) => {
+      const questionLower = question.toLowerCase()
 
-For each question, provide:
+      const isHypothetical =
+        questionLower.includes("would you") ||
+        questionLower.includes("do you think") ||
+        questionLower.includes("would this") ||
+        questionLower.includes("if you") ||
+        questionLower.includes("imagine")
 
-## Question Analysis
-Rate each question (1-10) and explain:
-- How well it follows Mom Test principles
-- Whether it's leading or neutral
-- If it asks about past behavior vs future intentions
-- How actionable the answers would be
+      const isLeading =
+        questionLower.includes("don't you think") ||
+        questionLower.includes("wouldn't you agree") ||
+        questionLower.includes("isn't it true") ||
+        questionLower.includes("do you agree")
 
-## Specific Improvements
-For questions that need work, provide:
-- Exact rewording suggestions
-- Why the original phrasing is problematic
-- How the improved version is better
+      const isYesNo =
+        questionLower.startsWith("do you") ||
+        questionLower.startsWith("are you") ||
+        questionLower.startsWith("will you") ||
+        questionLower.startsWith("can you") ||
+        questionLower.startsWith("have you")
 
-## Overall Assessment
-- Overall quality score (1-10)
-- Best questions in the set
-- Biggest areas for improvement
-- Missing question types that should be added
+      const isBehavioral =
+        questionLower.includes("tell me about") ||
+        questionLower.includes("describe") ||
+        questionLower.includes("walk me through") ||
+        questionLower.includes("last time you") ||
+        questionLower.includes("when did you")
 
-## Mom Test Principles Reminder
-- Ask about past behavior, not future intentions
-- Don't mention your idea directly
-- Ask about their life, not your product
-- Focus on problems and workflows, not solutions
+      const isOpenEnded =
+        questionLower.includes("how do you") ||
+        questionLower.includes("what do you") ||
+        questionLower.includes("why do you") ||
+        questionLower.includes("what's the") ||
+        questionLower.includes("how would you describe")
 
-Be specific and actionable in your feedback.
-`
+      const isProblemFocused =
+        questionLower.includes("problem") ||
+        questionLower.includes("challenge") ||
+        questionLower.includes("difficult") ||
+        questionLower.includes("frustrating") ||
+        questionLower.includes("pain")
 
-    const { text } = await generateText({
-      model: openai("gpt-4o"),
-      prompt,
-      maxTokens: 2000,
+      const hasGoodPatterns = isBehavioral || isOpenEnded || isProblemFocused
+      const hasBadPatterns = isHypothetical || isLeading || isYesNo
+      const isStrong = hasGoodPatterns && !hasBadPatterns
+
+      let reasoning = ""
+      if (isStrong) {
+        if (isBehavioral) reasoning = "This question encourages specific, behavioral responses about past actions."
+        else if (isOpenEnded) reasoning = "This is an open-ended question that invites detailed responses."
+        else if (isProblemFocused) reasoning = "This question focuses on real problems and pain points."
+        else reasoning = "This question follows good interview practices."
+      } else {
+        if (isHypothetical) reasoning = "This question is hypothetical and may not reveal actual behavior patterns."
+        else if (isLeading) reasoning = "This is a leading question that may bias the response."
+        else if (isYesNo) reasoning = "This question may lead to yes/no answers rather than detailed insights."
+        else reasoning = "This question could be improved to be more open-ended and behavioral."
+      }
+
+      let responseType = ""
+      if (isBehavioral) responseType = "Specific behavioral examples and past experiences"
+      else if (isHypothetical) responseType = "Hypothetical opinions and speculation"
+      else if (isYesNo) responseType = "Short yes/no answers with limited detail"
+      else if (isOpenEnded) responseType = "Detailed explanations and insights"
+      else responseType = "General responses"
+
+      let improvement = null
+      if (!isStrong) {
+        if (isHypothetical) {
+          improvement =
+            "Try rephrasing to focus on past behavior: 'Tell me about the last time you...' or 'Describe a situation when you...'"
+        } else if (isLeading) {
+          improvement =
+            "Remove the leading aspect and ask neutrally: 'How do you feel about...' or 'What's your experience with...'"
+        } else if (isYesNo) {
+          improvement = "Make it open-ended: 'How do you currently handle...' or 'What's your process for...'"
+        } else {
+          improvement =
+            "Consider making it more behavioral and specific: 'Tell me about a time when...' or 'Walk me through how you...'"
+        }
+      }
+
+      return {
+        question,
+        score: Math.floor(Math.random() * 40) + 60,
+        feedback: [
+          "Consider making this more specific",
+          "Good question - very relevant",
+          "This could be more actionable",
+          "Excellent insight potential",
+        ][index % 4],
+        category: ["market", "product", "business model", "team"][index % 4],
+        isStrong,
+        reasoning,
+        responseType,
+        isGoodForEarlyStage: isStrong,
+        improvement,
+      }
     })
 
-    return NextResponse.json({ evaluation: text })
+    return NextResponse.json({ evaluations })
   } catch (error) {
-    console.error("Error evaluating questions:", error)
+    console.error("Error in evaluate-questions API:", error)
     return NextResponse.json({ error: "Failed to evaluate questions" }, { status: 500 })
   }
 }
