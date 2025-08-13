@@ -1,175 +1,289 @@
-import { type NextRequest, NextResponse } from "next/server"
-
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const { mission, timeframe, accomplished } = await request.json()
 
-    if (!mission) {
-      return NextResponse.json({ error: "Mission description is required" }, { status: 400 })
+    if (!mission || mission.trim().length === 0) {
+      return Response.json({ error: "Mission is required" }, { status: 400 })
     }
 
+    // Check if OpenAI API key is available
     if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ error: "OpenAI API key not configured" }, { status: 500 })
+      console.log("No OpenAI API key found, using fallback")
+      return getFallbackResponse(mission, timeframe, accomplished)
     }
 
-    // Parse accomplished items
-    const accomplishedList = Array.isArray(accomplished)
-      ? accomplished
-      : accomplished
-        ? accomplished
-            .split("\n")
-            .map((item: string) => item.trim())
-            .filter((item: string) => item.length > 0)
-        : []
+    try {
+      // Create detailed prompt for OpenAI
+      const prompt = createOpenAIPrompt(mission, timeframe, accomplished)
 
-    // Create detailed prompt for OpenAI
-    const prompt = `You are an expert startup advisor and business strategist. Your task is to analyze a user's mission and provide 3-5 immediately actionable, concrete steps that will move them closer to their goal.
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a startup advisor who generates specific, actionable steps to help entrepreneurs achieve their goals. Always respond with valid JSON in the exact format requested.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 1500,
+        }),
+      })
 
-CONTEXT:
-- Mission/Goal: ${mission}
-${timeframe ? `- Timeline/Deadline: ${timeframe}` : ""}
-${accomplishedList.length > 0 ? `- Already Accomplished: ${accomplishedList.join(", ")}` : ""}
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`)
+      }
 
-INSTRUCTIONS:
-1. Generate 3-5 immediately actionable, concrete steps (not generic advice)
-2. Each step should be specific, measurable, and executable
-3. Customize steps based on the exact mission, timeline, and accomplished work
-4. Don't repeat or suggest things already accomplished
-5. Include specific numbers, tools, timeframes where relevant
-6. Focus on the NEXT logical steps given their current progress
+      const data = await response.json()
+      const aiResponse = data.choices[0]?.message?.content
 
-EXAMPLES OF GOOD STEPS:
-- "Write 8-10 specific research questions for customer interviews focusing on pain points and willingness to pay"
+      if (!aiResponse) {
+        throw new Error("No response from OpenAI")
+      }
+
+      // Parse the AI response
+      let parsedResponse
+      try {
+        parsedResponse = JSON.parse(aiResponse)
+      } catch (parseError) {
+        console.error("Failed to parse OpenAI response:", parseError)
+        throw new Error("Invalid JSON response from AI")
+      }
+
+      // Validate and format the response
+      const formattedSteps = validateAndFormatSteps(parsedResponse.steps || [])
+
+      return Response.json({
+        steps: formattedSteps,
+        source: "openai",
+        total_estimated_duration: parsedResponse.total_estimated_duration || "2-4 weeks",
+      })
+    } catch (openaiError) {
+      console.error("OpenAI API error:", openaiError)
+      return getFallbackResponse(mission, timeframe, accomplished)
+    }
+  } catch (error) {
+    console.error("API route error:", error)
+    return Response.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
+function createOpenAIPrompt(mission: string, timeframe?: string, accomplished?: string[]) {
+  const prompt = `
+MISSION: ${mission}
+${timeframe ? `TIMELINE/DEADLINE: ${timeframe}` : ""}
+${accomplished && accomplished.length > 0 ? `ALREADY ACCOMPLISHED:\n${accomplished.map((item) => `- ${item}`).join("\n")}` : ""}
+
+Generate 3-5 immediately actionable, concrete steps that will move the user closer to their goal. Each step must be:
+
+1. SPECIFIC - Include exact numbers, tools, deliverables
+2. ACTIONABLE - Something they can start doing today
+3. CONTEXTUAL - Tailored to their exact mission and progress
+4. MEASURABLE - Clear success criteria
+
+GOOD EXAMPLES:
+- "Write 8-10 specific research questions focusing on pain points and willingness to pay"
 - "Create a list of 50 potential customers with contact details using LinkedIn Sales Navigator"
-- "Build a landing page with email capture and drive 100 signups using $200 Facebook ads"
+- "Build a landing page with email signup and run $100 Facebook ad to get 100 signups"
 
-EXAMPLES OF BAD STEPS (too generic):
+BAD EXAMPLES (avoid these):
 - "Do market research"
-- "Build your product"
-- "Find customers"
+- "Build your product" 
+- "Create a marketing strategy"
 
-Return your response in this exact JSON format:
+Consider what they've already accomplished to avoid repetitive suggestions.
+
+Respond ONLY with valid JSON in this exact format:
 {
   "steps": [
     {
       "id": 1,
       "title": "Specific Action Title",
-      "description": "Detailed description of exactly what to do, including tools, numbers, and expected outcomes",
-      "duration": "Realistic time estimate",
+      "description": "Detailed description with tools, numbers, and expected outcomes",
+      "duration": "Realistic time estimate (e.g., '2-3 hours', '1 week', '3 days')",
       "priority": "critical|high|medium"
     }
   ],
   "total_estimated_duration": "Overall timeline estimate"
-}`
+}
+`
 
-    // Call OpenAI API
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an expert startup advisor who provides specific, actionable business advice. Always respond with valid JSON in the exact format requested.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 1500,
-      }),
-    })
+  return prompt
+}
 
-    if (!response.ok) {
-      console.error("OpenAI API error:", response.status, response.statusText)
-      throw new Error(`OpenAI API error: ${response.status}`)
-    }
+function validateAndFormatSteps(steps: any[]) {
+  if (!Array.isArray(steps)) {
+    return getDefaultFallbackSteps()
+  }
 
-    const data = await response.json()
-    const aiResponse = data.choices[0]?.message?.content
+  return steps.slice(0, 5).map((step, index) => ({
+    id: step.id || index + 1,
+    title: step.title || `Action Step ${index + 1}`,
+    description: step.description || "Complete this important task",
+    duration: step.duration || "1-2 weeks",
+    priority: ["critical", "high", "medium"].includes(step.priority) ? step.priority : "medium",
+  }))
+}
 
-    if (!aiResponse) {
-      throw new Error("No response from OpenAI")
-    }
+function getFallbackResponse(mission: string, timeframe?: string, accomplished?: string[]) {
+  const fallbackSteps = getContextualFallbackSteps(mission, timeframe, accomplished)
 
-    // Parse the JSON response from OpenAI
-    let parsedResponse
-    try {
-      parsedResponse = JSON.parse(aiResponse)
-    } catch (parseError) {
-      console.error("Failed to parse OpenAI response:", aiResponse)
-      throw new Error("Invalid JSON response from OpenAI")
-    }
+  return Response.json({
+    steps: fallbackSteps,
+    source: "fallback",
+    total_estimated_duration: timeframe || "2-4 weeks",
+  })
+}
 
-    // Validate and format the response
-    const steps = parsedResponse.steps || []
-    if (!Array.isArray(steps) || steps.length === 0) {
-      throw new Error("Invalid steps format from OpenAI")
-    }
+function getContextualFallbackSteps(mission: string, timeframe?: string, accomplished?: string[]) {
+  const missionLower = mission.toLowerCase()
+  const accomplishedSet = new Set(accomplished?.map((item) => item.toLowerCase()) || [])
 
-    // Ensure steps have required fields
-    const formattedSteps = steps.map((step: any, index: number) => ({
-      id: step.id || index + 1,
-      title: step.title || `Step ${index + 1}`,
-      description: step.description || "No description provided",
-      duration: step.duration || "TBD",
-      priority: step.priority?.toLowerCase() || "medium",
-    }))
-
-    return NextResponse.json({
-      mission,
-      timeframe: timeframe || parsedResponse.total_estimated_duration || "2-4 weeks",
-      steps: formattedSteps,
-      total_estimated_duration: parsedResponse.total_estimated_duration || timeframe || "2-4 weeks",
-      source: "openai",
-    })
-  } catch (error) {
-    console.error("Error in generate-mission-steps:", error)
-
-    // Fallback response if OpenAI fails
-    const fallbackSteps = [
+  // Customer interview specific steps
+  if (missionLower.includes("interview") || missionLower.includes("customer research")) {
+    return [
       {
         id: 1,
-        title: "Break Down Your Mission Into Specific Tasks",
-        description:
-          "List 10 specific, measurable tasks needed to achieve your goal. Make each task actionable with clear success criteria.",
-        duration: "2 hours",
-        priority: "high",
-      },
-      {
-        id: 2,
-        title: "Identify and Complete Your Highest-Impact Task Today",
-        description:
-          "From your task list, choose the one task that will move you closest to your goal and complete it before doing anything else.",
-        duration: "2-4 hours",
+        title: "Write 8-10 Research Questions",
+        description: "Create specific questions focusing on pain points, current solutions, and willingness to pay",
+        duration: "2-3 hours",
         priority: "critical",
       },
       {
+        id: 2,
+        title: "Build List of 30 Target Interviewees",
+        description: "Use LinkedIn, industry forums, and your network to identify and contact potential interviewees",
+        duration: "1 day",
+        priority: "high",
+      },
+      {
         id: 3,
-        title: "Set Up Daily Progress Tracking System",
+        title: "Schedule First 5 Interviews This Week",
+        description: "Send personalized outreach messages and use Calendly to book 30-minute interviews",
+        duration: "3-4 hours",
+        priority: "high",
+      },
+    ]
+  }
+
+  // MVP/Product building
+  if (missionLower.includes("mvp") || missionLower.includes("build") || missionLower.includes("develop")) {
+    return [
+      {
+        id: 1,
+        title: "Define Core Feature Set (Maximum 3)",
+        description: "List the 3 most essential features for your MVP - avoid feature creep",
+        duration: "4-6 hours",
+        priority: "critical",
+      },
+      {
+        id: 2,
+        title: "Choose Tech Stack and Set Up Environment",
+        description: "Select frameworks, set up development environment, and create project structure",
+        duration: "1-2 days",
+        priority: "high",
+      },
+      {
+        id: 3,
+        title: "Build Version 0.1 This Week",
+        description: "Create basic working version with core feature - focus on functionality over design",
+        duration: "1 week",
+        priority: "high",
+      },
+    ]
+  }
+
+  // Launch/Marketing
+  if (missionLower.includes("launch") || missionLower.includes("marketing") || missionLower.includes("promote")) {
+    return [
+      {
+        id: 1,
+        title: "Create Pre-Launch Timeline with 10 Tasks",
         description:
-          "Create a simple spreadsheet or use a tool like Notion to track what you accomplish each day toward your mission.",
-        duration: "30 minutes",
+          "Break down launch into specific tasks with deadlines - include content, outreach, and technical prep",
+        duration: "3-4 hours",
+        priority: "critical",
+      },
+      {
+        id: 2,
+        title: "Build Email List of 100 Interested Users",
+        description: "Create landing page with email signup and share in relevant communities",
+        duration: "1-2 weeks",
+        priority: "high",
+      },
+      {
+        id: 3,
+        title: "Prepare Launch Day Content",
+        description: "Write social media posts, press release, and Product Hunt submission",
+        duration: "2-3 days",
         priority: "medium",
       },
     ]
-
-    const mission = "Mission Analysis" // Declare mission variable here
-
-    return NextResponse.json({
-      mission,
-      timeframe: "1-2 weeks",
-      steps: fallbackSteps,
-      total_estimated_duration: "1-2 weeks",
-      source: "fallback",
-      error: "OpenAI API unavailable, using fallback response",
-    })
   }
+
+  // Sales/Revenue
+  if (missionLower.includes("sales") || missionLower.includes("revenue") || missionLower.includes("customers")) {
+    return [
+      {
+        id: 1,
+        title: "Create List of 50 Potential Customers",
+        description: "Research and compile contact details of ideal customers using LinkedIn and industry directories",
+        duration: "1-2 days",
+        priority: "critical",
+      },
+      {
+        id: 2,
+        title: "Write 3 Email Templates",
+        description: "Create templates for cold outreach, follow-up, and proposal emails",
+        duration: "3-4 hours",
+        priority: "high",
+      },
+      {
+        id: 3,
+        title: "Send 10 Personalized Emails Daily",
+        description: "Customize templates and send targeted outreach emails to potential customers",
+        duration: "1 hour daily",
+        priority: "high",
+      },
+    ]
+  }
+
+  // Default generic but actionable steps
+  return getDefaultFallbackSteps()
+}
+
+function getDefaultFallbackSteps() {
+  return [
+    {
+      id: 1,
+      title: "Define Your Success Metrics",
+      description: "Identify 3 specific, measurable outcomes that will indicate progress toward your goal",
+      duration: "2-3 hours",
+      priority: "critical",
+    },
+    {
+      id: 2,
+      title: "Create Weekly Action Plan",
+      description: "Break down your mission into weekly milestones with specific deliverables",
+      duration: "1-2 hours",
+      priority: "high",
+    },
+    {
+      id: 3,
+      title: "Set Up Progress Tracking System",
+      description: "Choose a tool (Notion, Trello, or spreadsheet) to track daily progress and metrics",
+      duration: "1 hour",
+      priority: "medium",
+    },
+  ]
 }

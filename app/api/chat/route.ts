@@ -2,30 +2,41 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, context } = await request.json()
+    const { messages } = await request.json()
 
-    if (!message) {
-      return NextResponse.json({ error: "Message is required" }, { status: 400 })
+    if (!messages || !Array.isArray(messages)) {
+      return NextResponse.json({ error: "Messages array is required" }, { status: 400 })
     }
 
-    // Mock response instead of AI SDK
-    const responses = [
-      "That's an interesting point. Let me help you explore that further.",
-      "Based on your startup context, I'd recommend focusing on user validation first.",
-      "Have you considered the market size for this opportunity?",
-      "Let's break this down into actionable steps.",
-      "What metrics would you use to measure success here?",
-    ]
-
-    const response = responses[Math.floor(Math.random() * responses.length)]
-
-    return NextResponse.json({
-      response,
-      timestamp: new Date().toISOString(),
-      context: context || "general",
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: messages,
+        max_tokens: 500,
+        temperature: 0.7,
+      }),
     })
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const message = data.choices[0]?.message?.content || "I'm here to help you create better interview questions!"
+
+    return NextResponse.json({ message })
   } catch (error) {
-    console.error("Error in chat:", error)
-    return NextResponse.json({ error: "Failed to process chat message" }, { status: 500 })
+    console.error("Error in chat API:", error)
+
+    // Fallback response if OpenAI fails
+    return NextResponse.json({
+      message:
+        "I'm here to help you create better interview questions! Try asking me about behavioral questions, avoiding hypotheticals, or how to structure effective customer interviews.",
+    })
   }
 }

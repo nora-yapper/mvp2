@@ -433,10 +433,14 @@ export default function ResearchTaskPage() {
                     body: JSON.stringify({ problemDescription: input.value }),
                   })
 
+                  if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`)
+                  }
+
                   const data = await response.json()
                   responseArea.style.display = "block"
 
-                  // Parse the structured response and populate individual sections
+                  // The AI response should be a structured analysis with sections
                   const analysis = data.analysis || "Error generating analysis"
 
                   // Function to extract content between headings
@@ -449,7 +453,7 @@ export default function ResearchTaskPage() {
                     return match ? match[1].trim() : ""
                   }
 
-                  // Populate each section
+                  // Populate each section with AI-generated content
                   const problemStatement = document.getElementById("problem-statement") as HTMLTextAreaElement
                   const targetAudience = document.getElementById("target-audience") as HTMLTextAreaElement
                   const contextTrigger = document.getElementById("context-trigger") as HTMLTextAreaElement
@@ -463,6 +467,15 @@ export default function ResearchTaskPage() {
                   assumptionsValidate.value = extractSection(analysis, "Assumptions to Validate")
                 } catch (error) {
                   console.error("Error:", error)
+                  responseArea.style.display = "block"
+
+                  // Show error message in the response area
+                  const errorDiv = document.createElement("div")
+                  errorDiv.style.cssText =
+                    "color: #dc3545; padding: 20px; text-align: center; background-color: #1a1a1a; border-radius: 4px;"
+                  errorDiv.textContent = "Failed to analyze problem. Please try again."
+                  responseArea.innerHTML = ""
+                  responseArea.appendChild(errorDiv)
                 } finally {
                   submitBtn.disabled = false
                   submitBtn.textContent = savedAnalysis ? "Regenerate" : "Submit"
@@ -1948,37 +1961,104 @@ export default function ResearchTaskPage() {
 
             {/* History Header */}
             <div style={{ textAlign: "center", marginBottom: "40px" }}>
-              <h2 style={{ fontSize: "28px", color: "#fff", marginBottom: "10px" }}>Game History</h2>
-              <p style={{ fontSize: "16px", color: "#ccc" }}>Your past scores</p>
+              <h2 style={{ fontSize: "28px", color: "#fff", marginBottom: "10px" }}>MomTest Game</h2>
+              <p style={{ fontSize: "16px", color: "#ccc" }}>
+                Test your skills in identifying good and bad interview questions.
+              </p>
             </div>
 
-            {/* Score List */}
-            {gameScores.length === 0 ? (
-              <p style={{ fontSize: "16px", color: "#ccc", textAlign: "center" }}>No scores yet. Play the game!</p>
-            ) : (
-              <ul style={{ listStyle: "none", padding: 0 }}>
-                {gameScores.map((score, index) => (
-                  <li
-                    key={index}
+            {!gameCompleted ? (
+              <div>
+                <h3 style={{ fontSize: "24px", color: "#fff", marginBottom: "20px" }}>
+                  Question {currentQuestionIndex + 1} of {gameQuestions.length}
+                </h3>
+                <p style={{ fontSize: "18px", color: "#ccc", marginBottom: "30px" }}>
+                  {gameQuestions[currentQuestionIndex]?.question}
+                </p>
+
+                <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
+                  <button
+                    onClick={() => answerQuestion("✅ Good Question")}
                     style={{
-                      backgroundColor: "#1a1a1a",
-                      padding: "20px",
-                      borderRadius: "6px",
-                      marginBottom: "10px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
+                      padding: "12px 24px",
+                      backgroundColor: "#28a745",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "16px",
+                      cursor: "pointer",
                     }}
                   >
-                    <div>
-                      <p style={{ fontSize: "16px", color: "#fff", marginBottom: "5px" }}>
-                        Score: {score.score} / {momTestQuestions.length}
+                    ✅ Good Question
+                  </button>
+                  <button
+                    onClick={() => answerQuestion("❌ Bad Question")}
+                    style={{
+                      padding: "12px 24px",
+                      backgroundColor: "#dc3545",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ❌ Bad Question
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <h3 style={{ fontSize: "28px", color: "#fff", marginBottom: "20px", textAlign: "center" }}>
+                  Game Over!
+                </h3>
+                <p style={{ fontSize: "20px", color: "#ccc", marginBottom: "30px", textAlign: "center" }}>
+                  Your Score: {gameScore} / {gameQuestions.length}
+                </p>
+
+                <div style={{ marginBottom: "30px" }}>
+                  <h4 style={{ fontSize: "20px", color: "#fff", marginBottom: "15px" }}>Review:</h4>
+                  {gameQuestions.map((q, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        backgroundColor: "#1a1a1a",
+                        padding: "20px",
+                        borderRadius: "6px",
+                        marginBottom: "15px",
+                      }}
+                    >
+                      <p style={{ fontSize: "16px", color: "#fff", marginBottom: "10px" }}>
+                        {index + 1}. {q.question}
                       </p>
-                      <p style={{ fontSize: "14px", color: "#888" }}>Date: {score.date}</p>
+                      <p style={{ fontSize: "14px", color: "#888", marginBottom: "5px" }}>
+                        Correct Answer: {q.correctAnswer}
+                      </p>
+                      <p style={{ fontSize: "14px", color: "#888", marginBottom: "5px" }}>
+                        Your Answer: {q.userAnswer}
+                      </p>
+                      <p style={{ fontSize: "14px", color: "#888" }}>Explanation: {q.explanation}</p>
                     </div>
-                  </li>
-                ))}
-              </ul>
+                  ))}
+                </div>
+
+                <div style={{ textAlign: "center" }}>
+                  <button
+                    onClick={() => setShowMomTestGame(false)}
+                    style={{
+                      padding: "12px 24px",
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>
