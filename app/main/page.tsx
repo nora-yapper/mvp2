@@ -38,7 +38,25 @@ export default function MainPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: newMessages,
+          messages: [
+            {
+              role: "system",
+              content: `You are the Project One AI assistant, helping early-stage startup founders using the Project One ecosystem (project1.io). 
+
+Key context:
+- This is an MVP for testing, showcasing partial features - not the final design
+- You help with startup progress tracking, task management, and AI-driven guidance
+- Team: Antonia (CEO), Nora (CTO), Vito Mir (CSO)
+- Focus on early-stage startup advice within Project One's mission
+- Never fabricate information or disclose sensitive beta/future plans
+- Politely decline non-startup questions and redirect to startup context
+- Remember conversation history and provide tailored advice
+- Keep responses concise and actionable
+
+Current conversation context: The user is in the main dashboard of their startup management platform.`,
+            },
+            ...newMessages,
+          ],
         }),
       })
 
@@ -50,7 +68,14 @@ export default function MainPage() {
       setMessages([...newMessages, { role: "assistant", content: data.message }])
     } catch (error) {
       console.error("Error:", error)
-      setMessages([...newMessages, { role: "assistant", content: "Sorry, I encountered an error. Please try again." }])
+      setMessages([
+        ...newMessages,
+        {
+          role: "assistant",
+          content:
+            "I'm having trouble connecting right now. As your Project One assistant, I'm here to help with startup guidance, task management, and progress tracking. Please try again in a moment!",
+        },
+      ])
     } finally {
       setIsLoading(false)
     }
@@ -243,7 +268,8 @@ export default function MainPage() {
           >
             {messages.length === 0 && (
               <div style={{ textAlign: "center", color: "#666", fontSize: "14px", marginTop: "20px" }}>
-                Ask me anything about your startup!
+                Hi! I'm your Project One AI assistant. I can help with startup advice, task management, and guidance
+                within the Project One ecosystem. How can I assist you today?
               </div>
             )}
             {messages.map((message, index) => (
@@ -300,7 +326,7 @@ export default function MainPage() {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
+              placeholder="Ask about startup advice, tasks, or Project One features..."
               style={{
                 flex: 1,
                 padding: "12px",
