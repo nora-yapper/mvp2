@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChevronDown, FileText, ArrowLeft, Plus, Eye, Download, Send, Edit3, Save, X } from "lucide-react"
 
 export default function ReportsPage() {
@@ -42,6 +42,19 @@ export default function ReportsPage() {
       }
     }>
   >([])
+
+  useEffect(() => {
+    const savedReportsFromStorage = sessionStorage.getItem("savedReports")
+    if (savedReportsFromStorage) {
+      setSavedReports(JSON.parse(savedReportsFromStorage))
+    }
+  }, [])
+
+  useEffect(() => {
+    if (savedReports.length > 0) {
+      sessionStorage.setItem("savedReports", JSON.stringify(savedReports))
+    }
+  }, [savedReports])
 
   const handleSectionToggle = (section: keyof typeof formData.sections) => {
     setFormData((prev) => ({

@@ -61,6 +61,7 @@ export default function ProductDetailPage() {
     // Only allow clicks for Overview and Action Table
     if (sectionId === "overview" || sectionId === "action-table") {
       const optionsParam = selectedOptions.join(",")
+      // Navigate to the product task page with proper parameters
       window.location.href = `/product/task?section=${sectionId}&task=${taskId}&options=${optionsParam}`
     }
   }
@@ -204,7 +205,8 @@ export default function ProductDetailPage() {
               ACTION TABLE PART 01
             </h3>
             <p style={{ fontSize: "14px", lineHeight: "1.5" }}>
-              Turn your interview insights into early product ideas and note any possible issues or risks each idea could bring.
+              Turn your interview insights into early product ideas and note any possible issues or risks each idea
+              could bring.
             </p>
           </GeometricCard>
         </div>
@@ -544,7 +546,7 @@ export default function ProductDetailPage() {
             Map
           </button>
           <button
-           onClick={() => (window.location.href = "/command-deck")}
+            onClick={() => (window.location.href = "/command-deck")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -569,7 +571,7 @@ export default function ProductDetailPage() {
             Health Check
           </button>
           <button
-          onClick={() => (window.location.href = "/health-check")}
+            onClick={() => (window.location.href = "/health-check")}
             style={{
               padding: "15px",
               fontSize: "16px",
