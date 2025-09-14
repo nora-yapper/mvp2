@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from "react"
 import { earnTokensForStep } from "@/lib/token-integration"
+import { useSearchParams } from "next/navigation"
+import { TokenDisplay } from "@/components/token-display"
 
 const ProductTaskPage = () => {
+  const searchParams = useSearchParams()
+  const section = searchParams.get("section") || ""
+  const task = searchParams.get("task") || ""
+  const optionsParam = searchParams.get("options") || ""
+  const options = optionsParam ? optionsParam.split(",") : []
+
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [section, setSection] = useState<string>("")
-  const [task, setTask] = useState<string>("")
-  const [options, setOptions] = useState<string[]>([])
   const [postIts, setPostIts] = useState<{
     ideas: string[]
     issues: string[]
@@ -21,15 +26,6 @@ const ProductTaskPage = () => {
   const [activeColumn, setActiveColumn] = useState<"ideas" | "issues" | "risks">("ideas")
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const sectionParam = params.get("section") || ""
-    const taskParam = params.get("task") || ""
-    const optionsParam = params.get("options") || ""
-
-    setSection(sectionParam)
-    setTask(taskParam)
-    setOptions(optionsParam ? optionsParam.split(",") : [])
-
     // Load saved post-its from session storage
     const savedPostIts = sessionStorage.getItem("productActionTablePostIts")
     if (savedPostIts) {
@@ -406,7 +402,8 @@ const ProductTaskPage = () => {
   }
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
+    <div className="min-h-screen bg-gray-50">
+      <TokenDisplay />
       {/* Top Bar */}
       <div
         style={{
