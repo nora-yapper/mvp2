@@ -1,0 +1,188 @@
+import { type NextRequest, NextResponse } from "next/server"
+
+export async function POST(request: NextRequest) {
+  try {
+    const { formData } = await request.json()
+
+    if (!formData) {
+      return NextResponse.json({ error: "Form data is required" }, { status: 400 })
+    }
+
+    // Check if OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      console.log("No OpenAI API key found, using fallback content")
+      return getFallbackContent(formData)
+    }
+
+    try {
+      const prompt = createReportPrompt(formData)
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a professional business report writer who creates comprehensive startup reports. Always respond with valid JSON in the exact format requested.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 2000,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      const aiResponse = data.choices[0]?.message?.content
+
+      if (!aiResponse) {
+        throw new Error("No response from OpenAI")
+      }
+
+      // Parse the AI response
+      let parsedResponse
+      try {
+        // Clean the response text
+        let cleanedText = aiResponse.trim()
+        if (cleanedText.startsWith("```json")) {
+          cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
+        } else if (cleanedText.startsWith("```")) {
+          cleanedText = cleanedText.replace(/^```\s*/, "").replace(/\s*```$/, "")
+        }
+
+        parsedResponse = JSON.parse(cleanedText)
+      } catch (parseError) {
+        console.error("Failed to parse OpenAI response:", parseError)
+        return getFallbackContent(formData)
+      }
+
+      return NextResponse.json({
+        content: parsedResponse,
+        source: "openai",
+      })
+    } catch (openaiError) {
+      console.error("OpenAI API error:", openaiError)
+      return getFallbackContent(formData)
+    }
+  } catch (error) {
+    console.error("API route error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
+function createReportPrompt(formData: any) {
+  const { title, startDate, endDate, audience, sections, notes } = formData
+
+  const dateRange = startDate && endDate ? `${startDate} to ${endDate}` : "current period"
+  const additionalContext = notes ? `\n\nADDITIONAL CONTEXT FROM USER:\n${notes}` : ""
+
+  const enabledSections = Object.entries(sections)
+    .filter(([_, enabled]) => enabled)
+    .map(([section, _]) => section)
+
+  const prompt = `
+Create a professional startup report with the following details:
+
+REPORT DETAILS:
+- Title: ${title}
+- Reporting Period: ${dateRange}
+- Target Audience: ${audience}
+- Sections to include: ${enabledSections.join(", ")}
+${additionalContext}
+
+Generate content for each enabled section. Make the content:
+1. Professional and business-appropriate
+2. Specific to the reporting period and audience
+3. Incorporate any additional context provided by the user
+4. Realistic and actionable
+5. Appropriate length for each section (2-4 sentences for most, bullet points for milestones)
+
+IMPORTANT: If additional context is provided, analyze it and incorporate relevant insights throughout the report sections. Use the context to make the report more specific and tailored.
+
+Respond with ONLY valid JSON in this exact format:
+{
+  "startupDescription": "Professional description of the startup and its mission...",
+  "progressOverview": "Summary of progress during the reporting period...",
+  "tractionMilestones": [
+    "Specific milestone 1",
+    "Specific milestone 2",
+    "Specific milestone 3"
+  ],
+  "risksBottlenecks": "Analysis of current risks and bottlenecks...",
+  "productStrategy": "Product strategy and roadmap insights...",
+  "forecastPriorities": "Forward-looking priorities and forecasts...",
+  "additionalNotes": "Any additional insights or notes..."
+}
+
+Only include fields for sections that are enabled: ${enabledSections.join(", ")}
+`
+
+  return prompt
+}
+
+function getFallbackContent(formData: any) {
+  const { sections, notes } = formData
+
+  const content: any = {}
+
+  if (sections.startupDescription) {
+    content.startupDescription = notes
+      ? `Our startup is focused on delivering innovative solutions that address key market challenges. ${notes.includes("product") || notes.includes("solution") ? "Based on our current focus, we are building solutions that directly address the needs identified in our market research." : "We have built a strong foundation with a clear value proposition and growing market traction."}`
+      : "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."
+  }
+
+  if (sections.progressOverview) {
+    content.progressOverview = notes
+      ? `This reporting period we have made significant progress toward our objectives. ${notes.includes("growth") || notes.includes("progress") ? "Our growth metrics align with the strategic initiatives outlined in our planning." : "We have maintained high quality standards while advancing our key initiatives."}`
+      : "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."
+  }
+
+  if (sections.tractionMilestones) {
+    content.tractionMilestones = [
+      "Completed major platform improvements affecting user experience",
+      "Achieved significant operational efficiency gains",
+      "Successfully onboarded new team members and stakeholders",
+      "Maintained high customer satisfaction and engagement metrics",
+    ]
+  }
+
+  if (sections.risksBottlenecks) {
+    content.risksBottlenecks = notes
+      ? `While progress has been strong, we continue to monitor key challenges in our operations. ${notes.includes("risk") || notes.includes("challenge") ? "The specific challenges mentioned in our planning require ongoing attention and strategic focus." : "Resource allocation and strategic coordination remain key focus areas."}`
+      : "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."
+  }
+
+  if (sections.productStrategy) {
+    content.productStrategy = notes
+      ? `Our product roadmap is aligned with market demands and user feedback. ${notes.includes("feature") || notes.includes("product") ? "The product direction incorporates the strategic insights from our recent analysis." : "We have prioritized features that drive user engagement and retention."}`
+      : "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."
+  }
+
+  if (sections.forecastPriorities) {
+    content.forecastPriorities = notes
+      ? `Looking ahead, we are prioritizing initiatives that align with our strategic objectives. ${notes.includes("future") || notes.includes("plan") ? "Our forward-looking priorities incorporate the insights and direction outlined in our strategic planning." : "We are focusing on sustainable growth and operational excellence."}`
+      : "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."
+  }
+
+  if (notes) {
+    content.additionalNotes = `Additional context: ${notes}`
+  }
+
+  return NextResponse.json({
+    content,
+    source: "fallback",
+  })
+}

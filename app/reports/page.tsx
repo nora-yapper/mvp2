@@ -83,7 +83,7 @@ export default function ReportsPage() {
     return errors
   }
 
-  const generateReport = () => {
+  const generateReport = async () => {
     const errors = validateForm()
     if (errors.length > 0) {
       setValidationErrors(errors)
@@ -94,6 +94,31 @@ export default function ReportsPage() {
       return
     }
     setValidationErrors([])
+
+    // Generate AI content
+    try {
+      const response = await fetch("/api/generate-report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ formData }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Store the generated content for use in the report
+        setGeneratedContent(data.content)
+      } else {
+        console.error("Failed to generate report content")
+        // Use fallback content
+        setGeneratedContent(null)
+      }
+    } catch (error) {
+      console.error("Error generating report:", error)
+      setGeneratedContent(null)
+    }
+
     setCurrentView("generated")
   }
 
@@ -357,43 +382,44 @@ export default function ReportsPage() {
     )
   }
 
+  const [generatedContent, setGeneratedContent] = useState<any>(null)
+
   const saveReport = () => {
+    const reportContent = generatedContent || {
+      startupDescription: formData.sections.startupDescription
+        ? "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."
+        : undefined,
+      progressOverview: formData.sections.progressOverview
+        ? "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."
+        : undefined,
+      tractionMilestones: formData.sections.tractionMilestones
+        ? [
+            "Completed major platform upgrade affecting 50,000+ users",
+            "Reduced system downtime by 65% through infrastructure improvements",
+            "Achieved 94% customer satisfaction score in latest survey",
+          ]
+        : undefined,
+      risksBottlenecks: formData.sections.risksBottlenecks
+        ? "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."
+        : undefined,
+      productStrategy: formData.sections.productStrategy
+        ? "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."
+        : undefined,
+      forecastPriorities: formData.sections.forecastPriorities
+        ? "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."
+        : undefined,
+      additionalNotes: formData.notes || undefined,
+    }
+
     const newReport = {
       id: Date.now().toString(),
-      title: formData.title || "Untitled Report",
+      title: formData.title,
       date: new Date().toLocaleDateString(),
-      period:
-        formData.startDate && formData.endDate
-          ? `${new Date(formData.startDate).toLocaleDateString()} - ${new Date(formData.endDate).toLocaleDateString()}`
-          : "",
+      period: `${new Date(formData.startDate).toLocaleDateString()} - ${new Date(formData.endDate).toLocaleDateString()}`,
       audience: formData.audience,
       sections: formData.sections,
       notes: formData.notes,
-      content: {
-        startupDescription: formData.sections.startupDescription
-          ? "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."
-          : undefined,
-        progressOverview: formData.sections.progressOverview
-          ? "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."
-          : undefined,
-        tractionMilestones: formData.sections.tractionMilestones
-          ? [
-              "Completed major platform upgrade affecting 50,000+ users",
-              "Reduced system downtime by 65% through infrastructure improvements",
-              "Achieved 94% customer satisfaction score in latest survey",
-            ]
-          : undefined,
-        risksBottlenecks: formData.sections.risksBottlenecks
-          ? "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."
-          : undefined,
-        productStrategy: formData.sections.productStrategy
-          ? "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."
-          : undefined,
-        forecastPriorities: formData.sections.forecastPriorities
-          ? "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."
-          : undefined,
-        additionalNotes: formData.notes || undefined,
-      },
+      content: reportContent,
     }
 
     setSavedReports((prev) => [newReport, ...prev])
