@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FileText, ArrowLeft, Plus, Eye, Download, Send, Edit3, Save, X } from "lucide-react"
+import { FileText, ArrowLeft, Plus, Eye, Download, Send, Edit3, Save, X, Trash2 } from "lucide-react"
 
 export default function ReportsPage() {
   const [currentView, setCurrentView] = useState<"history" | "form" | "generated" | "viewing" | "editing">("history")
@@ -175,6 +175,14 @@ export default function ReportsPage() {
 
   const cancelEdit = () => {
     setCurrentView("viewing")
+  }
+
+  const deleteReport = (report: any) => {
+    const updatedReports = savedReports.filter((r) => r.id !== report.id)
+    setSavedReports(updatedReports)
+    localStorage.setItem("savedReports", JSON.stringify(updatedReports))
+    setViewingReport(null)
+    setCurrentView("history")
   }
 
   // Toggle Switch Component
@@ -1290,6 +1298,12 @@ ${reportToDownload.content.additionalNotes}
                 icon: <Edit3 size={16} />,
                 action: () => editReport(viewingReport),
                 color: "#ffc107",
+              },
+              {
+                label: "Delete Report",
+                icon: <Trash2 size={16} />,
+                action: () => deleteReport(viewingReport),
+                color: "#dc3545",
               },
             ].map((button, index) => (
               <button
