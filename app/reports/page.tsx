@@ -237,33 +237,6 @@ export default function ReportsPage() {
           >
             ☰
           </button>
-
-          <button
-            onClick={() => (window.location.href = "/main")}
-            style={{
-              background: "#2a2a2a",
-              border: "1px solid #444",
-              fontSize: "20px",
-              cursor: "pointer",
-              color: "#e0e0e0",
-              width: "50px",
-              height: "50px",
-              clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
-              transition: "all 0.3s ease",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#3a3a3a"
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#2a2a2a"
-            }}
-            title="Back to Main"
-          >
-            ←
-          </button>
         </div>
 
         {/* Sidebar */}
