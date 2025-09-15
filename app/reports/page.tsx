@@ -637,6 +637,7 @@ ${reportToDownload.content.additionalNotes}
     <div style={{ textAlign: "center", marginBottom: "40px" }}>
       <h1
         style={{
+          textAlign: "center",
           fontSize: "42px",
           fontWeight: "300",
           marginBottom: "12px",
@@ -644,10 +645,10 @@ ${reportToDownload.content.additionalNotes}
           color: "#ffffff",
         }}
       >
-        Stakeholder Reports
+        Reports
       </h1>
       <p style={{ fontSize: "18px", color: "#999", lineHeight: "1.5" }}>
-        Generate comprehensive reports for your investors, mentors, and stakeholders
+        Generate comprehensive reports for all of your stakeholders
       </p>
     </div>
   )
@@ -1148,35 +1149,6 @@ ${reportToDownload.content.additionalNotes}
 
         <div style={{ padding: "100px 20px 40px", maxWidth: "1000px", margin: "0 auto" }}>
           <div style={{ marginBottom: "40px" }}>
-            <button
-              onClick={backToHistory}
-              style={{
-                padding: "12px 20px",
-                fontSize: "15px",
-                backgroundColor: "#2a2a2a",
-                color: "#e0e0e0",
-                border: "1px solid #444",
-                cursor: "pointer",
-                borderRadius: "8px",
-                fontWeight: "500",
-                letterSpacing: "0.02em",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                marginBottom: "30px",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#3a3a3a"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#2a2a2a"
-              }}
-            >
-              <ArrowLeft size={16} />
-              Back to History
-            </button>
-
             <div style={{ textAlign: "center" }}>
               <h1
                 style={{
@@ -1730,7 +1702,7 @@ ${reportToDownload.content.additionalNotes}
                     <option value="investors">Investors</option>
                     <option value="mentors">Mentors</option>
                     <option value="incubators">Incubators</option>
-                    <option value="general">General Audience</option>
+                    <option value="general">General audience</option>
                     <option value="internal">Internal</option>
                   </select>
                 </div>
