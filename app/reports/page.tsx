@@ -362,7 +362,10 @@ export default function ReportsPage() {
       id: Date.now().toString(),
       title: formData.title || "Untitled Report",
       date: new Date().toLocaleDateString(),
-      period: `${formData.startDate} - ${formData.endDate}`,
+      period:
+        formData.startDate && formData.endDate
+          ? `${new Date(formData.startDate).toLocaleDateString()} - ${new Date(formData.endDate).toLocaleDateString()}`
+          : "",
       audience: formData.audience,
       sections: formData.sections,
       notes: formData.notes,
@@ -789,9 +792,7 @@ ${reportToDownload.content.additionalNotes}
               />
               <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginBottom: "12px" }}>
                 {viewingReport.period && (
-                  <span style={{ fontSize: "16px", color: "#999" }}>
-                    {new Date(viewingReport.period).toLocaleDateString()}
-                  </span>
+                  <span style={{ fontSize: "16px", color: "#999" }}>{viewingReport.period}</span>
                 )}
                 {viewingReport.audience && (
                   <span style={{ fontSize: "16px", color: "#999" }}>
@@ -1145,9 +1146,7 @@ ${reportToDownload.content.additionalNotes}
               </h1>
               <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginBottom: "12px" }}>
                 {viewingReport.period && (
-                  <span style={{ fontSize: "16px", color: "#999" }}>
-                    {new Date(viewingReport.period).toLocaleDateString()}
-                  </span>
+                  <span style={{ fontSize: "16px", color: "#999" }}>{viewingReport.period}</span>
                 )}
                 {viewingReport.audience && (
                   <span style={{ fontSize: "16px", color: "#999" }}>
@@ -1306,7 +1305,7 @@ ${reportToDownload.content.additionalNotes}
                 color: "#dc3545",
               },
               {
-                label: "Go back",
+                label: "Go Back", // Capitalized "Back"
                 icon: <ArrowLeft size={16} />,
                 action: () => {
                   setCurrentView("history")
