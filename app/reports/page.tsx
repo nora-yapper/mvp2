@@ -386,8 +386,7 @@ export default function ReportsPage() {
     }
 
     setSavedReports((prev) => [newReport, ...prev])
-    setCurrentView("history") // Fixed redirect to go back to history view instead of form
-    alert("Report saved successfully!")
+    setCurrentView("history")
   }
 
   const downloadPDF = (report?: any) => {
