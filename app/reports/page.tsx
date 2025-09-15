@@ -1305,6 +1305,15 @@ ${reportToDownload.content.additionalNotes}
                 action: () => deleteReport(viewingReport),
                 color: "#dc3545",
               },
+              {
+                label: "Go back",
+                icon: <ArrowLeft size={16} />,
+                action: () => {
+                  setCurrentView("history")
+                  setViewingReport(null)
+                },
+                color: "#6c757d",
+              },
             ].map((button, index) => (
               <button
                 key={index}
