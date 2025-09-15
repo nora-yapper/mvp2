@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react"
 import { FileText, ArrowLeft, Plus, Eye, Download, Send, Edit3, Save, X } from "lucide-react"
 
-import { neon } from "@neondatabase/serverless"
-
 export default function ReportsPage() {
   const [currentView, setCurrentView] = useState<"history" | "form" | "generated" | "viewing" | "editing">("history")
   const [viewingReport, setViewingReport] = useState<any>(null)
@@ -351,73 +349,45 @@ export default function ReportsPage() {
     )
   }
 
-  const saveReport = async () => {
-    try {
-      const sql = neon(process.env.DATABASE_URL!)
-
-      const newReport = {
-        title: formData.title || "Untitled Report",
-        start_date: formData.startDate,
-        end_date: formData.endDate,
-        audience: formData.audience,
-        sections: formData.sections,
-        notes: formData.notes,
-        content: {
-          startupDescription: formData.sections.startupDescription
-            ? "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."
-            : undefined,
-          progressOverview: formData.sections.progressOverview
-            ? "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."
-            : undefined,
-          tractionMilestones: formData.sections.tractionMilestones
-            ? [
-                "Completed major platform upgrade affecting 50,000+ users",
-                "Reduced system downtime by 65% through infrastructure improvements",
-                "Achieved 94% customer satisfaction score in latest survey",
-              ]
-            : undefined,
-          risksBottlenecks: formData.sections.risksBottlenecks
-            ? "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."
-            : undefined,
-          productStrategy: formData.sections.productStrategy
-            ? "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."
-            : undefined,
-          forecastPriorities: formData.sections.forecastPriorities
-            ? "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."
-            : undefined,
-          additionalNotes: formData.notes || undefined,
-        },
-      }
-
-      // Save to database
-      await sql`
-        INSERT INTO reports (title, start_date, end_date, audience, sections, notes, content)
-        VALUES (${newReport.title}, ${newReport.start_date}, ${newReport.end_date}, 
-                ${newReport.audience}, ${JSON.stringify(newReport.sections)}, 
-                ${newReport.notes}, ${JSON.stringify(newReport.content)})
-      `
-
-      // Update local state for immediate UI feedback
-      const reportForState = {
-        id: Date.now().toString(),
-        title: newReport.title,
-        date: new Date().toLocaleDateString(),
-        period: `${formData.startDate} - ${formData.endDate}`,
-        audience: newReport.audience,
-        sections: newReport.sections,
-        notes: newReport.notes,
-        content: newReport.content,
-      }
-      setSavedReports((prev) => [reportForState, ...prev])
-
-      // Redirect to initial Reports screen
-      setCurrentView("form")
-      // setActiveTab is not defined in this component. Removing it.
-      // setActiveTab('history')
-    } catch (error) {
-      console.error("Error saving report:", error)
-      alert("Failed to save report. Please try again.")
+  const saveReport = () => {
+    const newReport = {
+      id: Date.now().toString(),
+      title: formData.title || "Untitled Report",
+      date: new Date().toLocaleDateString(),
+      period: `${formData.startDate} - ${formData.endDate}`,
+      audience: formData.audience,
+      sections: formData.sections,
+      notes: formData.notes,
+      content: {
+        startupDescription: formData.sections.startupDescription
+          ? "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."
+          : undefined,
+        progressOverview: formData.sections.progressOverview
+          ? "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."
+          : undefined,
+        tractionMilestones: formData.sections.tractionMilestones
+          ? [
+              "Completed major platform upgrade affecting 50,000+ users",
+              "Reduced system downtime by 65% through infrastructure improvements",
+              "Achieved 94% customer satisfaction score in latest survey",
+            ]
+          : undefined,
+        risksBottlenecks: formData.sections.risksBottlenecks
+          ? "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."
+          : undefined,
+        productStrategy: formData.sections.productStrategy
+          ? "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."
+          : undefined,
+        forecastPriorities: formData.sections.forecastPriorities
+          ? "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."
+          : undefined,
+        additionalNotes: formData.notes || undefined,
+      },
     }
+
+    setSavedReports((prev) => [newReport, ...prev])
+    setCurrentView("history") // Fixed redirect to go back to history view instead of form
+    alert("Report saved successfully!")
   }
 
   const downloadPDF = (report?: any) => {
