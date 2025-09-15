@@ -67,21 +67,30 @@ export default function ReportsPage() {
     }))
   }
 
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
+
   const validateForm = () => {
     const errors = []
-    if (!formData.title.trim()) errors.push("Report Title is required")
-    if (!formData.startDate) errors.push("Start Date is required")
-    if (!formData.endDate) errors.push("End Date is required")
-    if (!formData.audience) errors.push("Audience is required")
+    if (!formData.title.trim()) errors.push("title")
+    if (!formData.startDate) errors.push("startDate")
+    if (!formData.endDate) errors.push("endDate")
+    if (!formData.audience) errors.push("audience")
     return errors
   }
 
   const generateReport = () => {
     const errors = validateForm()
     if (errors.length > 0) {
-      alert("Please fill in all required fields:\n" + errors.join("\n"))
+      setValidationErrors(errors)
+      const errorMessages = []
+      if (errors.includes("title")) errorMessages.push("Report Title is required")
+      if (errors.includes("startDate")) errorMessages.push("Start Date is required")
+      if (errors.includes("endDate")) errorMessages.push("End Date is required")
+      if (errors.includes("audience")) errorMessages.push("Audience is required")
+      alert("Please fill in all required fields:\n" + errorMessages.join("\n"))
       return
     }
+    setValidationErrors([])
     setCurrentView("generated")
   }
 
@@ -438,15 +447,12 @@ export default function ReportsPage() {
         notes: formData.notes,
       }
 
-    // Create a simple text-based PDF content
     const pdfContent = `
 REPORT: ${reportToDownload.title}
 
 REPORTING PERIOD: ${reportToDownload.startDate ? new Date(reportToDownload.startDate).toLocaleDateString() : "N/A"} - ${reportToDownload.endDate ? new Date(reportToDownload.endDate).toLocaleDateString() : "N/A"}
 
 AUDIENCE: ${reportToDownload.audience}
-
-GENERATED: ${reportToDownload.date}
 
 ${
   reportToDownload.content.startupDescription
@@ -528,10 +534,9 @@ ${reportToDownload.content.additionalNotes}
           const dateRange = `${reportToDownload.startDate ? new Date(reportToDownload.startDate).toLocaleDateString() : "N/A"} - ${reportToDownload.endDate ? new Date(reportToDownload.endDate).toLocaleDateString() : "N/A"}`
           doc.text(`Reporting Period: ${dateRange}`, 20, 35)
           doc.text(`Audience: ${reportToDownload.audience}`, 20, 45)
-          doc.text(`Generated: ${reportToDownload.date}`, 20, 55)
 
           // Add content sections
-          let yPosition = 75
+          let yPosition = 65 // Adjust starting position since we removed Generated Date
           const lineHeight = 7
           const pageHeight = doc.internal.pageSize.height
           const margin = 20
@@ -1607,7 +1612,7 @@ ${reportToDownload.content.additionalNotes}
                       padding: "12px 16px",
                       fontSize: "14px",
                       backgroundColor: "#374151",
-                      border: `1px solid ${!formData.title.trim() ? "#ef4444" : "#4b5563"}`,
+                      border: `1px solid ${validationErrors.includes("title") ? "#ef4444" : "#4b5563"}`,
                       borderRadius: "8px",
                       color: "#f9fafb",
                       outline: "none",
@@ -1648,7 +1653,7 @@ ${reportToDownload.content.additionalNotes}
                           padding: "12px 16px",
                           fontSize: "14px",
                           backgroundColor: "#374151",
-                          border: `1px solid ${!formData.startDate ? "#ef4444" : "#4b5563"}`,
+                          border: `1px solid ${validationErrors.includes("startDate") ? "#ef4444" : "#4b5563"}`,
                           borderRadius: "8px",
                           color: "#f9fafb",
                           outline: "none",
@@ -1676,7 +1681,7 @@ ${reportToDownload.content.additionalNotes}
                           padding: "12px 16px",
                           fontSize: "14px",
                           backgroundColor: "#374151",
-                          border: `1px solid ${!formData.endDate ? "#ef4444" : "#4b5563"}`,
+                          border: `1px solid ${validationErrors.includes("endDate") ? "#ef4444" : "#4b5563"}`,
                           borderRadius: "8px",
                           color: "#f9fafb",
                           outline: "none",
@@ -1707,7 +1712,7 @@ ${reportToDownload.content.additionalNotes}
                       padding: "12px 16px",
                       fontSize: "14px",
                       backgroundColor: "#374151",
-                      border: `1px solid ${!formData.audience ? "#ef4444" : "#4b5563"}`,
+                      border: `1px solid ${validationErrors.includes("audience") ? "#ef4444" : "#4b5563"}`,
                       borderRadius: "8px",
                       color: "#f9fafb",
                       outline: "none",
