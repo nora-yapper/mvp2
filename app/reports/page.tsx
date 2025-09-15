@@ -407,7 +407,6 @@ export default function ReportsPage() {
             ? [
                 "Completed major platform upgrade affecting 50,000+ users",
                 "Reduced system downtime by 65% through infrastructure improvements",
-                "Onboarded 3 new team members with full integration success",
                 "Achieved 94% customer satisfaction score in latest survey",
               ]
             : undefined,
@@ -505,8 +504,8 @@ export default function ReportsPage() {
           <div class="header">
             <h1>${reportToDownload.title}</h1>
             <div class="meta-info">
-              ${reportToDownload.period ? `Report Period: ${new Date(reportToDownload.period).toLocaleDateString()}` : ""}
-              ${reportToDownload.period && reportToDownload.audience ? " • " : ""}
+              ${reportToDownload.startDate && reportToDownload.endDate ? `Report Period: ${new Date(reportToDownload.startDate).toLocaleDateString()} - ${new Date(reportToDownload.endDate).toLocaleDateString()}` : ""}
+              ${(reportToDownload.startDate && reportToDownload.endDate) && reportToDownload.audience ? " • " : ""}
               ${reportToDownload.audience ? `Audience: ${reportToDownload.audience.charAt(0).toUpperCase() + reportToDownload.audience.slice(1)}` : ""}
             </div>
             <div class="meta-info">Generated on ${reportToDownload.date}</div>
@@ -1917,9 +1916,10 @@ export default function ReportsPage() {
               {formData.title || "Generated Report"}
             </h1>
             <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginBottom: "12px" }}>
-              {formData.period && (
+              {formData.startDate && formData.endDate && (
                 <span style={{ fontSize: "16px", color: "#999" }}>
-                  {new Date(formData.period).toLocaleDateString()}
+                  {new Date(formData.startDate).toLocaleDateString()} -{" "}
+                  {new Date(formData.endDate).toLocaleDateString()}
                 </span>
               )}
               {formData.audience && (
