@@ -9,7 +9,8 @@ export default function ReportsPage() {
   const [editingContent, setEditingContent] = useState<any>({})
   const [formData, setFormData] = useState({
     title: "",
-    period: "",
+    startDate: "",
+    endDate: "",
     audience: "",
     sections: {
       startupDescription: true,
@@ -1622,29 +1623,64 @@ export default function ReportsPage() {
                   <label style={{ display: "block", fontSize: "15px", marginBottom: "8px", color: "#e0e0e0" }}>
                     Reporting Period
                   </label>
-                  <input
-                    type="date"
-                    value={formData.period}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, period: e.target.value }))}
-                    style={{
-                      width: "100%",
-                      padding: "14px 16px",
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid #444",
-                      borderRadius: "8px",
-                      color: "#e0e0e0",
-                      fontSize: "15px",
-                      outline: "none",
-                      colorScheme: "dark",
-                      transition: "border-color 0.2s ease",
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = "#007bff"
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = "#444"
-                    }}
-                  />
+                  <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: "block", fontSize: "13px", marginBottom: "6px", color: "#999" }}>
+                        From
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.startDate}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, startDate: e.target.value }))}
+                        style={{
+                          width: "100%",
+                          padding: "14px 16px",
+                          backgroundColor: "#1a1a1a",
+                          border: "1px solid #444",
+                          borderRadius: "8px",
+                          color: "#e0e0e0",
+                          fontSize: "15px",
+                          outline: "none",
+                          colorScheme: "dark",
+                          transition: "border-color 0.2s ease",
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = "#007bff"
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = "#444"
+                        }}
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: "block", fontSize: "13px", marginBottom: "6px", color: "#999" }}>
+                        To
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.endDate}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, endDate: e.target.value }))}
+                        style={{
+                          width: "100%",
+                          padding: "14px 16px",
+                          backgroundColor: "#1a1a1a",
+                          border: "1px solid #444",
+                          borderRadius: "8px",
+                          color: "#e0e0e0",
+                          fontSize: "15px",
+                          outline: "none",
+                          colorScheme: "dark",
+                          transition: "border-color 0.2s ease",
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = "#007bff"
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = "#444"
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div>
