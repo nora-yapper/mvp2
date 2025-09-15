@@ -424,235 +424,243 @@ export default function ReportsPage() {
         notes: formData.notes,
       }
 
-    // Create comprehensive HTML content for the PDF
-    let reportContent = `
-      <html>
+    const createPDFContent = () => {
+      let content = `
+        <!DOCTYPE html>
+        <html>
         <head>
+          <meta charset="utf-8">
           <title>${reportToDownload.title}</title>
           <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
             body { 
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-              margin: 40px; 
-              color: #333; 
-              line-height: 1.6;
-              background: #fff;
+              font-family: Arial, sans-serif; 
+              font-size: 12px;
+              line-height: 1.4;
+              color: #333;
+              padding: 20px;
+              background: white;
             }
-            .header {
-              text-align: center;
-              margin-bottom: 40px;
-              padding-bottom: 20px;
+            .header { 
+              text-align: center; 
+              margin-bottom: 30px; 
+              padding-bottom: 15px;
               border-bottom: 2px solid #007bff;
             }
             h1 { 
+              font-size: 24px; 
               color: #007bff; 
-              margin-bottom: 10px; 
-              font-size: 32px;
-              font-weight: 600;
+              margin-bottom: 8px;
+              font-weight: bold;
             }
-            .meta-info {
-              color: #666;
-              font-size: 14px;
-              margin-bottom: 10px;
+            .meta { 
+              font-size: 11px; 
+              color: #666; 
+              margin-bottom: 5px;
             }
             h2 { 
+              font-size: 16px; 
               color: #333; 
-              margin-top: 40px; 
-              margin-bottom: 20px; 
-              font-size: 24px;
-              font-weight: 600;
-              border-left: 4px solid #007bff;
-              padding-left: 15px;
-            }
-            h3 { 
-              color: #555; 
-              margin-top: 30px; 
-              margin-bottom: 15px; 
-              font-size: 20px;
-              font-weight: 500;
+              margin: 25px 0 10px 0;
+              font-weight: bold;
+              border-left: 3px solid #007bff;
+              padding-left: 10px;
             }
             p { 
-              line-height: 1.8; 
-              margin-bottom: 20px; 
+              margin-bottom: 15px; 
               text-align: justify;
             }
             ul { 
-              margin-bottom: 25px; 
-              padding-left: 25px;
+              margin: 10px 0 15px 20px; 
             }
             li { 
-              margin-bottom: 10px; 
-              line-height: 1.6;
+              margin-bottom: 5px; 
             }
-            .section {
-              margin-bottom: 35px;
-              padding: 20px;
-              background: #f8f9fa;
-              border-radius: 8px;
-              border-left: 4px solid #007bff;
+            .section { 
+              margin-bottom: 20px; 
             }
-            .footer {
-              margin-top: 50px;
-              padding-top: 20px;
-              border-top: 1px solid #ddd;
-              text-align: center;
-              color: #666;
-              font-size: 12px;
+            .footer { 
+              margin-top: 30px; 
+              padding-top: 15px; 
+              border-top: 1px solid #ddd; 
+              text-align: center; 
+              font-size: 10px; 
+              color: #666; 
             }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>${reportToDownload.title}</h1>
-            <div class="meta-info">
-              ${reportToDownload.startDate && reportToDownload.endDate ? `Report Period: ${new Date(reportToDownload.startDate).toLocaleDateString()} - ${new Date(reportToDownload.endDate).toLocaleDateString()}` : ""}
-              ${(reportToDownload.startDate && reportToDownload.endDate) && reportToDownload.audience ? " • " : ""}
-              ${reportToDownload.audience ? `Audience: ${reportToDownload.audience.charAt(0).toUpperCase() + reportToDownload.audience.slice(1)}` : ""}
-            </div>
-            <div class="meta-info">Generated on ${reportToDownload.date}</div>
-          </div>
-    `
+            <h1>${reportToDownload.title}</h1>`
 
-    // Add sections based on what's included
-    if (
-      reportToDownload.content?.startupDescription ||
-      (reportToDownload.sections?.startupDescription && currentView === "generated")
-    ) {
-      reportContent += `
-        <div class="section">
-          <h2>Startup Description</h2>
-          <p>${reportToDownload.content?.startupDescription || "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."}</p>
-        </div>
-      `
-    }
+      if (reportToDownload.startDate && reportToDownload.endDate) {
+        content += `<div class="meta">Report Period: ${new Date(reportToDownload.startDate).toLocaleDateString()} - ${new Date(reportToDownload.endDate).toLocaleDateString()}</div>`
+      }
 
-    if (
-      reportToDownload.content?.progressOverview ||
-      (reportToDownload.sections?.progressOverview && currentView === "generated")
-    ) {
-      reportContent += `
-        <div class="section">
-          <h2>Progress Overview</h2>
-          <p>${reportToDownload.content?.progressOverview || "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."}</p>
-        </div>
-      `
-    }
+      if (reportToDownload.audience) {
+        content += `<div class="meta">Audience: ${reportToDownload.audience.charAt(0).toUpperCase() + reportToDownload.audience.slice(1)}</div>`
+      }
 
-    if (
-      reportToDownload.content?.tractionMilestones ||
-      (reportToDownload.sections?.tractionMilestones && currentView === "generated")
-    ) {
-      const milestones = reportToDownload.content?.tractionMilestones || [
-        "Completed major platform upgrade affecting 50,000+ users",
-        "Reduced system downtime by 65% through infrastructure improvements",
-        "Achieved 94% customer satisfaction score in latest survey",
-      ]
-      const milestonesHtml = Array.isArray(milestones)
-        ? milestones.map((item) => `<li>${item}</li>`).join("")
-        : `<li>${milestones}</li>`
+      content += `<div class="meta">Generated on ${reportToDownload.date}</div>
+          </div>`
 
-      reportContent += `
-        <div class="section">
-          <h2>Traction & Milestones</h2>
-          <ul>
-            ${milestonesHtml}
-          </ul>
-        </div>
-      `
-    }
+      // Add sections
+      if (
+        reportToDownload.content?.startupDescription ||
+        (reportToDownload.sections?.startupDescription && currentView === "generated")
+      ) {
+        content += `
+          <div class="section">
+            <h2>Startup Description</h2>
+            <p>${reportToDownload.content?.startupDescription || "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."}</p>
+          </div>`
+      }
 
-    if (
-      reportToDownload.content?.risksBottlenecks ||
-      (reportToDownload.sections?.risksBottlenecks && currentView === "generated")
-    ) {
-      reportContent += `
-        <div class="section">
-          <h2>Risks & Bottlenecks</h2>
-          <p>${reportToDownload.content?.risksBottlenecks || "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."}</p>
-        </div>
-      `
-    }
+      if (
+        reportToDownload.content?.progressOverview ||
+        (reportToDownload.sections?.progressOverview && currentView === "generated")
+      ) {
+        content += `
+          <div class="section">
+            <h2>Progress Overview</h2>
+            <p>${reportToDownload.content?.progressOverview || "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."}</p>
+          </div>`
+      }
 
-    if (
-      reportToDownload.content?.productStrategy ||
-      (reportToDownload.sections?.productStrategy && currentView === "generated")
-    ) {
-      reportContent += `
-        <div class="section">
-          <h2>Product & Strategy Snapshot</h2>
-          <p>${reportToDownload.content?.productStrategy || "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."}</p>
-        </div>
-      `
-    }
+      if (
+        reportToDownload.content?.tractionMilestones ||
+        (reportToDownload.sections?.tractionMilestones && currentView === "generated")
+      ) {
+        const milestones = reportToDownload.content?.tractionMilestones || [
+          "Completed major platform upgrade affecting 50,000+ users",
+          "Reduced system downtime by 65% through infrastructure improvements",
+          "Achieved 94% customer satisfaction score in latest survey",
+        ]
+        const milestonesHtml = Array.isArray(milestones)
+          ? milestones.map((item) => `<li>${item}</li>`).join("")
+          : `<li>${milestones}</li>`
 
-    if (
-      reportToDownload.content?.forecastPriorities ||
-      (reportToDownload.sections?.forecastPriorities && currentView === "generated")
-    ) {
-      reportContent += `
-        <div class="section">
-          <h2>Forecast & Priorities</h2>
-          <p>${reportToDownload.content?.forecastPriorities || "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."}</p>
-        </div>
-      `
-    }
+        content += `
+          <div class="section">
+            <h2>Traction & Milestones</h2>
+            <ul>${milestonesHtml}</ul>
+          </div>`
+      }
 
-    if (reportToDownload.content?.additionalNotes || reportToDownload.notes) {
-      reportContent += `
-        <div class="section">
-          <h2>Additional Notes</h2>
-          <p>${reportToDownload.content?.additionalNotes || reportToDownload.notes}</p>
-        </div>
-      `
-    }
+      if (
+        reportToDownload.content?.risksBottlenecks ||
+        (reportToDownload.sections?.risksBottlenecks && currentView === "generated")
+      ) {
+        content += `
+          <div class="section">
+            <h2>Risks & Bottlenecks</h2>
+            <p>${reportToDownload.content?.risksBottlenecks || "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."}</p>
+          </div>`
+      }
 
-    reportContent += `
+      if (
+        reportToDownload.content?.productStrategy ||
+        (reportToDownload.sections?.productStrategy && currentView === "generated")
+      ) {
+        content += `
+          <div class="section">
+            <h2>Product & Strategy Snapshot</h2>
+            <p>${reportToDownload.content?.productStrategy || "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."}</p>
+          </div>`
+      }
+
+      if (
+        reportToDownload.content?.forecastPriorities ||
+        (reportToDownload.sections?.forecastPriorities && currentView === "generated")
+      ) {
+        content += `
+          <div class="section">
+            <h2>Forecast & Priorities</h2>
+            <p>${reportToDownload.content?.forecastPriorities || "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."}</p>
+          </div>`
+      }
+
+      if (reportToDownload.content?.additionalNotes || reportToDownload.notes) {
+        content += `
+          <div class="section">
+            <h2>Additional Notes</h2>
+            <p>${reportToDownload.content?.additionalNotes || reportToDownload.notes}</p>
+          </div>`
+      }
+
+      content += `
           <div class="footer">
             <p>This report was generated using the Stakeholder Reports system on ${new Date().toLocaleDateString()}</p>
           </div>
         </body>
-      </html>
-    `
+        </html>`
 
-    const element = document.createElement("div")
-    element.innerHTML = reportContent
-    element.style.position = "absolute"
-    element.style.left = "-9999px"
-    document.body.appendChild(element)
-
-    // Use html2pdf.js to generate PDF
-    const opt = {
-      margin: 1,
-      filename: `${reportToDownload.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}-${new Date().toISOString().split("T")[0]}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+      return content
     }
 
-    // Load html2pdf.js dynamically and generate PDF
-    if (typeof window !== "undefined" && !(window as any).html2pdf) {
-      const script = document.createElement("script")
-      script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
-      script.onload = () => {
-        ;(window as any)
-          .html2pdf()
-          .set(opt)
-          .from(element)
-          .save()
-          .then(() => {
-            document.body.removeChild(element)
-          })
+    const generatePDF = () => {
+      const htmlContent = createPDFContent()
+
+      // Create a temporary element
+      const element = document.createElement("div")
+      element.innerHTML = htmlContent
+      element.style.position = "absolute"
+      element.style.left = "-9999px"
+      element.style.top = "0"
+      element.style.width = "210mm" // A4 width
+      document.body.appendChild(element)
+
+      const filename = `${reportToDownload.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}-${new Date().toISOString().split("T")[0]}.pdf`
+
+      const opt = {
+        margin: [0.5, 0.5, 0.5, 0.5],
+        filename: filename,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+        },
+        jsPDF: {
+          unit: "in",
+          format: "letter",
+          orientation: "portrait",
+        },
       }
-      document.head.appendChild(script)
-    } else {
-      ;(window as any)
-        .html2pdf()
-        .set(opt)
-        .from(element)
-        .save()
-        .then(() => {
+
+      // Load and use html2pdf
+      const loadAndGenerate = () => {
+        if ((window as any).html2pdf) {
+          ;(window as any)
+            .html2pdf()
+            .set(opt)
+            .from(element)
+            .save()
+            .then(() => {
+              document.body.removeChild(element)
+            })
+            .catch((error: any) => {
+              console.error("PDF generation error:", error)
+              document.body.removeChild(element)
+            })
+        }
+      }
+
+      if (!(window as any).html2pdf) {
+        const script = document.createElement("script")
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+        script.onload = loadAndGenerate
+        script.onerror = () => {
+          console.error("Failed to load html2pdf library")
           document.body.removeChild(element)
-        })
+        }
+        document.head.appendChild(script)
+      } else {
+        loadAndGenerate()
+      }
     }
+
+    generatePDF()
   }
 
   // Main Header Component
