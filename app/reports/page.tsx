@@ -1583,6 +1583,7 @@ ${reportToDownload.content.additionalNotes}
           <div style={{ maxWidth: "800px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
             {/* Report Overview Section */}
             <div
+              id="report-overview"
               style={{
                 backgroundColor: "#2a2a2a",
                 border: "1px solid #444",
@@ -1658,7 +1659,7 @@ ${reportToDownload.content.additionalNotes}
                           padding: "12px 16px",
                           fontSize: "14px",
                           backgroundColor: "#374151",
-                          border: `1px solid ${validationErrors.includes("startDate") ? "#ef4444" : "#4b5563"}`,
+                          border: `1px solid ${validationErrors.includes("startDate") || validationErrors.includes("dateRange") ? "#ef4444" : "#4b5563"}`,
                           borderRadius: "8px",
                           color: "#f9fafb",
                           outline: "none",
@@ -1686,7 +1687,7 @@ ${reportToDownload.content.additionalNotes}
                           padding: "12px 16px",
                           fontSize: "14px",
                           backgroundColor: "#374151",
-                          border: `1px solid ${validationErrors.includes("endDate") ? "#ef4444" : "#4b5563"}`,
+                          border: `1px solid ${validationErrors.includes("endDate") || validationErrors.includes("dateRange") ? "#ef4444" : "#4b5563"}`,
                           borderRadius: "8px",
                           color: "#f9fafb",
                           outline: "none",
