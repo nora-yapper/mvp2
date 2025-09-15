@@ -75,6 +75,11 @@ export default function ReportsPage() {
     if (!formData.startDate) errors.push("startDate")
     if (!formData.endDate) errors.push("endDate")
     if (!formData.audience) errors.push("audience")
+
+    if (formData.startDate && formData.endDate && new Date(formData.startDate) >= new Date(formData.endDate)) {
+      errors.push("dateRange")
+    }
+
     return errors
   }
 
@@ -82,12 +87,10 @@ export default function ReportsPage() {
     const errors = validateForm()
     if (errors.length > 0) {
       setValidationErrors(errors)
-      const errorMessages = []
-      if (errors.includes("title")) errorMessages.push("Report Title is required")
-      if (errors.includes("startDate")) errorMessages.push("Start Date is required")
-      if (errors.includes("endDate")) errorMessages.push("End Date is required")
-      if (errors.includes("audience")) errorMessages.push("Audience is required")
-      alert("Please fill in all required fields:\n" + errorMessages.join("\n"))
+      const reportOverview = document.getElementById("report-overview")
+      if (reportOverview) {
+        reportOverview.scrollIntoView({ behavior: "smooth", block: "start" })
+      }
       return
     }
     setValidationErrors([])
@@ -128,6 +131,8 @@ export default function ReportsPage() {
         "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter.",
       tractionMilestones: report.content?.tractionMilestones || [
         "Completed major platform upgrade affecting 50,000+ users",
+        "Reduced system downtime by 65% through infrastructure improvements",
+        "Onboarded 3 new team members with full integration success",
         "Reduced system downtime by 65% through infrastructure improvements",
         "Onboarded 3 new team members with full integration success",
         "Achieved 94% customer satisfaction score in latest survey",
