@@ -97,7 +97,7 @@ function createReportPrompt(formData: any) {
 Create a professional startup report with the following details:
 
 REPORT DETAILS:
-- Title: ${title}
+- Report Title: ${title} (NOTE: This is just the report title, not necessarily the startup name)
 - Reporting Period: ${dateRange}
 - Target Audience: ${audience}
 - Sections to include: ${enabledSections.join(", ")}
@@ -106,11 +106,16 @@ ${additionalContext}
 Generate content for each enabled section. Make the content:
 1. Professional and business-appropriate
 2. Specific to the reporting period and audience
-3. Incorporate any additional context provided by the user
+3. Incorporate any additional context provided by the user throughout ALL sections
 4. Realistic and actionable
 5. Appropriate length for each section (2-4 sentences for most, bullet points for milestones)
+6. Do NOT assume the report title is the startup name - create appropriate startup content independently
 
-IMPORTANT: If additional context is provided, analyze it and incorporate relevant insights throughout the report sections. Use the context to make the report more specific and tailored.
+IMPORTANT: 
+- If additional context is provided, analyze it and incorporate relevant insights throughout ALL report sections
+- Use the context to make the report more specific and tailored
+- The report title "${title}" is just a label for this report, not the company name
+- ${notes ? "Include meaningful additional notes based on the user context" : "Do NOT include additionalNotes in the response if no user context was provided"}
 
 Respond with ONLY valid JSON in this exact format:
 {
@@ -123,11 +128,11 @@ Respond with ONLY valid JSON in this exact format:
   ],
   "risksBottlenecks": "Analysis of current risks and bottlenecks...",
   "productStrategy": "Product strategy and roadmap insights...",
-  "forecastPriorities": "Forward-looking priorities and forecasts...",
-  "additionalNotes": "Any additional insights or notes..."
+  "forecastPriorities": "Forward-looking priorities and forecasts..."${notes ? ',\n  "additionalNotes": "Meaningful insights based on user context..."' : ""}
 }
 
 Only include fields for sections that are enabled: ${enabledSections.join(", ")}
+${notes ? "" : "Do NOT include additionalNotes field if no user context was provided."}
 `
 
   return prompt
@@ -177,7 +182,7 @@ function getFallbackContent(formData: any) {
       : "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."
   }
 
-  if (notes) {
+  if (notes && notes.trim()) {
     content.additionalNotes = `Additional context: ${notes}`
   }
 
