@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronDown, FileText, ArrowLeft, Plus, Eye, Download, Send, Edit3, Save, X } from "lucide-react"
+import { FileText, ArrowLeft, Plus, Eye, Download, Send, Edit3, Save, X } from "lucide-react"
 
 export default function ReportsPage() {
   const [currentView, setCurrentView] = useState<"history" | "form" | "generated" | "viewing" | "editing">("history")
@@ -67,7 +67,21 @@ export default function ReportsPage() {
     }))
   }
 
+  const validateForm = () => {
+    const errors = []
+    if (!formData.title.trim()) errors.push("Report Title is required")
+    if (!formData.startDate) errors.push("Start Date is required")
+    if (!formData.endDate) errors.push("End Date is required")
+    if (!formData.audience) errors.push("Audience is required")
+    return errors
+  }
+
   const generateReport = () => {
+    const errors = validateForm()
+    if (errors.length > 0) {
+      alert("Please fill in all required fields:\n" + errors.join("\n"))
+      return
+    }
     setCurrentView("generated")
   }
 
@@ -424,243 +438,188 @@ export default function ReportsPage() {
         notes: formData.notes,
       }
 
-    const createPDFContent = () => {
-      let content = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>${reportToDownload.title}</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-              font-family: Arial, sans-serif; 
-              font-size: 12px;
-              line-height: 1.4;
-              color: #333;
-              padding: 20px;
-              background: white;
+    // Create a simple text-based PDF content
+    const pdfContent = `
+REPORT: ${reportToDownload.title}
+
+REPORTING PERIOD: ${reportToDownload.startDate ? new Date(reportToDownload.startDate).toLocaleDateString() : "N/A"} - ${reportToDownload.endDate ? new Date(reportToDownload.endDate).toLocaleDateString() : "N/A"}
+
+AUDIENCE: ${reportToDownload.audience}
+
+GENERATED: ${reportToDownload.date}
+
+${
+  reportToDownload.content.startupDescription
+    ? `
+STARTUP DESCRIPTION:
+${reportToDownload.content.startupDescription}
+`
+    : ""
+}
+
+${
+  reportToDownload.content.progressOverview
+    ? `
+PROGRESS OVERVIEW:
+${reportToDownload.content.progressOverview}
+`
+    : ""
+}
+
+${
+  reportToDownload.content.tractionMilestones
+    ? `
+TRACTION & MILESTONES:
+${reportToDownload.content.tractionMilestones.map((milestone: string, index: number) => `${index + 1}. ${milestone}`).join("\n")}
+`
+    : ""
+}
+
+${
+  reportToDownload.content.risksBottlenecks
+    ? `
+RISKS & BOTTLENECKS:
+${reportToDownload.content.risksBottlenecks}
+`
+    : ""
+}
+
+${
+  reportToDownload.content.productStrategy
+    ? `
+PRODUCT STRATEGY:
+${reportToDownload.content.productStrategy}
+`
+    : ""
+}
+
+${
+  reportToDownload.content.forecastPriorities
+    ? `
+FORECAST & PRIORITIES:
+${reportToDownload.content.forecastPriorities}
+`
+    : ""
+}
+
+${
+  reportToDownload.content.additionalNotes
+    ? `
+ADDITIONAL NOTES:
+${reportToDownload.content.additionalNotes}
+`
+    : ""
+}
+`.trim()
+
+    // Use jsPDF for proper PDF generation
+    try {
+      // Import jsPDF dynamically
+      import("jspdf")
+        .then((jsPDF) => {
+          const { jsPDF: PDF } = jsPDF
+          const doc = new PDF()
+
+          // Set font and add content
+          doc.setFontSize(16)
+          doc.text(reportToDownload.title, 20, 20)
+
+          doc.setFontSize(12)
+          const dateRange = `${reportToDownload.startDate ? new Date(reportToDownload.startDate).toLocaleDateString() : "N/A"} - ${reportToDownload.endDate ? new Date(reportToDownload.endDate).toLocaleDateString() : "N/A"}`
+          doc.text(`Reporting Period: ${dateRange}`, 20, 35)
+          doc.text(`Audience: ${reportToDownload.audience}`, 20, 45)
+          doc.text(`Generated: ${reportToDownload.date}`, 20, 55)
+
+          // Add content sections
+          let yPosition = 75
+          const lineHeight = 7
+          const pageHeight = doc.internal.pageSize.height
+          const margin = 20
+
+          const addSection = (title: string, content: string) => {
+            if (yPosition > pageHeight - 40) {
+              doc.addPage()
+              yPosition = 20
             }
-            .header { 
-              text-align: center; 
-              margin-bottom: 30px; 
-              padding-bottom: 15px;
-              border-bottom: 2px solid #007bff;
-            }
-            h1 { 
-              font-size: 24px; 
-              color: #007bff; 
-              margin-bottom: 8px;
-              font-weight: bold;
-            }
-            .meta { 
-              font-size: 11px; 
-              color: #666; 
-              margin-bottom: 5px;
-            }
-            h2 { 
-              font-size: 16px; 
-              color: #333; 
-              margin: 25px 0 10px 0;
-              font-weight: bold;
-              border-left: 3px solid #007bff;
-              padding-left: 10px;
-            }
-            p { 
-              margin-bottom: 15px; 
-              text-align: justify;
-            }
-            ul { 
-              margin: 10px 0 15px 20px; 
-            }
-            li { 
-              margin-bottom: 5px; 
-            }
-            .section { 
-              margin-bottom: 20px; 
-            }
-            .footer { 
-              margin-top: 30px; 
-              padding-top: 15px; 
-              border-top: 1px solid #ddd; 
-              text-align: center; 
-              font-size: 10px; 
-              color: #666; 
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>${reportToDownload.title}</h1>`
 
-      if (reportToDownload.startDate && reportToDownload.endDate) {
-        content += `<div class="meta">Report Period: ${new Date(reportToDownload.startDate).toLocaleDateString()} - ${new Date(reportToDownload.endDate).toLocaleDateString()}</div>`
-      }
+            doc.setFontSize(14)
+            doc.text(title, margin, yPosition)
+            yPosition += lineHeight + 3
 
-      if (reportToDownload.audience) {
-        content += `<div class="meta">Audience: ${reportToDownload.audience.charAt(0).toUpperCase() + reportToDownload.audience.slice(1)}</div>`
-      }
-
-      content += `<div class="meta">Generated on ${reportToDownload.date}</div>
-          </div>`
-
-      // Add sections
-      if (
-        reportToDownload.content?.startupDescription ||
-        (reportToDownload.sections?.startupDescription && currentView === "generated")
-      ) {
-        content += `
-          <div class="section">
-            <h2>Startup Description</h2>
-            <p>${reportToDownload.content?.startupDescription || "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."}</p>
-          </div>`
-      }
-
-      if (
-        reportToDownload.content?.progressOverview ||
-        (reportToDownload.sections?.progressOverview && currentView === "generated")
-      ) {
-        content += `
-          <div class="section">
-            <h2>Progress Overview</h2>
-            <p>${reportToDownload.content?.progressOverview || "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."}</p>
-          </div>`
-      }
-
-      if (
-        reportToDownload.content?.tractionMilestones ||
-        (reportToDownload.sections?.tractionMilestones && currentView === "generated")
-      ) {
-        const milestones = reportToDownload.content?.tractionMilestones || [
-          "Completed major platform upgrade affecting 50,000+ users",
-          "Reduced system downtime by 65% through infrastructure improvements",
-          "Achieved 94% customer satisfaction score in latest survey",
-        ]
-        const milestonesHtml = Array.isArray(milestones)
-          ? milestones.map((item) => `<li>${item}</li>`).join("")
-          : `<li>${milestones}</li>`
-
-        content += `
-          <div class="section">
-            <h2>Traction & Milestones</h2>
-            <ul>${milestonesHtml}</ul>
-          </div>`
-      }
-
-      if (
-        reportToDownload.content?.risksBottlenecks ||
-        (reportToDownload.sections?.risksBottlenecks && currentView === "generated")
-      ) {
-        content += `
-          <div class="section">
-            <h2>Risks & Bottlenecks</h2>
-            <p>${reportToDownload.content?.risksBottlenecks || "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."}</p>
-          </div>`
-      }
-
-      if (
-        reportToDownload.content?.productStrategy ||
-        (reportToDownload.sections?.productStrategy && currentView === "generated")
-      ) {
-        content += `
-          <div class="section">
-            <h2>Product & Strategy Snapshot</h2>
-            <p>${reportToDownload.content?.productStrategy || "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."}</p>
-          </div>`
-      }
-
-      if (
-        reportToDownload.content?.forecastPriorities ||
-        (reportToDownload.sections?.forecastPriorities && currentView === "generated")
-      ) {
-        content += `
-          <div class="section">
-            <h2>Forecast & Priorities</h2>
-            <p>${reportToDownload.content?.forecastPriorities || "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."}</p>
-          </div>`
-      }
-
-      if (reportToDownload.content?.additionalNotes || reportToDownload.notes) {
-        content += `
-          <div class="section">
-            <h2>Additional Notes</h2>
-            <p>${reportToDownload.content?.additionalNotes || reportToDownload.notes}</p>
-          </div>`
-      }
-
-      content += `
-          <div class="footer">
-            <p>This report was generated using the Stakeholder Reports system on ${new Date().toLocaleDateString()}</p>
-          </div>
-        </body>
-        </html>`
-
-      return content
-    }
-
-    const generatePDF = () => {
-      const htmlContent = createPDFContent()
-
-      // Create a temporary element
-      const element = document.createElement("div")
-      element.innerHTML = htmlContent
-      element.style.position = "absolute"
-      element.style.left = "-9999px"
-      element.style.top = "0"
-      element.style.width = "210mm" // A4 width
-      document.body.appendChild(element)
-
-      const filename = `${reportToDownload.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}-${new Date().toISOString().split("T")[0]}.pdf`
-
-      const opt = {
-        margin: [0.5, 0.5, 0.5, 0.5],
-        filename: filename,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-        },
-        jsPDF: {
-          unit: "in",
-          format: "letter",
-          orientation: "portrait",
-        },
-      }
-
-      // Load and use html2pdf
-      const loadAndGenerate = () => {
-        if ((window as any).html2pdf) {
-          ;(window as any)
-            .html2pdf()
-            .set(opt)
-            .from(element)
-            .save()
-            .then(() => {
-              document.body.removeChild(element)
+            doc.setFontSize(10)
+            const lines = doc.splitTextToSize(content, doc.internal.pageSize.width - 2 * margin)
+            lines.forEach((line: string) => {
+              if (yPosition > pageHeight - 20) {
+                doc.addPage()
+                yPosition = 20
+              }
+              doc.text(line, margin, yPosition)
+              yPosition += lineHeight
             })
-            .catch((error: any) => {
-              console.error("PDF generation error:", error)
-              document.body.removeChild(element)
-            })
-        }
-      }
+            yPosition += 10
+          }
 
-      if (!(window as any).html2pdf) {
-        const script = document.createElement("script")
-        script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
-        script.onload = loadAndGenerate
-        script.onerror = () => {
-          console.error("Failed to load html2pdf library")
-          document.body.removeChild(element)
-        }
-        document.head.appendChild(script)
-      } else {
-        loadAndGenerate()
-      }
+          if (reportToDownload.content.startupDescription) {
+            addSection("STARTUP DESCRIPTION", reportToDownload.content.startupDescription)
+          }
+
+          if (reportToDownload.content.progressOverview) {
+            addSection("PROGRESS OVERVIEW", reportToDownload.content.progressOverview)
+          }
+
+          if (reportToDownload.content.tractionMilestones) {
+            const milestonesText = reportToDownload.content.tractionMilestones
+              .map((milestone: string, index: number) => `${index + 1}. ${milestone}`)
+              .join("\n")
+            addSection("TRACTION & MILESTONES", milestonesText)
+          }
+
+          if (reportToDownload.content.risksBottlenecks) {
+            addSection("RISKS & BOTTLENECKS", reportToDownload.content.risksBottlenecks)
+          }
+
+          if (reportToDownload.content.productStrategy) {
+            addSection("PRODUCT STRATEGY", reportToDownload.content.productStrategy)
+          }
+
+          if (reportToDownload.content.forecastPriorities) {
+            addSection("FORECAST & PRIORITIES", reportToDownload.content.forecastPriorities)
+          }
+
+          if (reportToDownload.content.additionalNotes) {
+            addSection("ADDITIONAL NOTES", reportToDownload.content.additionalNotes)
+          }
+
+          // Save the PDF
+          const fileName = `${reportToDownload.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_report.pdf`
+          doc.save(fileName)
+        })
+        .catch((error) => {
+          console.error("Error loading jsPDF:", error)
+          // Fallback: create a text file
+          const blob = new Blob([pdfContent], { type: "text/plain" })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement("a")
+          a.href = url
+          a.download = `${reportToDownload.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_report.txt`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+        })
+    } catch (error) {
+      console.error("Error generating PDF:", error)
+      // Fallback: create a text file
+      const blob = new Blob([pdfContent], { type: "text/plain" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `${reportToDownload.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_report.txt`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
     }
-
-    generatePDF()
   }
 
   // Main Header Component
@@ -1626,9 +1585,17 @@ export default function ReportsPage() {
               </h2>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                <div>
-                  <label style={{ display: "block", fontSize: "15px", marginBottom: "8px", color: "#e0e0e0" }}>
-                    Report Title
+                <div style={{ marginBottom: "24px" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      color: "#e5e7eb",
+                    }}
+                  >
+                    Report Title <span style={{ color: "#ef4444" }}>*</span>
                   </label>
                   <input
                     type="text"
@@ -1637,31 +1604,39 @@ export default function ReportsPage() {
                     onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
                     style={{
                       width: "100%",
-                      padding: "14px 16px",
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid #444",
+                      padding: "12px 16px",
+                      fontSize: "14px",
+                      backgroundColor: "#374151",
+                      border: `1px solid ${!formData.title.trim() ? "#ef4444" : "#4b5563"}`,
                       borderRadius: "8px",
-                      color: "#e0e0e0",
-                      fontSize: "15px",
+                      color: "#f9fafb",
                       outline: "none",
-                      transition: "border-color 0.2s ease",
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = "#007bff"
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = "#444"
                     }}
                   />
                 </div>
 
-                <div>
-                  <label style={{ display: "block", fontSize: "15px", marginBottom: "8px", color: "#e0e0e0" }}>
-                    Reporting Period
+                <div style={{ marginBottom: "24px" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      color: "#e5e7eb",
+                    }}
+                  >
+                    Reporting Period <span style={{ color: "#ef4444" }}>*</span>
                   </label>
                   <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                     <div style={{ flex: 1 }}>
-                      <label style={{ display: "block", fontSize: "13px", marginBottom: "6px", color: "#999" }}>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "4px",
+                          fontSize: "12px",
+                          color: "#9ca3af",
+                        }}
+                      >
                         From
                       </label>
                       <input
@@ -1670,26 +1645,26 @@ export default function ReportsPage() {
                         onChange={(e) => setFormData((prev) => ({ ...prev, startDate: e.target.value }))}
                         style={{
                           width: "100%",
-                          padding: "14px 16px",
-                          backgroundColor: "#1a1a1a",
-                          border: "1px solid #444",
+                          padding: "12px 16px",
+                          fontSize: "14px",
+                          backgroundColor: "#374151",
+                          border: `1px solid ${!formData.startDate ? "#ef4444" : "#4b5563"}`,
                           borderRadius: "8px",
-                          color: "#e0e0e0",
-                          fontSize: "15px",
+                          color: "#f9fafb",
                           outline: "none",
-                          colorScheme: "dark",
-                          transition: "border-color 0.2s ease",
-                        }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = "#007bff"
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = "#444"
+                          cursor: "pointer",
                         }}
                       />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <label style={{ display: "block", fontSize: "13px", marginBottom: "6px", color: "#999" }}>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "4px",
+                          fontSize: "12px",
+                          color: "#9ca3af",
+                        }}
+                      >
                         To
                       </label>
                       <input
@@ -1698,72 +1673,54 @@ export default function ReportsPage() {
                         onChange={(e) => setFormData((prev) => ({ ...prev, endDate: e.target.value }))}
                         style={{
                           width: "100%",
-                          padding: "14px 16px",
-                          backgroundColor: "#1a1a1a",
-                          border: "1px solid #444",
+                          padding: "12px 16px",
+                          fontSize: "14px",
+                          backgroundColor: "#374151",
+                          border: `1px solid ${!formData.endDate ? "#ef4444" : "#4b5563"}`,
                           borderRadius: "8px",
-                          color: "#e0e0e0",
-                          fontSize: "15px",
+                          color: "#f9fafb",
                           outline: "none",
-                          colorScheme: "dark",
-                          transition: "border-color 0.2s ease",
-                        }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = "#007bff"
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = "#444"
+                          cursor: "pointer",
                         }}
                       />
                     </div>
                   </div>
                 </div>
 
-                <div>
-                  <label style={{ display: "block", fontSize: "15px", marginBottom: "8px", color: "#e0e0e0" }}>
-                    Audience
+                <div style={{ marginBottom: "24px" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      color: "#e5e7eb",
+                    }}
+                  >
+                    Audience <span style={{ color: "#ef4444" }}>*</span>
                   </label>
-                  <div style={{ position: "relative" }}>
-                    <select
-                      value={formData.audience}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, audience: e.target.value }))}
-                      style={{
-                        width: "100%",
-                        padding: "14px 16px",
-                        backgroundColor: "#1a1a1a",
-                        border: "1px solid #444",
-                        borderRadius: "8px",
-                        color: "#e0e0e0",
-                        fontSize: "15px",
-                        outline: "none",
-                        appearance: "none",
-                        transition: "border-color 0.2s ease",
-                      }}
-                      onFocus={(e) => {
-                        e.currentTarget.style.borderColor = "#007bff"
-                      }}
-                      onBlur={(e) => {
-                        e.currentTarget.style.borderColor = "#444"
-                      }}
-                    >
-                      <option value="">Select audience</option>
-                      <option value="investors">Investors</option>
-                      <option value="mentors">Mentors</option>
-                      <option value="incubators">Incubators</option>
-                      <option value="general">General</option>
-                    </select>
-                    <ChevronDown
-                      size={18}
-                      style={{
-                        position: "absolute",
-                        right: "16px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        color: "#999",
-                        pointerEvents: "none",
-                      }}
-                    />
-                  </div>
+                  <select
+                    value={formData.audience}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, audience: e.target.value }))}
+                    style={{
+                      width: "100%",
+                      padding: "12px 16px",
+                      fontSize: "14px",
+                      backgroundColor: "#374151",
+                      border: `1px solid ${!formData.audience ? "#ef4444" : "#4b5563"}`,
+                      borderRadius: "8px",
+                      color: "#f9fafb",
+                      outline: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <option value="">Select audience</option>
+                    <option value="investors">Investors</option>
+                    <option value="board">Board Members</option>
+                    <option value="team">Team</option>
+                    <option value="advisors">Advisors</option>
+                    <option value="stakeholders">Stakeholders</option>
+                  </select>
                 </div>
               </div>
             </div>
