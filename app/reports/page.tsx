@@ -1446,6 +1446,7 @@ ${reportToDownload.content.additionalNotes}
                     e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,123,255,0.3)"
                   }}
                   onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#007bff"
                     e.currentTarget.style.transform = "translateY(0px)"
                     e.currentTarget.style.boxShadow = "none"
                   }}
@@ -1727,10 +1728,10 @@ ${reportToDownload.content.additionalNotes}
                   >
                     <option value="">Select audience</option>
                     <option value="investors">Investors</option>
-                    <option value="board">Board Members</option>
-                    <option value="team">Team</option>
-                    <option value="advisors">Advisors</option>
-                    <option value="stakeholders">Stakeholders</option>
+                    <option value="mentors">Mentors</option>
+                    <option value="incubators">Incubators</option>
+                    <option value="general">General Audience</option>
+                    <option value="internal">Internal</option>
                   </select>
                 </div>
               </div>
