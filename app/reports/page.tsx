@@ -1918,8 +1918,8 @@ ${reportToDownload.content.additionalNotes}
                     Startup Description
                   </h3>
                   <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
-                    Our startup is focused on delivering innovative solutions that address key market challenges. We
-                    have built a strong foundation with a clear value proposition and growing market traction.
+                    {generatedContent?.startupDescription ||
+                      "Our startup is focused on delivering innovative solutions that address key market challenges. We have built a strong foundation with a clear value proposition and growing market traction."}
                   </p>
                 </>
               )}
@@ -1930,9 +1930,8 @@ ${reportToDownload.content.additionalNotes}
                     Progress Overview
                   </h3>
                   <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
-                    This quarter we have successfully delivered 87% of our planned objectives while maintaining high
-                    quality standards and team satisfaction. Our development velocity has increased by 40% compared to
-                    the previous quarter.
+                    {generatedContent?.progressOverview ||
+                      "This quarter we have successfully delivered 87% of our planned objectives while maintaining high quality standards and team satisfaction. Our development velocity has increased by 40% compared to the previous quarter."}
                   </p>
                 </>
               )}
@@ -1951,12 +1950,18 @@ ${reportToDownload.content.additionalNotes}
                       paddingLeft: "20px",
                     }}
                   >
-                    <li style={{ marginBottom: "8px" }}>Completed major platform upgrade affecting 50,000+ users</li>
-                    <li style={{ marginBottom: "8px" }}>
-                      Reduced system downtime by 65% through infrastructure improvements
-                    </li>
-                    <li style={{ marginBottom: "8px" }}>Onboarded 3 new team members with full integration success</li>
-                    <li style={{ marginBottom: "8px" }}>Achieved 94% customer satisfaction score in latest survey</li>
+                    {(
+                      generatedContent?.tractionMilestones || [
+                        "Completed major platform upgrade affecting 50,000+ users",
+                        "Reduced system downtime by 65% through infrastructure improvements",
+                        "Onboarded 3 new team members with full integration success",
+                        "Achieved 94% customer satisfaction score in latest survey",
+                      ]
+                    ).map((milestone: string, index: number) => (
+                      <li key={index} style={{ marginBottom: "8px" }}>
+                        {milestone}
+                      </li>
+                    ))}
                   </ul>
                 </>
               )}
@@ -1967,9 +1972,8 @@ ${reportToDownload.content.additionalNotes}
                     Risks & Bottlenecks
                   </h3>
                   <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
-                    While progress has been strong, we face ongoing challenges in scaling our operations and maintaining
-                    quality as we grow. Resource allocation and team coordination remain key focus areas that require
-                    immediate attention.
+                    {generatedContent?.risksBottlenecks ||
+                      "While progress has been strong, we face ongoing challenges in scaling our operations and maintaining quality as we grow. Resource allocation and team coordination remain key focus areas that require immediate attention."}
                   </p>
                 </>
               )}
@@ -1980,8 +1984,8 @@ ${reportToDownload.content.additionalNotes}
                     Product & Strategy Snapshot
                   </h3>
                   <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
-                    Our product roadmap is aligned with market demands and user feedback. We've prioritized features
-                    that drive user engagement and retention, with a focus on scalability and performance optimization.
+                    {generatedContent?.productStrategy ||
+                      "Our product roadmap is aligned with market demands and user feedback. We've prioritized features that drive user engagement and retention, with a focus on scalability and performance optimization."}
                   </p>
                 </>
               )}
@@ -1992,20 +1996,19 @@ ${reportToDownload.content.additionalNotes}
                     Forecast & Priorities
                   </h3>
                   <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
-                    Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships.
-                    Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our
-                    next growth phase.
+                    {generatedContent?.forecastPriorities ||
+                      "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."}
                   </p>
                 </>
               )}
 
-              {formData.notes && (
+              {(generatedContent?.additionalNotes || formData.notes) && (
                 <>
                   <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
                     Additional Notes
                   </h3>
                   <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
-                    {formData.notes}
+                    {generatedContent?.additionalNotes || formData.notes}
                   </p>
                 </>
               )}
