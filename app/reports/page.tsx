@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FileText, ArrowLeft, Plus, Eye, Download, Send, Edit3, Save, X, Trash2 } from "lucide-react"
+import { FileText, ArrowLeft, Plus, Eye, Download, Send, Edit3, Trash2 } from "lucide-react"
 
 export default function ReportsPage() {
   const [currentView, setCurrentView] = useState<"history" | "form" | "generated" | "viewing" | "editing">("history")
@@ -733,392 +733,42 @@ ${reportToDownload.content.additionalNotes}
         <HamburgerMenu />
 
         <div style={{ padding: "100px 20px 40px", maxWidth: "1000px", margin: "0 auto" }}>
-          <div style={{ marginBottom: "40px" }}>
-            <button
-              onClick={cancelEdit}
+          <div style={{ textAlign: "center", marginBottom: "40px" }}>
+            <input
+              type="text"
+              value={editingContent.title}
+              onChange={(e) => setEditingContent((prev) => ({ ...prev, title: e.target.value }))}
               style={{
-                padding: "12px 20px",
-                fontSize: "15px",
-                backgroundColor: "#2a2a2a",
-                color: "#e0e0e0",
-                border: "1px solid #444",
-                cursor: "pointer",
-                borderRadius: "8px",
-                fontWeight: "500",
+                fontSize: "36px",
+                fontWeight: "400",
+                marginBottom: "16px",
                 letterSpacing: "0.02em",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                marginBottom: "30px",
+                color: "#ffffff",
+                backgroundColor: "transparent",
+                border: "2px solid #444",
+                borderRadius: "8px",
+                padding: "12px 16px",
+                textAlign: "center",
+                width: "100%",
+                maxWidth: "600px",
+                outline: "none",
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#3a3a3a"
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#007bff"
               }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#2a2a2a"
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "#444"
               }}
-            >
-              <X size={16} />
-              Cancel Edit
-            </button>
-
-            <div style={{ textAlign: "center", marginBottom: "40px" }}>
-              <input
-                type="text"
-                value={editingContent.title}
-                onChange={(e) => setEditingContent((prev) => ({ ...prev, title: e.target.value }))}
-                style={{
-                  fontSize: "36px",
-                  fontWeight: "400",
-                  marginBottom: "16px",
-                  letterSpacing: "0.02em",
-                  color: "#ffffff",
-                  backgroundColor: "transparent",
-                  border: "2px solid #444",
-                  borderRadius: "8px",
-                  padding: "12px 16px",
-                  textAlign: "center",
-                  width: "100%",
-                  maxWidth: "600px",
-                  outline: "none",
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "#007bff"
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "#444"
-                }}
-              />
-              <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginBottom: "12px" }}>
-                {viewingReport.period && (
-                  <span style={{ fontSize: "16px", color: "#999" }}>{viewingReport.period}</span>
-                )}
-                {viewingReport.audience && (
-                  <span style={{ fontSize: "16px", color: "#999" }}>
-                    {viewingReport.audience.charAt(0).toUpperCase() + viewingReport.audience.slice(1)}
-                  </span>
-                )}
-              </div>
-              <p style={{ fontSize: "14px", color: "#666" }}>Generated on {viewingReport.date}</p>
+            />
+            <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginBottom: "12px" }}>
+              {viewingReport.period && <span style={{ fontSize: "16px", color: "#999" }}>{viewingReport.period}</span>}
+              {viewingReport.audience && (
+                <span style={{ fontSize: "16px", color: "#999" }}>
+                  {viewingReport.audience.charAt(0).toUpperCase() + viewingReport.audience.slice(1)}
+                </span>
+              )}
             </div>
-          </div>
-
-          {/* Editable Report Content */}
-          <div
-            style={{
-              backgroundColor: "#2a2a2a",
-              border: "1px solid #444",
-              borderRadius: "16px",
-              padding: "40px",
-              marginBottom: "30px",
-            }}
-          >
-            {viewingReport.sections?.startupDescription && (
-              <div style={{ marginBottom: "40px" }}>
-                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
-                  Startup Description
-                </h3>
-                <textarea
-                  value={editingContent.startupDescription}
-                  onChange={(e) => setEditingContent((prev) => ({ ...prev, startupDescription: e.target.value }))}
-                  style={{
-                    width: "100%",
-                    minHeight: "120px",
-                    padding: "16px",
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #444",
-                    borderRadius: "8px",
-                    color: "#e0e0e0",
-                    fontSize: "16px",
-                    lineHeight: "1.7",
-                    fontFamily: "inherit",
-                    resize: "vertical",
-                    outline: "none",
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#007bff"
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "#444"
-                  }}
-                />
-              </div>
-            )}
-
-            {viewingReport.sections?.progressOverview && (
-              <div style={{ marginBottom: "40px" }}>
-                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
-                  Progress Overview
-                </h3>
-                <textarea
-                  value={editingContent.progressOverview}
-                  onChange={(e) => setEditingContent((prev) => ({ ...prev, progressOverview: e.target.value }))}
-                  style={{
-                    width: "100%",
-                    minHeight: "120px",
-                    padding: "16px",
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #444",
-                    borderRadius: "8px",
-                    color: "#e0e0e0",
-                    fontSize: "16px",
-                    lineHeight: "1.7",
-                    fontFamily: "inherit",
-                    resize: "vertical",
-                    outline: "none",
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#007bff"
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "#444"
-                  }}
-                />
-              </div>
-            )}
-
-            {viewingReport.sections?.tractionMilestones && (
-              <div style={{ marginBottom: "40px" }}>
-                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
-                  Traction & Milestones
-                </h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {editingContent.tractionMilestones?.map((milestone: string, index: number) => (
-                    <div key={index} style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                      <span style={{ color: "#999", fontSize: "14px", minWidth: "20px" }}>•</span>
-                      <input
-                        type="text"
-                        value={milestone}
-                        onChange={(e) => {
-                          const newMilestones = [...editingContent.tractionMilestones]
-                          newMilestones[index] = e.target.value
-                          setEditingContent((prev) => ({ ...prev, tractionMilestones: newMilestones }))
-                        }}
-                        style={{
-                          flex: 1,
-                          padding: "12px 16px",
-                          backgroundColor: "#1a1a1a",
-                          border: "1px solid #444",
-                          borderRadius: "6px",
-                          color: "#e0e0e0",
-                          fontSize: "16px",
-                          outline: "none",
-                        }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = "#007bff"
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = "#444"
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {viewingReport.sections?.risksBottlenecks && (
-              <div style={{ marginBottom: "40px" }}>
-                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
-                  Risks & Bottlenecks
-                </h3>
-                <textarea
-                  value={editingContent.risksBottlenecks}
-                  onChange={(e) => setEditingContent((prev) => ({ ...prev, risksBottlenecks: e.target.value }))}
-                  style={{
-                    width: "100%",
-                    minHeight: "120px",
-                    padding: "16px",
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #444",
-                    borderRadius: "8px",
-                    color: "#e0e0e0",
-                    fontSize: "16px",
-                    lineHeight: "1.7",
-                    fontFamily: "inherit",
-                    resize: "vertical",
-                    outline: "none",
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#007bff"
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "#444"
-                  }}
-                />
-              </div>
-            )}
-
-            {viewingReport.sections?.productStrategy && (
-              <div style={{ marginBottom: "40px" }}>
-                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
-                  Product & Strategy Snapshot
-                </h3>
-                <textarea
-                  value={editingContent.productStrategy}
-                  onChange={(e) => setEditingContent((prev) => ({ ...prev, productStrategy: e.target.value }))}
-                  style={{
-                    width: "100%",
-                    minHeight: "120px",
-                    padding: "16px",
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #444",
-                    borderRadius: "8px",
-                    color: "#e0e0e0",
-                    fontSize: "16px",
-                    lineHeight: "1.7",
-                    fontFamily: "inherit",
-                    resize: "vertical",
-                    outline: "none",
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#007bff"
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "#444"
-                  }}
-                />
-              </div>
-            )}
-
-            {viewingReport.sections?.forecastPriorities && (
-              <div style={{ marginBottom: "40px" }}>
-                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
-                  Forecast & Priorities
-                </h3>
-                <textarea
-                  value={editingContent.forecastPriorities}
-                  onChange={(e) => setEditingContent((prev) => ({ ...prev, forecastPriorities: e.target.value }))}
-                  style={{
-                    width: "100%",
-                    minHeight: "120px",
-                    padding: "16px",
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #444",
-                    borderRadius: "8px",
-                    color: "#e0e0e0",
-                    fontSize: "16px",
-                    lineHeight: "1.7",
-                    fontFamily: "inherit",
-                    resize: "vertical",
-                    outline: "none",
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#007bff"
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "#444"
-                  }}
-                />
-              </div>
-            )}
-
-            {(viewingReport.notes || editingContent.additionalNotes) && (
-              <div style={{ marginBottom: "40px" }}>
-                <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
-                  Additional Notes
-                </h3>
-                <textarea
-                  value={editingContent.additionalNotes}
-                  onChange={(e) => setEditingContent((prev) => ({ ...prev, additionalNotes: e.target.value }))}
-                  style={{
-                    width: "100%",
-                    minHeight: "120px",
-                    padding: "16px",
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #444",
-                    borderRadius: "8px",
-                    color: "#e0e0e0",
-                    fontSize: "16px",
-                    lineHeight: "1.7",
-                    fontFamily: "inherit",
-                    resize: "vertical",
-                    outline: "none",
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#007bff"
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "#444"
-                  }}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div
-            style={{
-              display: "flex",
-              gap: "16px",
-              justifyContent: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <button
-              onClick={saveEditedReport}
-              style={{
-                padding: "16px 32px",
-                fontSize: "16px",
-                backgroundColor: "#28a745",
-                color: "#fff",
-                border: "none",
-                cursor: "pointer",
-                borderRadius: "8px",
-                fontWeight: "500",
-                letterSpacing: "0.02em",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#1e7e34"
-                e.currentTarget.style.transform = "translateY(-2px)"
-                e.currentTarget.style.boxShadow = "0 4px 12px rgba(40,167,69,0.3)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#28a745"
-                e.currentTarget.style.transform = "translateY(0px)"
-                e.currentTarget.style.boxShadow = "none"
-              }}
-            >
-              <Save size={16} />
-              Save Changes
-            </button>
-
-            <button
-              onClick={cancelEdit}
-              style={{
-                padding: "16px 32px",
-                fontSize: "16px",
-                backgroundColor: "#6c757d",
-                color: "#fff",
-                border: "none",
-                cursor: "pointer",
-                borderRadius: "8px",
-                fontWeight: "500",
-                letterSpacing: "0.02em",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#545b62"
-                e.currentTarget.style.transform = "translateY(-2px)"
-                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#6c757d"
-                e.currentTarget.style.transform = "translateY(0px)"
-                e.currentTarget.style.boxShadow = "none"
-              }}
-            >
-              <X size={16} />
-              Cancel
-            </button>
+            <p style={{ fontSize: "14px", color: "#666" }}>Generated on {viewingReport.date}</p>
           </div>
         </div>
       </div>
