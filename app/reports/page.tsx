@@ -368,7 +368,6 @@ export default function ReportsPage() {
           ? [
               "Completed major platform upgrade affecting 50,000+ users",
               "Reduced system downtime by 65% through infrastructure improvements",
-              "Onboarded 3 new team members with full integration success",
               "Achieved 94% customer satisfaction score in latest survey",
             ]
           : undefined,
@@ -392,7 +391,8 @@ export default function ReportsPage() {
     const reportToDownload = report ||
       viewingReport || {
         title: formData.title || "Generated Report",
-        period: formData.period,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
         audience: formData.audience,
         date: new Date().toLocaleDateString(),
         sections: formData.sections,
@@ -544,14 +544,17 @@ export default function ReportsPage() {
       const milestones = reportToDownload.content?.tractionMilestones || [
         "Completed major platform upgrade affecting 50,000+ users",
         "Reduced system downtime by 65% through infrastructure improvements",
-        "Onboarded 3 new team members with full integration success",
         "Achieved 94% customer satisfaction score in latest survey",
       ]
+      const milestonesHtml = Array.isArray(milestones)
+        ? milestones.map((item) => `<li>${item}</li>`).join("")
+        : `<li>${milestones}</li>`
+
       reportContent += `
         <div class="section">
           <h2>Traction & Milestones</h2>
           <ul>
-            ${Array.isArray(milestones) ? milestones.map((milestone) => `<li>${milestone}</li>`).join("") : `<li>${milestones}</li>`}
+            ${milestonesHtml}
           </ul>
         </div>
       `
@@ -610,20 +613,46 @@ export default function ReportsPage() {
       </html>
     `
 
-    // Create a blob with the HTML content
-    const blob = new Blob([reportContent], { type: "text/html" })
-    const url = URL.createObjectURL(blob)
+    const element = document.createElement("div")
+    element.innerHTML = reportContent
+    element.style.position = "absolute"
+    element.style.left = "-9999px"
+    document.body.appendChild(element)
 
-    // Create a temporary link and trigger download
-    const link = document.createElement("a")
-    link.href = url
-    link.download = `${reportToDownload.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}-${new Date().toISOString().split("T")[0]}.html`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    // Use html2pdf.js to generate PDF
+    const opt = {
+      margin: 1,
+      filename: `${reportToDownload.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}-${new Date().toISOString().split("T")[0]}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+    }
 
-    // Clean up the URL
-    URL.revokeObjectURL(url)
+    // Load html2pdf.js dynamically and generate PDF
+    if (typeof window !== "undefined" && !(window as any).html2pdf) {
+      const script = document.createElement("script")
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+      script.onload = () => {
+        ;(window as any)
+          .html2pdf()
+          .set(opt)
+          .from(element)
+          .save()
+          .then(() => {
+            document.body.removeChild(element)
+          })
+      }
+      document.head.appendChild(script)
+    } else {
+      ;(window as any)
+        .html2pdf()
+        .set(opt)
+        .from(element)
+        .save()
+        .then(() => {
+          document.body.removeChild(element)
+        })
+    }
   }
 
   // Main Header Component
