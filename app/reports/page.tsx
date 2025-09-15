@@ -76,7 +76,7 @@ export default function ReportsPage() {
     if (!formData.endDate) errors.push("endDate")
     if (!formData.audience) errors.push("audience")
 
-    if (formData.startDate && formData.endDate && new Date(formData.startDate) >= new Date(formData.endDate)) {
+    if (formData.startDate && formData.endDate && new Date(formData.startDate) > new Date(formData.endDate)) {
       errors.push("dateRange")
     }
 
