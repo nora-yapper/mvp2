@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { FileText, ArrowLeft, Plus, Eye, Download, Send, Edit3, Save, X, Trash2 } from "lucide-react"
 
-export default function ReportsPage() {
+export default function Reports() {
   const [currentView, setCurrentView] = useState<"history" | "form" | "generated" | "viewing" | "editing">("history")
   const [viewingReport, setViewingReport] = useState<any>(null)
   const [editingContent, setEditingContent] = useState<any>({})
@@ -68,6 +68,8 @@ export default function ReportsPage() {
   }
 
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [generatedContent, setGeneratedContent] = useState<any>(null)
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const validateForm = () => {
     const errors = []
@@ -117,6 +119,8 @@ export default function ReportsPage() {
     }
     setValidationErrors([])
 
+    setIsGenerating(true)
+
     console.log("[v0] Form validation passed, calling API")
     // Generate AI content
     try {
@@ -146,6 +150,8 @@ export default function ReportsPage() {
       console.error("[v0] Error generating report:", error)
       alert("Network error occurred. Using fallback content instead.")
       setGeneratedContent(null)
+    } finally {
+      setIsGenerating(false)
     }
 
     console.log("[v0] Setting view to generated")
@@ -411,8 +417,6 @@ export default function ReportsPage() {
       </>
     )
   }
-
-  const [generatedContent, setGeneratedContent] = useState<any>(null)
 
   const saveReport = () => {
     const reportContent = generatedContent || {
@@ -1436,6 +1440,7 @@ ${reportToDownload.content.additionalNotes}
                     transition: "all 0.2s ease",
                     display: "flex",
                     alignItems: "center",
+                    justifyContent: "center",
                     gap: "8px",
                     margin: "0 auto",
                   }}
@@ -1833,13 +1838,14 @@ ${reportToDownload.content.additionalNotes}
             >
               <button
                 onClick={generateReport}
+                disabled={isGenerating}
                 style={{
                   padding: "16px 32px",
                   fontSize: "16px",
-                  backgroundColor: "#007bff",
+                  backgroundColor: isGenerating ? "#6c757d" : "#007bff",
                   color: "#fff",
                   border: "none",
-                  cursor: "pointer",
+                  cursor: isGenerating ? "not-allowed" : "pointer",
                   borderRadius: "8px",
                   fontWeight: "500",
                   letterSpacing: "0.02em",
@@ -1849,18 +1855,22 @@ ${reportToDownload.content.additionalNotes}
                   gap: "8px",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#0056b3"
-                  e.currentTarget.style.transform = "translateY(-2px)"
-                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,123,255,0.3)"
+                  if (!isGenerating) {
+                    e.currentTarget.style.backgroundColor = "#0056b3"
+                    e.currentTarget.style.transform = "translateY(-2px)"
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,123,255,0.3)"
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "#007bff"
-                  e.currentTarget.style.transform = "translateY(0px)"
-                  e.currentTarget.style.boxShadow = "none"
+                  if (!isGenerating) {
+                    e.currentTarget.style.backgroundColor = "#007bff"
+                    e.currentTarget.style.transform = "translateY(0px)"
+                    e.currentTarget.style.boxShadow = "none"
+                  }
                 }}
               >
                 <Plus size={18} />
-                Generate Report
+                {isGenerating ? "Analyzing..." : "Generate Report"}
               </button>
 
               <button
