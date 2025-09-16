@@ -497,10 +497,16 @@ export default function Reports() {
         notes: formData.notes,
       }
 
+    const reportingPeriod =
+      reportToDownload.period ||
+      (reportToDownload.startDate && reportToDownload.endDate
+        ? `${new Date(reportToDownload.startDate).toLocaleDateString()} - ${new Date(reportToDownload.endDate).toLocaleDateString()}`
+        : "N/A")
+
     const pdfContent = `
 REPORT: ${reportToDownload.title}
 
-REPORTING PERIOD: ${reportToDownload.startDate ? new Date(reportToDownload.startDate).toLocaleDateString() : "N/A"} - ${reportToDownload.endDate ? new Date(reportToDownload.endDate).toLocaleDateString() : "N/A"}
+REPORTING PERIOD: ${reportingPeriod}
 
 AUDIENCE: ${reportToDownload.audience}
 
@@ -581,8 +587,7 @@ ${reportToDownload.content.additionalNotes}
           doc.text(reportToDownload.title, 20, 20)
 
           doc.setFontSize(12)
-          const dateRange = `${reportToDownload.startDate ? new Date(reportToDownload.startDate).toLocaleDateString() : "N/A"} - ${reportToDownload.endDate ? new Date(reportToDownload.endDate).toLocaleDateString() : "N/A"}`
-          doc.text(`Reporting Period: ${dateRange}`, 20, 35)
+          doc.text(`Reporting Period: ${reportingPeriod}`, 20, 35)
           doc.text(`Audience: ${reportToDownload.audience}`, 20, 45)
 
           // Add content sections
