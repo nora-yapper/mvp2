@@ -151,42 +151,73 @@ CRITICAL INSTRUCTIONS:
 4. Generate realistic startup content that stands on its own, independent of the report title
 5. NEVER refer to the person writing this report as "user" - always use "founder", "founders", or "co-founders"
 
-6. FOUNDER'S NOTES PARSING:
+6. FOUNDER'S NOTES PARSING - COMPREHENSIVE TRAINING:
 
+   STEP 1: Split notes on connectors: "and", "also", "plus", "additionally", "furthermore", "moreover", "as well as"
    
-   STEP 1: Parse the founder's notes by splitting on connectors like "and", "also", "plus", "additionally"
+   STEP 2: Classify each segment:
    
-   STEP 2: For each parsed segment, classify as:
+   TYPE A - INSTRUCTIONS (apply to existing sections, NO additionalNotes):
+   • "add X to [section]" → modify that section
+   • "mention Y in progress" → add to progressOverview
+   • "include Z in description" → add to startupDescription
+   • "update forecast with..." → modify forecastPriorities
+   • "add funding to traction" → modify tractionMilestones
+   • "make sure to highlight..." → apply to relevant section
    
-   TYPE A - INSTRUCTIONS for existing sections:
-   - Patterns: "add X to [section]", "mention Y in progress", "include Z in description"
-   - Keywords: "add to", "mention in", "include in", "update", "change", "make sure"
-   - Action: Apply to existing sections, DO NOT show in additionalNotes
+   TYPE B - NEW SECTIONS (create additionalNotes):
+   • "add new section about X"
+   • "create Y section"
+   • "add section for Z"
+   • Standalone information that doesn't fit existing sections
    
-   TYPE B - NEW SECTIONS or STANDALONE INFO:
-   - Patterns: "add new section about X", "create Y section", standalone facts
-   - Keywords: "new section", "create section", "add section", or standalone information
-   - Action: Create professional content in additionalNotes
+   COMPREHENSIVE EXAMPLES:
    
-   EXAMPLES:
-   - "add pets to startup description and create team culture section"
-     → "add pets to startup description" = TYPE A (apply to startupDescription)
-     → "create team culture section" = TYPE B (goes to additionalNotes)
+   Example 1: "add we got 10M funding to traction and milestones and add that we finished incubation program in a new section"
+   → "add we got 10M funding to traction and milestones" = TYPE A (apply to tractionMilestones)
+   → "add that we finished incubation program in a new section" = TYPE B (additionalNotes)
+   → Result: Include additionalNotes with incubation program content
    
-   - "mention 10M funding in forecast and John joined our team"
-     → "mention 10M funding in forecast" = TYPE A (apply to forecastPriorities)
-     → "John joined our team" = TYPE B (goes to additionalNotes as team update)
+   Example 2: "mention John joining our team and add 5M funding to forecast"
+   → "mention John joining our team" = TYPE B (standalone team info)
+   → "add 5M funding to forecast" = TYPE A (apply to forecastPriorities)
+   → Result: Include additionalNotes with John joining content
    
-   - "add we got funding to forecast and priorities"
-     → This is TYPE A (instruction to add funding info to forecast section)
+   Example 3: "add pets policy to startup description and mention office move in progress"
+   → "add pets policy to startup description" = TYPE A (apply to startupDescription)
+   → "mention office move in progress" = TYPE A (apply to progressOverview)
+   → Result: NO additionalNotes (all TYPE A)
    
-   - "add new section about John joining and add funding to forecast"
-     → "add new section about John joining" = TYPE B (new section in additionalNotes)
-     → "add funding to forecast" = TYPE A (apply to forecastPriorities)
-
-   DECISION RULE:
-   - If ANY segment is TYPE B, include additionalNotes field with ONLY the TYPE B content
-   - If ALL segments are TYPE A, do NOT include additionalNotes field
+   Example 4: "create team culture section and add new hiring section"
+   → "create team culture section" = TYPE B (new section)
+   → "add new hiring section" = TYPE B (new section)
+   → Result: Include additionalNotes with both sections
+   
+   Example 5: "we hired 3 developers and add this to progress overview"
+   → "we hired 3 developers" = TYPE B (standalone info)
+   → "add this to progress overview" = TYPE A (instruction to apply above to progress)
+   → Result: NO additionalNotes (instruction overrides standalone)
+   
+   Example 6: "add funding milestone to traction also we completed Y Combinator"
+   → "add funding milestone to traction" = TYPE A (apply to tractionMilestones)
+   → "we completed Y Combinator" = TYPE B (standalone achievement)
+   → Result: Include additionalNotes with Y Combinator content
+   
+   Example 7: "John joined as CTO plus add office expansion to forecast"
+   → "John joined as CTO" = TYPE B (standalone team update)
+   → "add office expansion to forecast" = TYPE A (apply to forecastPriorities)
+   → Result: Include additionalNotes with John CTO content
+   
+   Example 8: "add new partnerships section furthermore mention revenue growth in progress"
+   → "add new partnerships section" = TYPE B (new section)
+   → "mention revenue growth in progress" = TYPE A (apply to progressOverview)
+   → Result: Include additionalNotes with partnerships section
+   
+   DECISION LOGIC:
+   • If ANY segment is TYPE B → Include additionalNotes with ONLY TYPE B content
+   • If ALL segments are TYPE A → NO additionalNotes field
+   • TYPE A content gets applied to existing sections silently
+   • TYPE B content becomes professional additionalNotes content
 
 Generate content for each enabled section. Make the content professional, realistic, and appropriate for the target audience.
 
