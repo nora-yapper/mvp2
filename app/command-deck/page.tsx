@@ -1535,13 +1535,42 @@ export default function CommandDeck() {
                           </div>
                           <div>
                             <label className="text-sm font-medium text-gray-200">Category</label>
-                            <Input
-                              value={editingStep?.category || ""}
-                              onChange={(e) =>
-                                setEditingStep((prev) => (prev ? { ...prev, category: e.target.value } : null))
+                            <Select
+                              value={editingStep?.category || "Product Development"}
+                              onValueChange={(value) =>
+                                setEditingStep((prev) => (prev ? { ...prev, category: value } : null))
                               }
-                              className="bg-gray-600 border-gray-500 text-gray-100"
-                            />
+                            >
+                              <SelectTrigger className="bg-gray-600 border-gray-500 text-gray-100">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-800 border-gray-600">
+                                <SelectItem value="Product Development" className="text-gray-100 hover:bg-gray-700">
+                                  Product Development
+                                </SelectItem>
+                                <SelectItem value="Sales" className="text-gray-100 hover:bg-gray-700">
+                                  Sales
+                                </SelectItem>
+                                <SelectItem value="Marketing" className="text-gray-100 hover:bg-gray-700">
+                                  Marketing
+                                </SelectItem>
+                                <SelectItem value="Finance" className="text-gray-100 hover:bg-gray-700">
+                                  Finance
+                                </SelectItem>
+                                <SelectItem value="Operations" className="text-gray-100 hover:bg-gray-700">
+                                  Operations
+                                </SelectItem>
+                                <SelectItem value="Human Resources" className="text-gray-100 hover:bg-gray-700">
+                                  Human Resources
+                                </SelectItem>
+                                <SelectItem value="Legal" className="text-gray-100 hover:bg-gray-700">
+                                  Legal
+                                </SelectItem>
+                                <SelectItem value="Research" className="text-gray-100 hover:bg-gray-700">
+                                  Research
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
                         <div className="flex justify-end gap-2">
