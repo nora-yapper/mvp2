@@ -377,7 +377,7 @@ export default function CommandDeck() {
           assignee: teamMembers[Math.floor(Math.random() * teamMembers.length)]?.name || "Unassigned",
           deadline: getDefaultDeadline(step.duration || "2 weeks"),
           priority: priority as "High" | "Medium" | "Low",
-          category: "Product Development", // Default to Product Development instead of Mission Critical
+          category: step.category || "Operations", // Use AI-suggested category with fallback
         }
       })
 
@@ -1486,7 +1486,7 @@ export default function CommandDeck() {
                             <label className="text-sm font-medium text-gray-200">Assignee</label>
                             <Select
                               value={editingStep?.assignee || ""}
-                              onValueChange={(value) =>
+                              onChange={(value) =>
                                 setEditingStep((prev) => (prev ? { ...prev, assignee: value } : null))
                               }
                             >

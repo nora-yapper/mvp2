@@ -126,7 +126,8 @@ Respond ONLY with valid JSON in this exact format:
       "title": "Specific Action Title",
       "description": "Detailed description with tools, numbers, and expected outcomes",
       "duration": "Realistic time estimate (e.g., '2-3 hours', '1 week', '3 days')",
-      "priority": "critical|high|medium"
+      "priority": "critical|high|medium",
+      "category": "Product Development|Sales|Marketing|Finance|Operations|Human Resources|Legal|Research"
     }
   ],
   "total_estimated_duration": "Overall timeline estimate"
@@ -141,13 +142,139 @@ function validateAndFormatSteps(steps: any[]) {
     return getDefaultFallbackSteps()
   }
 
+  const validCategories = [
+    "Product Development",
+    "Sales",
+    "Marketing",
+    "Finance",
+    "Operations",
+    "Human Resources",
+    "Legal",
+    "Research",
+  ]
+
   return steps.slice(0, 5).map((step, index) => ({
     id: step.id || index + 1,
     title: step.title || `Action Step ${index + 1}`,
     description: step.description || "Complete this important task",
     duration: step.duration || "1-2 weeks",
     priority: ["critical", "high", "medium"].includes(step.priority) ? step.priority : "medium",
+    category: validCategories.includes(step.category) ? step.category : getSmartCategory(step.title, step.description),
   }))
+}
+
+function getSmartCategory(title: string, description: string): string {
+  const content = `${title} ${description}`.toLowerCase()
+
+  // Product Development keywords
+  if (
+    content.includes("build") ||
+    content.includes("develop") ||
+    content.includes("code") ||
+    content.includes("mvp") ||
+    content.includes("feature") ||
+    content.includes("technical") ||
+    content.includes("app") ||
+    content.includes("website") ||
+    content.includes("software")
+  ) {
+    return "Product Development"
+  }
+
+  // Sales keywords
+  if (
+    content.includes("customer") ||
+    content.includes("sales") ||
+    content.includes("lead") ||
+    content.includes("prospect") ||
+    content.includes("outreach") ||
+    content.includes("revenue") ||
+    content.includes("deal") ||
+    content.includes("client") ||
+    content.includes("sell")
+  ) {
+    return "Sales"
+  }
+
+  // Marketing keywords
+  if (
+    content.includes("marketing") ||
+    content.includes("promote") ||
+    content.includes("brand") ||
+    content.includes("content") ||
+    content.includes("social") ||
+    content.includes("campaign") ||
+    content.includes("launch") ||
+    content.includes("awareness") ||
+    content.includes("advertising")
+  ) {
+    return "Marketing"
+  }
+
+  // Research keywords
+  if (
+    content.includes("research") ||
+    content.includes("interview") ||
+    content.includes("survey") ||
+    content.includes("analyze") ||
+    content.includes("study") ||
+    content.includes("investigate") ||
+    content.includes("questions") ||
+    content.includes("feedback")
+  ) {
+    return "Research"
+  }
+
+  // Finance keywords
+  if (
+    content.includes("budget") ||
+    content.includes("pricing") ||
+    content.includes("cost") ||
+    content.includes("financial") ||
+    content.includes("funding") ||
+    content.includes("investment")
+  ) {
+    return "Finance"
+  }
+
+  // Operations keywords
+  if (
+    content.includes("process") ||
+    content.includes("workflow") ||
+    content.includes("system") ||
+    content.includes("operations") ||
+    content.includes("logistics") ||
+    content.includes("infrastructure")
+  ) {
+    return "Operations"
+  }
+
+  // HR keywords
+  if (
+    content.includes("hire") ||
+    content.includes("team") ||
+    content.includes("recruit") ||
+    content.includes("employee") ||
+    content.includes("culture") ||
+    content.includes("training")
+  ) {
+    return "Human Resources"
+  }
+
+  // Legal keywords
+  if (
+    content.includes("legal") ||
+    content.includes("contract") ||
+    content.includes("compliance") ||
+    content.includes("terms") ||
+    content.includes("privacy") ||
+    content.includes("intellectual property")
+  ) {
+    return "Legal"
+  }
+
+  // Default fallback
+  return "Operations"
 }
 
 function getFallbackResponse(mission: string, timeframe?: string, accomplished?: string[]) {
@@ -173,6 +300,7 @@ function getContextualFallbackSteps(mission: string, timeframe?: string, accompl
         description: "Create specific questions focusing on pain points, current solutions, and willingness to pay",
         duration: "2-3 hours",
         priority: "critical",
+        category: "Research",
       },
       {
         id: 2,
@@ -180,6 +308,7 @@ function getContextualFallbackSteps(mission: string, timeframe?: string, accompl
         description: "Use LinkedIn, industry forums, and your network to identify and contact potential interviewees",
         duration: "1 day",
         priority: "high",
+        category: "Research",
       },
       {
         id: 3,
@@ -187,6 +316,7 @@ function getContextualFallbackSteps(mission: string, timeframe?: string, accompl
         description: "Send personalized outreach messages and use Calendly to book 30-minute interviews",
         duration: "3-4 hours",
         priority: "high",
+        category: "Research",
       },
     ]
   }
@@ -200,6 +330,7 @@ function getContextualFallbackSteps(mission: string, timeframe?: string, accompl
         description: "List the 3 most essential features for your MVP - avoid feature creep",
         duration: "4-6 hours",
         priority: "critical",
+        category: "Product Development",
       },
       {
         id: 2,
@@ -207,6 +338,7 @@ function getContextualFallbackSteps(mission: string, timeframe?: string, accompl
         description: "Select frameworks, set up development environment, and create project structure",
         duration: "1-2 days",
         priority: "high",
+        category: "Product Development",
       },
       {
         id: 3,
@@ -214,6 +346,7 @@ function getContextualFallbackSteps(mission: string, timeframe?: string, accompl
         description: "Create basic working version with core feature - focus on functionality over design",
         duration: "1 week",
         priority: "high",
+        category: "Product Development",
       },
     ]
   }
@@ -228,6 +361,7 @@ function getContextualFallbackSteps(mission: string, timeframe?: string, accompl
           "Break down launch into specific tasks with deadlines - include content, outreach, and technical prep",
         duration: "3-4 hours",
         priority: "critical",
+        category: "Marketing",
       },
       {
         id: 2,
@@ -235,6 +369,7 @@ function getContextualFallbackSteps(mission: string, timeframe?: string, accompl
         description: "Create landing page with email signup and share in relevant communities",
         duration: "1-2 weeks",
         priority: "high",
+        category: "Marketing",
       },
       {
         id: 3,
@@ -242,6 +377,7 @@ function getContextualFallbackSteps(mission: string, timeframe?: string, accompl
         description: "Write social media posts, press release, and Product Hunt submission",
         duration: "2-3 days",
         priority: "medium",
+        category: "Marketing",
       },
     ]
   }
@@ -255,6 +391,7 @@ function getContextualFallbackSteps(mission: string, timeframe?: string, accompl
         description: "Research and compile contact details of ideal customers using LinkedIn and industry directories",
         duration: "1-2 days",
         priority: "critical",
+        category: "Sales",
       },
       {
         id: 2,
@@ -262,6 +399,7 @@ function getContextualFallbackSteps(mission: string, timeframe?: string, accompl
         description: "Create templates for cold outreach, follow-up, and proposal emails",
         duration: "3-4 hours",
         priority: "high",
+        category: "Sales",
       },
       {
         id: 3,
@@ -269,6 +407,7 @@ function getContextualFallbackSteps(mission: string, timeframe?: string, accompl
         description: "Customize templates and send targeted outreach emails to potential customers",
         duration: "1 hour daily",
         priority: "high",
+        category: "Sales",
       },
     ]
   }
@@ -285,6 +424,7 @@ function getDefaultFallbackSteps() {
       description: "Identify 3 specific, measurable outcomes that will indicate progress toward your goal",
       duration: "2-3 hours",
       priority: "critical",
+      category: "Operations",
     },
     {
       id: 2,
@@ -292,6 +432,7 @@ function getDefaultFallbackSteps() {
       description: "Break down your mission into weekly milestones with specific deliverables",
       duration: "1-2 hours",
       priority: "high",
+      category: "Operations",
     },
     {
       id: 3,
@@ -299,6 +440,7 @@ function getDefaultFallbackSteps() {
       description: "Choose a tool (Notion, Trello, or spreadsheet) to track daily progress and metrics",
       duration: "1 hour",
       priority: "medium",
+      category: "Operations",
     },
   ]
 }
