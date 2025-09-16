@@ -151,20 +151,23 @@ CRITICAL INSTRUCTIONS:
 4. Generate realistic startup content that stands on its own, independent of the report title
 5. NEVER refer to the person writing this report as "user" - always use "founder", "founders", or "co-founders"
 
-6. FOUNDER'S NOTES HANDLING:
+6. FOUNDER'S NOTES ANALYSIS - FOLLOW THIS DECISION TREE:
+
+   STEP 1: Analyze the founder's notes content
    
-   IF the founder's notes contain instructions that modify existing sections:
-   - Examples: "add X to startup description", "mention Y in overview", "include Z in milestones"
+   IF notes contain instructions for EXISTING sections:
+   - Examples: "add pets to startup description", "mention AI in overview", "include security in risks"
    - Action: Apply these instructions to the relevant sections
-   - Result: DO NOT include "additionalNotes" field in response
+   - Result: DO NOT include "additionalNotes" field in JSON response
    
-   IF the founder's notes request NEW sections or contain additional information:
-   - Examples: "add a team culture section", "create partnerships section", "we have great office culture"
-   - Action: Create professional content in "additionalNotes" field
-   - Result: Include "additionalNotes" field with enhanced, professional content
+   IF notes contain requests for NEW sections OR standalone information:
+   - Examples: "add team culture section", "create partnerships overview", "we have a pet-friendly office", "our company values include sustainability"
+   - Action: Create professional content for "additionalNotes" field
+   - Result: MUST include "additionalNotes" field in JSON response
    
-   Simple test: If the notes tell you HOW to modify existing sections = no additionalNotes
-                If the notes add NEW information or sections = include additionalNotes
+   STEP 2: Apply the decision
+   - Modify existing sections: NO additionalNotes field
+   - New sections/info: YES additionalNotes field with professional content
 
 Generate content for each enabled section. Make the content professional, realistic, and appropriate for the target audience.
 
@@ -174,7 +177,8 @@ Respond with ONLY valid JSON. Include ONLY the fields for enabled sections: ${en
 Base JSON structure (only include enabled sections):
 {${enabledSections.includes("startupDescription") ? '\n  "startupDescription": "Professional description...",' : ""}${enabledSections.includes("progressOverview") ? '\n  "progressOverview": "Summary of progress...",' : ""}${enabledSections.includes("tractionMilestones") ? '\n  "tractionMilestones": [\n    "Milestone 1",\n    "Milestone 2"\n  ],' : ""}${enabledSections.includes("risksBottlenecks") ? '\n  "risksBottlenecks": "Analysis of risks...",' : ""}${enabledSections.includes("productStrategy") ? '\n  "productStrategy": "Product strategy...",' : ""}${enabledSections.includes("forecastPriorities") ? '\n  "forecastPriorities": "Forward-looking priorities..."' : ""}}
 
-ONLY add "additionalNotes": "content here" field if the founder's notes contain NEW information or section requests.
+IMPORTANT: If founder's notes request NEW sections or contain standalone info, ADD this field:
+"additionalNotes": "Professional content based on founder's notes"
 `
 
   return prompt
