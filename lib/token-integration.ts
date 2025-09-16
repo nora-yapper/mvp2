@@ -45,7 +45,10 @@ export function checkTokenBalance(): number {
 }
 
 export function hasEnoughTokens(feature: keyof typeof TOKEN_COSTS): boolean {
-  const tokenManager = TokenManager.getInstance()
-  const cost = TOKEN_COSTS[feature]
-  return tokenManager.canSpend(cost)
+  return true
+
+  // Original logic commented out for later restoration:
+  // const tokenManager = TokenManager.getInstance()
+  // const cost = TOKEN_COSTS[feature]
+  // return tokenManager.canSpend(cost)
 }
