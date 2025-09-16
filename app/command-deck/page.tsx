@@ -11,20 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Plus,
-  Clock,
-  Kanban,
-  TableIcon,
-  Loader2,
-  Edit,
-  Save,
-  X,
-  AlertCircle,
-  BarChart3,
-  Trash2,
-  RotateCcw,
-} from "lucide-react"
+import { Plus, Clock, Kanban, Loader2, Edit, Save, X, AlertCircle, BarChart3, Trash2, RotateCcw } from "lucide-react"
 
 interface Task {
   id: string
@@ -1147,10 +1134,10 @@ export default function CommandDeck() {
                       </Dialog>
 
                       <div className="flex items-center gap-2">
+                        {/* Removed Table option from view buttons array */}
                         {[
                           { name: "List", icon: BarChart3 },
                           { name: "Kanban", icon: Kanban },
-                          { name: "Table", icon: TableIcon },
                         ].map((view) => (
                           <Button
                             key={view.name}
@@ -1219,9 +1206,9 @@ export default function CommandDeck() {
                   </div>
 
                   {/* View Content */}
+                  {/* Removed Table view rendering */}
                   {activeView === "List" && renderGanttView()}
                   {activeView === "Kanban" && renderKanbanView()}
-                  {activeView === "Table" && renderTableView()}
                 </CardContent>
               </Card>
             </div>
