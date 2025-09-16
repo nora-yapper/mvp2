@@ -370,25 +370,53 @@ export default function CommandDeck() {
         throw new Error("Invalid response format: missing steps array")
       }
 
-      // Transform API response to match our task format
-      const transformedSteps = data.steps.map((step: any, index: number) => ({
-        id: Date.now() + index,
-        task: step.title || step.task || `Step ${index + 1}`,
-        description: step.description || "",
-        assignee: Array.isArray(step.assignee) ? step.assignee : [step.assignee || "Unassigned"],
-        category: Array.isArray(step.category) ? step.category : [step.category || "Operations"],
-        priority:
-          step.priority === "critical"
-            ? "High"
-            : step.priority === "high"
+      const transformedSteps = data.steps.map((step: any, index: number) => {
+        // Smart assignee assignment based on category
+        const getSmartAssignee = (category: string): string => {
+          switch (category) {
+            case "Product Development":
+              return "Tech Lead"
+            case "Sales":
+              return "Sales Manager"
+            case "Marketing":
+              return "Marketing Manager"
+            case "Research":
+              return "Research Lead"
+            case "Finance":
+              return "Finance Manager"
+            case "Operations":
+              return "Operations Manager"
+            case "Human Resources":
+              return "HR Manager"
+            case "Legal":
+              return "Legal Counsel"
+            default:
+              return "Project Manager"
+          }
+        }
+
+        const category = step.category || "Operations"
+        const assignee = getSmartAssignee(category)
+
+        return {
+          id: Date.now() + index,
+          task: step.title || `Action Step ${index + 1}`, // Use title from AI response
+          description: step.description || "",
+          assignee: [assignee], // Smart assignee based on category
+          category: [category],
+          priority:
+            step.priority === "critical"
               ? "High"
-              : step.priority === "medium"
-                ? "Medium"
-                : "Medium",
-        deadline: step.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-        status: "todo",
-        duration: step.duration || "1 week",
-      }))
+              : step.priority === "high"
+                ? "High"
+                : step.priority === "medium"
+                  ? "Medium"
+                  : "Medium",
+          deadline: step.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+          status: "todo",
+          duration: step.duration || "1 week",
+        }
+      })
 
       console.log("Transformed steps:", transformedSteps)
 
