@@ -150,10 +150,27 @@ CRITICAL INSTRUCTIONS:
 3. Use terms like "our startup", "the company", "our organization" instead of using the report title
 4. Generate realistic startup content that stands on its own, independent of the report title
 5. NEVER refer to the person writing this report as "user" - always use "founder", "founders", or "co-founders" depending on context
-6. ANALYZE THE ADDITIONAL NOTES CAREFULLY:
-   - If the notes contain instructions about existing sections (e.g., "make the startup description more technical", "focus on AI in market analysis"), incorporate those instructions into the relevant sections but DO NOT display an "Additional Notes" section
-   - Only include an "Additional Notes" section if the notes contain truly additional content that doesn't belong in existing sections (new topics, supplementary information, etc.)
-   - The goal is to use instructional notes to improve existing sections, not create redundant content
+
+6. ADDITIONAL NOTES ANALYSIS - THIS IS CRITICAL:
+   BEFORE including any "additionalNotes" field, analyze the founder's notes:
+   
+   INSTRUCTIONAL NOTES (DO NOT include additionalNotes field):
+   - "add [something] to startup description" → incorporate into startupDescription
+   - "make [section] more [adjective]" → modify that section accordingly
+   - "focus on [topic] in [section]" → emphasize that topic in the specified section
+   - "include [information] in [section]" → add that information to the specified section
+   - Any note that tells you HOW to modify existing sections
+   
+   ADDITIONAL CONTENT (DO include additionalNotes field):
+   - New topics not covered in existing sections
+   - Supplementary information that doesn't fit elsewhere
+   - Context that stands alone as additional information
+   
+   EXAMPLE: "add pets are awesome to startup description" = INSTRUCTIONAL → incorporate into startupDescription, DO NOT include additionalNotes
+   EXAMPLE: "We also have a partnership with XYZ Corp" = ADDITIONAL → include in additionalNotes
+
+7. If notes are instructional, apply them to the relevant sections and NEVER include additionalNotes field
+8. Only include additionalNotes field if the notes contain truly standalone additional content
 
 Generate content for each enabled section. Make the content:
 1. Professional and business-appropriate
@@ -163,14 +180,13 @@ Generate content for each enabled section. Make the content:
 5. Appropriate length for each section (2-4 sentences for most, bullet points for milestones)
 6. NEVER use the report title "${title}" as the startup/company name in any section
 7. Always refer to the report writer as "founder" or "co-founders", never as "user"
-8. If additional notes are instructional (referring to how to modify existing sections), apply those instructions to the relevant sections and do NOT include an additionalNotes field
 
 IMPORTANT: 
 - If additional context is provided, analyze it and incorporate relevant insights throughout ALL report sections
 - Use the context to make the report more specific and tailored
 - Write about a startup/company generically - do not assume any specific company name
 - When referencing the person who provided context, use "founder" or "co-founders"
-- Only include additionalNotes if the founder context contains truly additional content that doesn't belong in existing sections
+- CRITICAL: Only include additionalNotes if the founder context contains truly additional standalone content, NOT instructions for existing sections
 
 Respond with ONLY valid JSON in this exact format:
 {
@@ -183,11 +199,11 @@ Respond with ONLY valid JSON in this exact format:
   ],
   "risksBottlenecks": "Analysis of current risks and bottlenecks...",
   "productStrategy": "Product strategy and roadmap insights...",
-  "forecastPriorities": "Forward-looking priorities and forecasts..."${notes ? ',\n  "additionalNotes": "Only include this if notes contain truly additional content, not instructions for existing sections..."' : ""}
+  "forecastPriorities": "Forward-looking priorities and forecasts..."
 }
 
 Only include fields for sections that are enabled: ${enabledSections.join(", ")}
-${notes ? "Only include additionalNotes field if the founder context contains truly additional content that doesn't belong in existing sections." : "Do NOT include additionalNotes field if no founder context was provided."}
+DO NOT include additionalNotes field unless the founder context contains truly additional standalone content (not instructions for existing sections).
 `
 
   return prompt
@@ -237,8 +253,22 @@ function getFallbackContent(formData: any) {
       : "Looking ahead, we're prioritizing system optimization, team expansion, and strategic partnerships. Our AI-powered recommendations suggest focusing on automation and process refinement to achieve our next growth phase."
   }
 
-  if (notes && notes.trim()) {
-    content.additionalNotes = `Additional context: ${notes}`
+  // Analyze notes to determine if they contain additional standalone content
+  const additionalNotes = notes
+    ? notes
+        .split(/\n+/)
+        .filter(
+          (note) =>
+            !note.startsWith("add") &&
+            !note.startsWith("make") &&
+            !note.startsWith("focus") &&
+            !note.startsWith("include"),
+        )
+        .join("\n")
+    : ""
+
+  if (additionalNotes.trim()) {
+    content.additionalNotes = `Additional context: ${additionalNotes}`
   }
 
   return NextResponse.json({
