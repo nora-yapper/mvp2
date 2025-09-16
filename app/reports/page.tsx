@@ -2012,13 +2012,13 @@ ${reportToDownload.content.additionalNotes}
                 </>
               )}
 
-              {(generatedContent?.additionalNotes || formData.notes) && (
+              {generatedContent?.additionalNotes && (
                 <>
                   <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px", color: "#fff" }}>
                     Additional Notes
                   </h3>
                   <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#e0e0e0", marginBottom: "32px" }}>
-                    {generatedContent?.additionalNotes || formData.notes}
+                    {generatedContent.additionalNotes}
                   </p>
                 </>
               )}
