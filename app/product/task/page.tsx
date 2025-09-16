@@ -72,7 +72,8 @@ const ProductTaskPage = () => {
   const handleCompletion = () => {
     if (section === "action-table" && task === "priority-tasks") {
       sessionStorage.setItem("productActionTablePart01Completed", "true")
-      alert("Action Table Part 01 completed! Part 02 is now unlocked.")
+      const optionsParam = options.join(",")
+      window.location.href = `/product/detail?step=${section}&options=${optionsParam}`
     }
 
     // Completion logic here
