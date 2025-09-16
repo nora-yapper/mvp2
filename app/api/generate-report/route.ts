@@ -151,46 +151,37 @@ CRITICAL INSTRUCTIONS:
 4. Generate realistic startup content that stands on its own, independent of the report title
 5. NEVER refer to the person writing this report as "user" - always use "founder", "founders", or "co-founders"
 
-6. FOUNDER'S NOTES ANALYSIS - ENHANCED MIXED INPUT HANDLING:
+6. FOUNDER'S NOTES HANDLING:
 
-   STEP 1: Parse the founder's notes into two categories:
+   If founder's notes are provided, analyze them carefully:
    
-   A) INSTRUCTIONS for existing sections:
-   - Look for: "add X to [section]", "mention Y in [section]", "include Z in overview", etc.
-   - Action: Apply these to the relevant sections
-   - Result: These instructions should NOT appear in additionalNotes
+   TYPE 1 - INSTRUCTIONS for existing sections:
+   - Examples: "add pets to startup description", "mention growth in progress", "include challenges in risks"
+   - Action: Apply these instructions to the relevant sections
+   - Result: DO NOT include additionalNotes field
    
-   B) NEW SECTIONS or STANDALONE INFORMATION:
-   - Look for: "add [new section name]", "create [new section]", standalone facts/info
-   - Examples: "add team culture section", "we have a pet-friendly office", "our values include sustainability"
-   - Action: Create professional content for additionalNotes
-   - Result: These should appear in additionalNotes field
+   TYPE 2 - NEW SECTIONS or ADDITIONAL INFO:
+   - Examples: "add team culture section", "we have remote work policy", "our office is pet-friendly"
+   - Action: Create professional content for these in additionalNotes
+   - Result: INCLUDE additionalNotes field with professional content
    
-   STEP 2: Handle MIXED INPUT (both A and B present):
-   - Apply category A instructions to existing sections (don't show in additionalNotes)
-   - Create additionalNotes field with category B content only
-   - BOTH actions can happen in the same response
-   
-   STEP 3: Decision logic:
-   - If ONLY category A (instructions): NO additionalNotes field
-   - If ONLY category B (new/standalone): YES additionalNotes field
-   - If BOTH A and B: Apply A to sections + YES additionalNotes field with B content
-   
-   EXAMPLES:
-   - "add pets to startup description" → Apply to startupDescription, NO additionalNotes
-   - "add team culture section" → NO changes to existing sections, YES additionalNotes with team culture content
-   - "add pets to startup description and create team culture section" → Apply pets to startupDescription + YES additionalNotes with team culture content
+   TYPE 3 - MIXED (both instructions AND new info):
+   - Example: "add pets to startup description and create team culture section"
+   - Action: Apply instructions to existing sections AND create additionalNotes for new content
+   - Result: INCLUDE additionalNotes field with only the new content (not the instructions)
 
 Generate content for each enabled section. Make the content professional, realistic, and appropriate for the target audience.
 
 RESPONSE FORMAT:
-Respond with ONLY valid JSON. Include ONLY the fields for enabled sections: ${enabledSections.join(", ")}
+Respond with ONLY valid JSON. Always include these enabled sections: ${enabledSections.join(", ")}
 
-Base JSON structure (only include enabled sections):
+Base structure:
 {${enabledSections.includes("startupDescription") ? '\n  "startupDescription": "Professional description...",' : ""}${enabledSections.includes("progressOverview") ? '\n  "progressOverview": "Summary of progress...",' : ""}${enabledSections.includes("tractionMilestones") ? '\n  "tractionMilestones": [\n    "Milestone 1",\n    "Milestone 2"\n  ],' : ""}${enabledSections.includes("risksBottlenecks") ? '\n  "risksBottlenecks": "Analysis of risks...",' : ""}${enabledSections.includes("productStrategy") ? '\n  "productStrategy": "Product strategy...",' : ""}${enabledSections.includes("forecastPriorities") ? '\n  "forecastPriorities": "Forward-looking priorities..."' : ""}}
 
-IMPORTANT: Only add this field if founder's notes contain NEW sections or standalone info (category B):
-"additionalNotes": "Professional content for new sections/standalone information"
+IMPORTANT: Add this field ONLY if founder's notes contain TYPE 2 or TYPE 3 content:
+"additionalNotes": "Professional content for new sections or additional information"
+
+DECISION RULE: If the founder's notes ask you to create NEW sections or contain standalone information that doesn't belong in existing sections, include the additionalNotes field. If the notes only give instructions for existing sections, do NOT include additionalNotes.
 `
 
   return prompt
