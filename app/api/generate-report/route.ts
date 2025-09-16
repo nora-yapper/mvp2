@@ -87,7 +87,7 @@ function createReportPrompt(formData: any) {
   const { title, startDate, endDate, audience, sections, notes } = formData
 
   const dateRange = startDate && endDate ? `${startDate} to ${endDate}` : "current period"
-  const additionalContext = notes ? `\n\nADDITIONAL CONTEXT FROM USER:\n${notes}` : ""
+  const additionalContext = notes ? `\n\nADDITIONAL CONTEXT FROM FOUNDER:\n${notes}` : ""
 
   const enabledSections = Object.entries(sections)
     .filter(([_, enabled]) => enabled)
@@ -108,20 +108,23 @@ CRITICAL INSTRUCTIONS:
 2. Create content about a generic startup/company - do NOT reference "${title}" as the company name
 3. Use terms like "our startup", "the company", "our organization" instead of using the report title
 4. Generate realistic startup content that stands on its own, independent of the report title
+5. NEVER refer to the person writing this report as "user" - always use "founder", "founders", or "co-founders" depending on context
 
 Generate content for each enabled section. Make the content:
 1. Professional and business-appropriate
 2. Specific to the reporting period and audience
-3. Incorporate any additional context provided by the user throughout ALL sections
+3. Incorporate any additional context provided by the founder throughout ALL sections
 4. Realistic and actionable
 5. Appropriate length for each section (2-4 sentences for most, bullet points for milestones)
 6. NEVER use the report title "${title}" as the startup/company name in any section
+7. Always refer to the report writer as "founder" or "co-founders", never as "user"
 
 IMPORTANT: 
 - If additional context is provided, analyze it and incorporate relevant insights throughout ALL report sections
 - Use the context to make the report more specific and tailored
 - Write about a startup/company generically - do not assume any specific company name
-- ${notes ? "Include meaningful additional notes based on the user context" : "Do NOT include additionalNotes in the response if no user context was provided"}
+- When referencing the person who provided context, use "founder" or "co-founders"
+- ${notes ? "Include meaningful additional notes based on founder context" : "Do NOT include additionalNotes in the response if no founder context was provided"}
 
 Respond with ONLY valid JSON in this exact format:
 {
@@ -134,11 +137,11 @@ Respond with ONLY valid JSON in this exact format:
   ],
   "risksBottlenecks": "Analysis of current risks and bottlenecks...",
   "productStrategy": "Product strategy and roadmap insights...",
-  "forecastPriorities": "Forward-looking priorities and forecasts..."${notes ? ',\n  "additionalNotes": "Meaningful insights based on user context..."' : ""}
+  "forecastPriorities": "Forward-looking priorities and forecasts..."${notes ? ',\n  "additionalNotes": "Meaningful insights based on founder context..."' : ""}
 }
 
 Only include fields for sections that are enabled: ${enabledSections.join(", ")}
-${notes ? "" : "Do NOT include additionalNotes field if no user context was provided."}
+${notes ? "" : "Do NOT include additionalNotes field if no founder context was provided."}
 `
 
   return prompt
