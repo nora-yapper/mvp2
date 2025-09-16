@@ -359,14 +359,27 @@ export default function CommandDeck() {
       }
 
       // Transform API response to match UI expectations
-      const transformedSteps = data.steps.map((step: any) => ({
-        title: step.title || "Untitled Step",
-        description: step.description || "No description provided",
-        assignee: teamMembers[Math.floor(Math.random() * teamMembers.length)]?.name || "Unassigned",
-        deadline: getDefaultDeadline(step.duration || "2 weeks"),
-        priority: capitalizeFirst(step.priority || "medium") as "High" | "Medium" | "Low",
-        category: "Product Development", // Default to Product Development instead of Mission Critical
-      }))
+      const transformedSteps = data.steps.map((step: any) => {
+        let priority = "Medium" // Default priority
+        const stepPriority = (step.priority || "medium").toLowerCase()
+
+        if (stepPriority === "high" || stepPriority === "critical") {
+          priority = "High"
+        } else if (stepPriority === "low") {
+          priority = "Low"
+        } else {
+          priority = "Medium"
+        }
+
+        return {
+          title: step.title || "Untitled Step",
+          description: step.description || "No description provided",
+          assignee: teamMembers[Math.floor(Math.random() * teamMembers.length)]?.name || "Unassigned",
+          deadline: getDefaultDeadline(step.duration || "2 weeks"),
+          priority: priority as "High" | "Medium" | "Low",
+          category: "Product Development", // Default to Product Development instead of Mission Critical
+        }
+      })
 
       setGeneratedSteps(transformedSteps)
       setApiSource(data.source || "unknown")
