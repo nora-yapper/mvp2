@@ -2,20 +2,25 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("[v0] API route called")
     const { formData } = await request.json()
+    console.log("[v0] Form data received:", formData)
 
     if (!formData) {
+      console.log("[v0] No form data provided")
       return NextResponse.json({ error: "Form data is required" }, { status: 400 })
     }
 
     // Check if OpenAI API key is available
     if (!process.env.OPENAI_API_KEY) {
-      console.log("No OpenAI API key found, using fallback content")
+      console.log("[v0] No OpenAI API key found, using fallback content")
       return getFallbackContent(formData)
     }
 
     try {
+      console.log("[v0] Creating prompt")
       const prompt = createReportPrompt(formData)
+      console.log("[v0] Prompt created, calling OpenAI API")
 
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
@@ -41,20 +46,27 @@ export async function POST(request: NextRequest) {
         }),
       })
 
+      console.log("[v0] OpenAI API response status:", response.status)
+
       if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`)
+        const errorText = await response.text()
+        console.error("[v0] OpenAI API error:", response.status, errorText)
+        throw new Error(`OpenAI API error: ${response.status} - ${errorText}`)
       }
 
       const data = await response.json()
+      console.log("[v0] OpenAI response received")
       const aiResponse = data.choices[0]?.message?.content
 
       if (!aiResponse) {
+        console.error("[v0] No response content from OpenAI")
         throw new Error("No response from OpenAI")
       }
 
       // Parse the AI response
       let parsedResponse
       try {
+        console.log("[v0] Parsing AI response")
         // Clean the response text
         let cleanedText = aiResponse.trim()
         if (cleanedText.startsWith("```json")) {
@@ -64,8 +76,10 @@ export async function POST(request: NextRequest) {
         }
 
         parsedResponse = JSON.parse(cleanedText)
+        console.log("[v0] AI response parsed successfully")
       } catch (parseError) {
-        console.error("Failed to parse OpenAI response:", parseError)
+        console.error("[v0] Failed to parse OpenAI response:", parseError)
+        console.error("[v0] Raw AI response:", aiResponse)
         return getFallbackContent(formData)
       }
 
@@ -74,11 +88,11 @@ export async function POST(request: NextRequest) {
         source: "openai",
       })
     } catch (openaiError) {
-      console.error("OpenAI API error:", openaiError)
+      console.error("[v0] OpenAI API error:", openaiError)
       return getFallbackContent(formData)
     }
   } catch (error) {
-    console.error("API route error:", error)
+    console.error("[v0] API route error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
