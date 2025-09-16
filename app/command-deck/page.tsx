@@ -647,7 +647,11 @@ export default function CommandDeck() {
                 <Badge className={`text-white ${getStatusColor(task.status)}`}>{task.status}</Badge>
               </TableCell>
               <TableCell className="text-gray-200">{task.deadline}</TableCell>
-              <TableCell className="text-gray-200">{task.category}</TableCell>
+              <TableCell>
+                <Badge variant="outline" className="text-gray-300 border-gray-500">
+                  {task.category}
+                </Badge>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -1196,7 +1200,7 @@ export default function CommandDeck() {
                   <label className="text-sm font-medium text-gray-200">Priority</label>
                   <Select
                     value={editingTask.priority}
-                    onChange={(value) =>
+                    onValueChange={(value) =>
                       setEditingTask({ ...editingTask, priority: value as "High" | "Medium" | "Low" })
                     }
                   >
@@ -1222,7 +1226,7 @@ export default function CommandDeck() {
                   <label className="text-sm font-medium text-gray-200">Status</label>
                   <Select
                     value={editingTask.status}
-                    onChange={(value) =>
+                    onValueChange={(value) =>
                       setEditingTask({ ...editingTask, status: value as "To Do" | "In Progress" | "Done" })
                     }
                   >
@@ -1255,11 +1259,40 @@ export default function CommandDeck() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-200">Category</label>
-                <Input
+                <Select
                   value={editingTask.category}
-                  onChange={(e) => setEditingTask({ ...editingTask, category: e.target.value })}
-                  className="bg-gray-700 border-gray-600 text-gray-100"
-                />
+                  onValueChange={(value) => setEditingTask({ ...editingTask, category: value })}
+                >
+                  <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-600">
+                    <SelectItem value="Product Development" className="text-gray-100 hover:bg-gray-700">
+                      Product Development
+                    </SelectItem>
+                    <SelectItem value="Sales" className="text-gray-100 hover:bg-gray-700">
+                      Sales
+                    </SelectItem>
+                    <SelectItem value="Marketing" className="text-gray-100 hover:bg-gray-700">
+                      Marketing
+                    </SelectItem>
+                    <SelectItem value="Finance" className="text-gray-100 hover:bg-gray-700">
+                      Finance
+                    </SelectItem>
+                    <SelectItem value="Operations" className="text-gray-100 hover:bg-gray-700">
+                      Operations
+                    </SelectItem>
+                    <SelectItem value="Human Resources" className="text-gray-100 hover:bg-gray-700">
+                      Human Resources
+                    </SelectItem>
+                    <SelectItem value="Legal" className="text-gray-100 hover:bg-gray-700">
+                      Legal
+                    </SelectItem>
+                    <SelectItem value="Research & Development" className="text-gray-100 hover:bg-gray-700">
+                      Research & Development
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex justify-between pt-4">
                 <Button
