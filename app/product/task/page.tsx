@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { earnTokensForStep } from "@/lib/token-integration"
 import { useSearchParams } from "next/navigation"
-import { TokenDisplay } from "@/components/token-display"
 
 const ProductTaskPage = () => {
   const searchParams = useSearchParams()
@@ -403,7 +402,6 @@ const ProductTaskPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <TokenDisplay />
       {/* Top Bar */}
       <div
         style={{
