@@ -151,24 +151,42 @@ CRITICAL INSTRUCTIONS:
 4. Generate realistic startup content that stands on its own, independent of the report title
 5. NEVER refer to the person writing this report as "user" - always use "founder", "founders", or "co-founders"
 
-6. FOUNDER'S NOTES HANDLING:
+6. FOUNDER'S NOTES PARSING:
 
-   If founder's notes are provided, analyze them carefully:
    
-   TYPE 1 - INSTRUCTIONS for existing sections:
-   - Examples: "add pets to startup description", "mention growth in progress", "include challenges in risks"
-   - Action: Apply these instructions to the relevant sections
-   - Result: DO NOT include additionalNotes field
+   STEP 1: Parse the founder's notes by splitting on connectors like "and", "also", "plus", "additionally"
    
-   TYPE 2 - NEW SECTIONS or ADDITIONAL INFO:
-   - Examples: "add team culture section", "we have remote work policy", "our office is pet-friendly"
-   - Action: Create professional content for these in additionalNotes
-   - Result: INCLUDE additionalNotes field with professional content
+   STEP 2: For each parsed segment, classify as:
    
-   TYPE 3 - MIXED (both instructions AND new info):
-   - Example: "add pets to startup description and create team culture section"
-   - Action: Apply instructions to existing sections AND create additionalNotes for new content
-   - Result: INCLUDE additionalNotes field with only the new content (not the instructions)
+   TYPE A - INSTRUCTIONS for existing sections:
+   - Patterns: "add X to [section]", "mention Y in progress", "include Z in description"
+   - Keywords: "add to", "mention in", "include in", "update", "change", "make sure"
+   - Action: Apply to existing sections, DO NOT show in additionalNotes
+   
+   TYPE B - NEW SECTIONS or STANDALONE INFO:
+   - Patterns: "add new section about X", "create Y section", standalone facts
+   - Keywords: "new section", "create section", "add section", or standalone information
+   - Action: Create professional content in additionalNotes
+   
+   EXAMPLES:
+   - "add pets to startup description and create team culture section"
+     → "add pets to startup description" = TYPE A (apply to startupDescription)
+     → "create team culture section" = TYPE B (goes to additionalNotes)
+   
+   - "mention 10M funding in forecast and John joined our team"
+     → "mention 10M funding in forecast" = TYPE A (apply to forecastPriorities)
+     → "John joined our team" = TYPE B (goes to additionalNotes as team update)
+   
+   - "add we got funding to forecast and priorities"
+     → This is TYPE A (instruction to add funding info to forecast section)
+   
+   - "add new section about John joining and add funding to forecast"
+     → "add new section about John joining" = TYPE B (new section in additionalNotes)
+     → "add funding to forecast" = TYPE A (apply to forecastPriorities)
+
+   DECISION RULE:
+   - If ANY segment is TYPE B, include additionalNotes field with ONLY the TYPE B content
+   - If ALL segments are TYPE A, do NOT include additionalNotes field
 
 Generate content for each enabled section. Make the content professional, realistic, and appropriate for the target audience.
 
@@ -178,10 +196,8 @@ Respond with ONLY valid JSON. Always include these enabled sections: ${enabledSe
 Base structure:
 {${enabledSections.includes("startupDescription") ? '\n  "startupDescription": "Professional description...",' : ""}${enabledSections.includes("progressOverview") ? '\n  "progressOverview": "Summary of progress...",' : ""}${enabledSections.includes("tractionMilestones") ? '\n  "tractionMilestones": [\n    "Milestone 1",\n    "Milestone 2"\n  ],' : ""}${enabledSections.includes("risksBottlenecks") ? '\n  "risksBottlenecks": "Analysis of risks...",' : ""}${enabledSections.includes("productStrategy") ? '\n  "productStrategy": "Product strategy...",' : ""}${enabledSections.includes("forecastPriorities") ? '\n  "forecastPriorities": "Forward-looking priorities..."' : ""}}
 
-IMPORTANT: Add this field ONLY if founder's notes contain TYPE 2 or TYPE 3 content:
-"additionalNotes": "Professional content for new sections or additional information"
-
-DECISION RULE: If the founder's notes ask you to create NEW sections or contain standalone information that doesn't belong in existing sections, include the additionalNotes field. If the notes only give instructions for existing sections, do NOT include additionalNotes.
+CONDITIONAL FIELD - Add ONLY if founder's notes contain TYPE B content:
+"additionalNotes": "Professional content for new sections (TYPE B content only)"
 `
 
   return prompt
