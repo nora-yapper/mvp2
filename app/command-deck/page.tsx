@@ -26,6 +26,8 @@ import {
   RotateCcw,
 } from "lucide-react"
 
+import { checkTokenBalance } from "@/lib/token-integration"
+
 interface Task {
   id: string
   title: string
@@ -334,6 +336,17 @@ export default function CommandDeck() {
   const handleGenerateMissionSteps = async () => {
     if (!mission.trim()) return
 
+    const currentBalance = checkTokenBalance()
+    if (currentBalance < 20) {
+      setErrorMessage(
+        `Insufficient tokens. You have ${currentBalance} tokens but need 20 for mission step generation. Complete more tasks to earn tokens!`,
+      )
+      setTimeout(() => {
+        setErrorMessage("")
+      }, 8000)
+      return
+    }
+
     setIsGenerating(true)
     setApiSource("")
     setErrorMessage("")
@@ -363,7 +376,23 @@ export default function CommandDeck() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
-        throw new Error(errorData.error || `HTTP ${response.status}`)
+        if (response.status === 402) {
+          const balance = checkTokenBalance()
+          setErrorMessage(
+            `Insufficient tokens. You have ${balance} tokens but need 20. Complete tasks to earn more tokens!`,
+          )
+        } else {
+          setErrorMessage(`Error generating mission steps: ${errorData.error || `HTTP ${response.status}`}`)
+        }
+
+        // Show error for 8 seconds for token errors, 5 seconds for others
+        setTimeout(
+          () => {
+            setErrorMessage("")
+          },
+          response.status === 402 ? 8000 : 5000,
+        )
+        return
       }
 
       const data = await response.json()
@@ -404,12 +433,21 @@ export default function CommandDeck() {
     } catch (error) {
       console.error("Error generating mission steps:", error)
       const errorMsg = error instanceof Error ? error.message : "Unknown error occurred"
-      setErrorMessage(`Failed to generate steps: ${errorMsg}`)
 
-      // Show error for 5 seconds then clear
-      setTimeout(() => {
-        setErrorMessage("")
-      }, 5000)
+      if (errorMsg.includes("Insufficient tokens") || errorMsg.includes("tokens")) {
+        const balance = checkTokenBalance()
+        setErrorMessage(
+          `Insufficient tokens. You have ${balance} tokens but need 20. Complete more tasks to earn tokens!`,
+        )
+        setTimeout(() => {
+          setErrorMessage("")
+        }, 8000)
+      } else {
+        setErrorMessage(`Failed to generate steps: ${errorMsg}`)
+        setTimeout(() => {
+          setErrorMessage("")
+        }, 5000)
+      }
     } finally {
       setIsGenerating(false)
     }
