@@ -164,7 +164,7 @@ const ProductTaskPage = () => {
           </div>
 
           {/* Three Column Layout */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "30px", minHeight: "500px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "30px" }}>
             {/* Ideas Column */}
             <div>
               <h3
@@ -180,7 +180,7 @@ const ProductTaskPage = () => {
               >
                 💡 Product Ideas
               </h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", minHeight: "200px" }}>
                 {postIts.ideas.map((idea, index) => (
                   <div
                     key={index}
@@ -243,7 +243,7 @@ const ProductTaskPage = () => {
               >
                 ⚠️ Potential Issues
               </h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", minHeight: "200px" }}>
                 {postIts.issues.map((issue, index) => (
                   <div
                     key={index}
@@ -306,7 +306,7 @@ const ProductTaskPage = () => {
               >
                 🚨 Risks
               </h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", minHeight: "200px" }}>
                 {postIts.risks.map((risk, index) => (
                   <div
                     key={index}
@@ -356,7 +356,7 @@ const ProductTaskPage = () => {
           </div>
 
           {/* Save Button */}
-          <div style={{ marginTop: "40px", textAlign: "center" }}>
+          <div style={{ marginTop: "20px", textAlign: "center" }}>
             <button
               onClick={handleSave}
               style={{
@@ -576,7 +576,7 @@ const ProductTaskPage = () => {
       </div>
 
       {/* Main Content */}
-      <div style={{ marginTop: "60px", paddingBottom: "40px" }}>{renderTaskContent()}</div>
+      <div style={{ marginTop: "60px" }}>{renderTaskContent()}</div>
 
       {/* Overlay for sidebar */}
       {sidebarOpen && (
