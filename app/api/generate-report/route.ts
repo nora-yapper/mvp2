@@ -68,13 +68,35 @@ export async function POST(request: NextRequest) {
       let parsedResponse
       try {
         console.log("[v0] Parsing AI response")
-        // Clean the response text
         let cleanedText = text.trim()
+
+        // Remove any markdown formatting
         if (cleanedText.startsWith("```json")) {
           cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
         } else if (cleanedText.startsWith("```")) {
           cleanedText = cleanedText.replace(/^```\s*/, "").replace(/\s*```$/, "")
         }
+
+        // Handle duplicate JSON objects - take only the first complete one
+        const jsonStart = cleanedText.indexOf("{")
+        if (jsonStart !== -1) {
+          let braceCount = 0
+          let endIndex = jsonStart
+
+          for (let i = jsonStart; i < cleanedText.length; i++) {
+            if (cleanedText[i] === "{") braceCount++
+            if (cleanedText[i] === "}") braceCount--
+            if (braceCount === 0) {
+              endIndex = i + 1
+              break
+            }
+          }
+
+          cleanedText = cleanedText.substring(jsonStart, endIndex)
+        }
+
+        // Remove any trailing incomplete content
+        cleanedText = cleanedText.replace(/,\s*$/, "")
 
         parsedResponse = JSON.parse(cleanedText)
         console.log("[v0] AI response parsed successfully")
@@ -112,7 +134,15 @@ function createReportPrompt(formData: any) {
   const { title, startDate, endDate, audience, sections, notes } = formData
 
   const dateRange = startDate && endDate ? `${startDate} to ${endDate}` : "current period"
-  const additionalContext = notes ? `\n\nFOUNDER'S NOTES:\n${notes}` : ""
+
+  const hasNotes = notes && notes.trim().length > 0
+
+  if (!hasNotes) {
+    // Simple default report generation without complex analysis
+    return createSimpleReportPrompt(title, dateRange, audience, sections)
+  }
+
+  const additionalContext = `\n\nFOUNDER'S NOTES:\n${notes}`
 
   const enabledSections = Object.entries(sections)
     .filter(([_, enabled]) => enabled)
@@ -127,6 +157,13 @@ REPORT DETAILS:
 - Target Audience: ${audience}
 - Sections to include: ${enabledSections.join(", ")}
 ${additionalContext}
+
+CRITICAL JSON FORMAT REQUIREMENTS:
+1. Respond with ONLY valid JSON - no markdown, no code blocks, no extra text
+2. Do NOT wrap response in \`\`\`json or any other formatting
+3. Generate ONE complete JSON object only
+4. Ensure all strings are properly escaped and complete
+5. Do NOT repeat or duplicate the JSON structure
 
 CRITICAL INSTRUCTIONS:
 1. The title "${title}" is ONLY the report title/label - it is NOT the startup name
@@ -155,71 +192,7 @@ CRITICAL INSTRUCTIONS:
    • "add section for Z"
    • "write new section about..."
    • Standalone information that doesn't fit existing sections
-   
-   COMPREHENSIVE EXAMPLES:
-   
-   Example 1: "add we got 10M funding to traction and milestones and add that we finished incubation program in a new section"
-   → "add we got 10M funding to traction and milestones" = TYPE A (apply to tractionMilestones)
-   → "add that we finished incubation program in a new section" = TYPE B (additionalNotes)
-   → Result: Include additionalNotes with incubation program content
-   
-   Example 2: "add that we finished incubation program and that john is joining our team in a new section"
-   → "add that we finished incubation program and that john is joining our team in a new section" = TYPE B (multiple items in ONE new section)
-   → Result: Include additionalNotes with BOTH incubation program AND John joining content in one section
-   
-   Example 3: "add 10m funding to forecast and priorities. Write a new section about finishing incubation program. Add new mentor arthur to startup description."
-   → "add 10m funding to forecast and priorities" = TYPE A (apply to forecastPriorities)
-   → "Write a new section about finishing incubation program" = TYPE B (new section)
-   → "Add new mentor arthur to startup description" = TYPE A (apply to startupDescription)
-   → Result: Include additionalNotes with ONLY incubation program content
-   
-   Example 4: "mention John joining our team and add 5M funding to forecast"
-   → "mention John joining our team" = TYPE B (standalone team info)
-   → "add 5M funding to forecast" = TYPE A (apply to forecastPriorities)
-   → Result: Include additionalNotes with John joining content
-   
-   Example 5: "add pets policy to startup description and mention office move in progress"
-   → "add pets policy to startup description" = TYPE A (apply to startupDescription)
-   → "mention office move in progress" = TYPE A (apply to progressOverview)
-   → Result: NO additionalNotes (all TYPE A)
-   
-   Example 6: "create team culture section and add new hiring section"
-   → "create team culture section" = TYPE B (new section)
-   → "add new hiring section" = TYPE B (new section)
-   → Result: Include additionalNotes with BOTH team culture AND hiring sections
-   
-   Example 7: "we hired 3 developers and add this to progress overview"
-   → "we hired 3 developers" = TYPE B (standalone info)
-   → "add this to progress overview" = TYPE A (instruction to apply above to progress)
-   → Result: NO additionalNotes (instruction overrides standalone)
-   
-   Example 8: "add funding milestone to traction also we completed Y Combinator"
-   → "add funding milestone to traction" = TYPE A (apply to tractionMilestones)
-   → "we completed Y Combinator" = TYPE B (standalone achievement)
-   → Result: Include additionalNotes with Y Combinator content
-   
-   Example 9: "John joined as CTO plus add office expansion to forecast"
-   → "John joined as CTO" = TYPE B (standalone team update)
-   → "add office expansion to forecast" = TYPE A (apply to forecastPriorities)
-   → Result: Include additionalNotes with John CTO content
-   
-   Example 10: "add new partnerships section furthermore mention revenue growth in progress"
-   → "add new partnerships section" = TYPE B (new section)
-   → "mention revenue growth in progress" = TYPE A (apply to progressOverview)
-   → Result: Include additionalNotes with partnerships section
-   
-   Example 11: "we launched beta version, add user feedback to progress, create metrics section"
-   → "we launched beta version" = TYPE B (standalone achievement)
-   → "add user feedback to progress" = TYPE A (apply to progressOverview)
-   → "create metrics section" = TYPE B (new section)
-   → Result: Include additionalNotes with BOTH beta launch AND metrics section
-   
-   Example 12: "add new team member Sarah to description and create onboarding section and mention Q4 goals in forecast"
-   → "add new team member Sarah to description" = TYPE A (apply to startupDescription)
-   → "create onboarding section" = TYPE B (new section)
-   → "mention Q4 goals in forecast" = TYPE A (apply to forecastPriorities)
-   → Result: Include additionalNotes with ONLY onboarding section
-   
+
    DECISION LOGIC:
    • If ANY segment is TYPE B → Include additionalNotes with ONLY TYPE B content
    • If ALL segments are TYPE A → NO additionalNotes field
@@ -229,17 +202,50 @@ CRITICAL INSTRUCTIONS:
 
 Generate content for each enabled section. Make the content professional, realistic, and appropriate for the target audience.
 
-RESPONSE FORMAT:
-Respond with ONLY valid JSON. Always include these enabled sections: ${enabledSections.join(", ")}
-
-Base structure:
+RESPONSE FORMAT - EXACT JSON STRUCTURE:
 {${enabledSections.includes("startupDescription") ? '\n  "startupDescription": "Professional description...",' : ""}${enabledSections.includes("progressOverview") ? '\n  "progressOverview": "Summary of progress...",' : ""}${enabledSections.includes("tractionMilestones") ? '\n  "tractionMilestones": [\n    "Milestone 1",\n    "Milestone 2"\n  ],' : ""}${enabledSections.includes("risksBottlenecks") ? '\n  "risksBottlenecks": "Analysis of risks...",' : ""}${enabledSections.includes("productStrategy") ? '\n  "productStrategy": "Product strategy...",' : ""}${enabledSections.includes("forecastPriorities") ? '\n  "forecastPriorities": "Forward-looking priorities..."' : ""}}
 
 CONDITIONAL FIELD - Add ONLY if founder's notes contain TYPE B content:
 "additionalNotes": "Professional content for new sections (TYPE B content only)"
-`
+
+REMEMBER: Respond with ONLY the JSON object, no other text or formatting.`
 
   return prompt
+}
+
+function createSimpleReportPrompt(title: string, dateRange: string, audience: string, sections: any) {
+  const enabledSections = Object.entries(sections)
+    .filter(([_, enabled]) => enabled)
+    .map(([section, _]) => section)
+
+  return `
+Create a professional startup report with the following details:
+
+REPORT DETAILS:
+- Report Title: ${title} (THIS IS ONLY A REPORT TITLE/LABEL - DO NOT USE THIS AS THE COMPANY NAME)
+- Reporting Period: ${dateRange}
+- Target Audience: ${audience}
+- Sections to include: ${enabledSections.join(", ")}
+
+CRITICAL JSON FORMAT REQUIREMENTS:
+1. Respond with ONLY valid JSON - no markdown, no code blocks, no extra text
+2. Do NOT wrap response in \`\`\`json or any other formatting
+3. Generate ONE complete JSON object only
+4. Ensure all strings are properly escaped and complete
+
+INSTRUCTIONS:
+1. The title "${title}" is ONLY the report title/label - it is NOT the startup name
+2. Create content about a generic startup/company - do NOT reference "${title}" as the company name
+3. Use terms like "our startup", "the company", "our organization" instead of using the report title
+4. Generate realistic, professional startup content
+5. NEVER refer to the person writing this report as "user" - always use "founder", "founders", or "co-founders"
+
+Generate standard professional content for each enabled section.
+
+RESPONSE FORMAT - EXACT JSON STRUCTURE:
+{${enabledSections.includes("startupDescription") ? '\n  "startupDescription": "Professional description...",' : ""}${enabledSections.includes("progressOverview") ? '\n  "progressOverview": "Summary of progress...",' : ""}${enabledSections.includes("tractionMilestones") ? '\n  "tractionMilestones": [\n    "Milestone 1",\n    "Milestone 2"\n  ],' : ""}${enabledSections.includes("risksBottlenecks") ? '\n  "risksBottlenecks": "Analysis of risks...",' : ""}${enabledSections.includes("productStrategy") ? '\n  "productStrategy": "Product strategy...",' : ""}${enabledSections.includes("forecastPriorities") ? '\n  "forecastPriorities": "Forward-looking priorities..."' : ""}}
+
+REMEMBER: Respond with ONLY the JSON object, no other text or formatting.`
 }
 
 function getFallbackContent(formData: any) {
