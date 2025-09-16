@@ -13,16 +13,18 @@ const ProductTaskPage = () => {
 
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [postIts, setPostIts] = useState<{
+    insights: string[]
     ideas: string[]
+    directions: string[]
     issues: string[]
-    risks: string[]
   }>({
+    insights: [],
     ideas: [],
+    directions: [],
     issues: [],
-    risks: [],
   })
   const [newPostIt, setNewPostIt] = useState("")
-  const [activeColumn, setActiveColumn] = useState<"ideas" | "issues" | "risks">("ideas")
+  const [activeColumn, setActiveColumn] = useState<"insights" | "ideas" | "directions" | "issues">("insights")
 
   useEffect(() => {
     // Load saved post-its from session storage
@@ -49,7 +51,7 @@ const ProductTaskPage = () => {
     }
   }
 
-  const removePostIt = (column: "ideas" | "issues" | "risks", index: number) => {
+  const removePostIt = (column: "insights" | "ideas" | "directions" | "issues", index: number) => {
     const updatedPostIts = {
       ...postIts,
       [column]: postIts[column].filter((_, i) => i !== index),
@@ -92,6 +94,19 @@ const ProductTaskPage = () => {
           <div style={{ marginBottom: "30px", padding: "20px", backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
             <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
               <button
+                onClick={() => setActiveColumn("insights")}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: activeColumn === "insights" ? "#6f42c1" : "#e9ecef",
+                  color: activeColumn === "insights" ? "white" : "#333",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Key Insights
+              </button>
+              <button
                 onClick={() => setActiveColumn("ideas")}
                 style={{
                   padding: "8px 16px",
@@ -105,6 +120,19 @@ const ProductTaskPage = () => {
                 Ideas
               </button>
               <button
+                onClick={() => setActiveColumn("directions")}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: activeColumn === "directions" ? "#28a745" : "#e9ecef",
+                  color: activeColumn === "directions" ? "white" : "#333",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Possible Directions
+              </button>
+              <button
                 onClick={() => setActiveColumn("issues")}
                 style={{
                   padding: "8px 16px",
@@ -115,20 +143,7 @@ const ProductTaskPage = () => {
                   cursor: "pointer",
                 }}
               >
-                Issues
-              </button>
-              <button
-                onClick={() => setActiveColumn("risks")}
-                style={{
-                  padding: "8px 16px",
-                  backgroundColor: activeColumn === "risks" ? "#ffc107" : "#e9ecef",
-                  color: activeColumn === "risks" ? "#333" : "#333",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Risks
+                Potential Issues
               </button>
             </div>
             <div style={{ display: "flex", gap: "10px" }}>
@@ -136,7 +151,7 @@ const ProductTaskPage = () => {
                 type="text"
                 value={newPostIt}
                 onChange={(e) => setNewPostIt(e.target.value)}
-                placeholder={`Add a new ${activeColumn.slice(0, -1)}...`}
+                placeholder={`Add a new ${activeColumn === "insights" ? "insight" : activeColumn === "directions" ? "direction" : activeColumn.slice(0, -1)}...`}
                 style={{
                   flex: 1,
                   padding: "10px",
@@ -162,8 +177,71 @@ const ProductTaskPage = () => {
             </div>
           </div>
 
-          {/* Three Column Layout */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "30px" }}>
+          {/* Four Column Layout */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "20px" }}>
+            {/* Key Insights Column */}
+            <div>
+              <h3
+                style={{
+                  fontSize: "18px",
+                  marginBottom: "20px",
+                  color: "#6f42c1",
+                  textAlign: "center",
+                  padding: "10px",
+                  backgroundColor: "#f3e5f5",
+                  borderRadius: "8px",
+                }}
+              >
+                🔍 Key Insights
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", minHeight: "200px" }}>
+                {postIts.insights.map((insight, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      backgroundColor: "#f3e5f5",
+                      padding: "15px",
+                      borderRadius: "8px",
+                      border: "1px solid #e1bee7",
+                      position: "relative",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    <button
+                      onClick={() => removePostIt("insights", index)}
+                      style={{
+                        position: "absolute",
+                        top: "5px",
+                        right: "5px",
+                        background: "none",
+                        border: "none",
+                        fontSize: "16px",
+                        cursor: "pointer",
+                        color: "#999",
+                      }}
+                    >
+                      ×
+                    </button>
+                    <p style={{ margin: 0, fontSize: "14px", lineHeight: "1.4" }}>{insight}</p>
+                  </div>
+                ))}
+                {postIts.insights.length === 0 && (
+                  <div
+                    style={{
+                      padding: "20px",
+                      textAlign: "center",
+                      color: "#999",
+                      fontStyle: "italic",
+                      border: "2px dashed #ddd",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    No insights yet. Add some above!
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Ideas Column */}
             <div>
               <h3
@@ -177,17 +255,17 @@ const ProductTaskPage = () => {
                   borderRadius: "8px",
                 }}
               >
-                💡 Product Ideas
+                💡 Ideas
               </h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", minHeight: "200px" }}>
                 {postIts.ideas.map((idea, index) => (
                   <div
                     key={index}
                     style={{
-                      backgroundColor: "#fff3cd",
+                      backgroundColor: "#e3f2fd",
                       padding: "15px",
                       borderRadius: "8px",
-                      border: "1px solid #ffeaa7",
+                      border: "1px solid #bbdefb",
                       position: "relative",
                       boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                     }}
@@ -227,7 +305,70 @@ const ProductTaskPage = () => {
               </div>
             </div>
 
-            {/* Issues Column */}
+            {/* Possible Directions Column */}
+            <div>
+              <h3
+                style={{
+                  fontSize: "18px",
+                  marginBottom: "20px",
+                  color: "#28a745",
+                  textAlign: "center",
+                  padding: "10px",
+                  backgroundColor: "#d4edda",
+                  borderRadius: "8px",
+                }}
+              >
+                🎯 Possible Directions
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", minHeight: "200px" }}>
+                {postIts.directions.map((direction, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      backgroundColor: "#d4edda",
+                      padding: "15px",
+                      borderRadius: "8px",
+                      border: "1px solid #c3e6cb",
+                      position: "relative",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    <button
+                      onClick={() => removePostIt("directions", index)}
+                      style={{
+                        position: "absolute",
+                        top: "5px",
+                        right: "5px",
+                        background: "none",
+                        border: "none",
+                        fontSize: "16px",
+                        cursor: "pointer",
+                        color: "#999",
+                      }}
+                    >
+                      ×
+                    </button>
+                    <p style={{ margin: 0, fontSize: "14px", lineHeight: "1.4" }}>{direction}</p>
+                  </div>
+                ))}
+                {postIts.directions.length === 0 && (
+                  <div
+                    style={{
+                      padding: "20px",
+                      textAlign: "center",
+                      color: "#999",
+                      fontStyle: "italic",
+                      border: "2px dashed #ddd",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    No directions yet. Add some above!
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Potential Issues Column */}
             <div>
               <h3
                 style={{
@@ -285,69 +426,6 @@ const ProductTaskPage = () => {
                     }}
                   >
                     No issues identified yet.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Risks Column */}
-            <div>
-              <h3
-                style={{
-                  fontSize: "18px",
-                  marginBottom: "20px",
-                  color: "#856404",
-                  textAlign: "center",
-                  padding: "10px",
-                  backgroundColor: "#fff3cd",
-                  borderRadius: "8px",
-                }}
-              >
-                🚨 Risks
-              </h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px", minHeight: "200px" }}>
-                {postIts.risks.map((risk, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      backgroundColor: "#fff3cd",
-                      padding: "15px",
-                      borderRadius: "8px",
-                      border: "1px solid #ffeaa7",
-                      position: "relative",
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                    }}
-                  >
-                    <button
-                      onClick={() => removePostIt("risks", index)}
-                      style={{
-                        position: "absolute",
-                        top: "5px",
-                        right: "5px",
-                        background: "none",
-                        border: "none",
-                        fontSize: "16px",
-                        cursor: "pointer",
-                        color: "#999",
-                      }}
-                    >
-                      ×
-                    </button>
-                    <p style={{ margin: 0, fontSize: "14px", lineHeight: "1.4" }}>{risk}</p>
-                  </div>
-                ))}
-                {postIts.risks.length === 0 && (
-                  <div
-                    style={{
-                      padding: "20px",
-                      textAlign: "center",
-                      color: "#999",
-                      fontStyle: "italic",
-                      border: "2px dashed #ddd",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    No risks identified yet.
                   </div>
                 )}
               </div>
