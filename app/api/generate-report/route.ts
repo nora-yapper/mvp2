@@ -153,58 +153,67 @@ CRITICAL INSTRUCTIONS:
 
 6. ADDITIONAL NOTES ANALYSIS - THIS IS THE MOST CRITICAL RULE:
    
-   STEP 1: Analyze the founder's notes to determine if they are INSTRUCTIONAL or ADDITIONAL:
+   STEP 1: Analyze the founder's notes to categorize them:
    
-   INSTRUCTIONAL NOTES (these modify existing sections, DO NOT create additionalNotes field):
-   - Any command or directive that tells you to modify existing sections
-   - Phrases like: "add [X] to [section]", "make [section] more [Y]", "focus on [Z] in [section]", "include [A] in [section]"
-   - Phrases like: "mention [X]", "emphasize [Y]", "highlight [Z]", "talk about [A]"
-   - Phrases like: "update [section] with [info]", "change [section] to include [X]"
-   - Any sentence that starts with action verbs: "add", "include", "mention", "focus", "emphasize", "highlight", "update", "change", "make", "ensure"
-   - Any content that references specific report sections by name
-   - ANY instruction about HOW to write or WHAT to include in the report
+   A) INSTRUCTIONS FOR EXISTING SECTIONS (DO NOT create additionalNotes field):
+   - Commands that modify existing report sections: "add [X] to startup description", "mention [Y] in overview"
+   - Action verbs targeting existing sections: "add", "include", "mention", "focus", "emphasize", "highlight", "update", "change", "make", "ensure"
+   - References to specific section names: "startup description", "overview", "milestones", "risks", "product strategy", "priorities"
+   - ANY instruction about HOW to write or WHAT to include in existing sections
    
-   ADDITIONAL CONTENT (these are standalone info, DO create additionalNotes field):
-   - New factual information that doesn't fit in standard sections
-   - Supplementary context that stands alone
-   - Background information not covered elsewhere
-   - Statements that provide additional context without instructing changes
-   - Information that would naturally appear as a separate "Additional Notes" section
+   B) REQUESTS FOR NEW SECTIONS (DO create additionalNotes field):
+   - Instructions to create entirely new sections not in the standard report format
+   - "Add a section about [topic]", "Create a new section for [X]", "Include a [new topic] section"
+   - Content that doesn't fit into any existing section categories
+   - Requests for custom sections like "Team Culture", "Office Environment", "Partnership Details", etc.
    
-   STEP 2: If notes are INSTRUCTIONAL (even partially):
-   - Apply ALL instructions to the relevant sections
-   - DO NOT include any "additionalNotes" field in your JSON response
-   - Seamlessly integrate the instructional content into existing sections
+   C) TRULY ADDITIONAL CONTENT (DO create additionalNotes field, analyze and rewrite):
+   - Standalone factual information that supplements the report
+   - Background context that doesn't instruct changes
+   - Additional details that provide context but don't modify existing sections
+   - Information that would naturally appear as supplementary notes
    
-   STEP 3: If notes contain ONLY truly additional standalone content:
-   - Include ONLY the non-instructional parts in the "additionalNotes" field
-   - Never include instructional phrases in additionalNotes
+   STEP 2: Processing Logic:
+   - Type A (Instructions for existing sections): Apply to relevant sections, NO additionalNotes field
+   - Type B (New section requests): Create new content in additionalNotes field with appropriate heading
+   - Type C (Additional content): Analyze, enhance, and include in additionalNotes field
+   
+   STEP 3: For additionalNotes content:
+   - Don't copy-paste user input
+   - Analyze and rewrite in professional business language
+   - Create proper section headings if it's a new section request
+   - Enhance with relevant business context
 
-7. EXAMPLES OF INSTRUCTIONAL vs ADDITIONAL:
-   - "add pets are awesome to startup description" = INSTRUCTIONAL → modify startupDescription
-   - "mention our new office in the overview" = INSTRUCTIONAL → modify progressOverview  
-   - "focus on AI features in product strategy" = INSTRUCTIONAL → modify productStrategy
-   - "We have a partnership with XYZ Corp" = ADDITIONAL → include in additionalNotes
-   - "Our team loves working remotely" = ADDITIONAL → include in additionalNotes
+7. EXAMPLES:
+   - "add pets are awesome to startup description" = Type A → modify startupDescription, no additionalNotes
+   - "mention our new office in the overview" = Type A → modify progressOverview, no additionalNotes
+   - "add a section about team culture" = Type B → create additionalNotes with "Team Culture" heading
+   - "create a partnerships section" = Type B → create additionalNotes with "Strategic Partnerships" heading
+   - "We have a great remote work policy" = Type C → analyze and include in additionalNotes
+   - "Our office is pet-friendly and has great coffee" = Type C → enhance and include in additionalNotes
 
 Generate content for each enabled section. Make the content:
 1. Professional and business-appropriate
 2. Specific to the reporting period and audience
-3. Incorporate any instructional context from founder notes into the relevant sections
-4. Realistic and actionable
-5. Appropriate length for each section (2-4 sentences for most, bullet points for milestones)
-6. NEVER use the report title "${title}" as the startup/company name in any section
-7. Always refer to the report writer as "founder" or "co-founders", never as "user"
+3. Incorporate any Type A instructions into the relevant sections
+4. Create new sections in additionalNotes for Type B requests
+5. Enhance and include Type C content in additionalNotes
+6. Realistic and actionable
+7. Appropriate length for each section (2-4 sentences for most, bullet points for milestones)
+8. NEVER use the report title "${title}" as the startup/company name in any section
+9. Always refer to the report writer as "founder" or "co-founders", never as "user"
 
 RESPONSE FORMAT:
 Respond with ONLY valid JSON. Include ONLY the fields for enabled sections: ${enabledSections.join(", ")}
 
 Base JSON structure (only include enabled sections):
-{${enabledSections.includes("startupDescription") ? '\n  "startupDescription": "Professional description of the startup and its mission (incorporate any instructional notes here)...",' : ""}${enabledSections.includes("progressOverview") ? '\n  "progressOverview": "Summary of progress during the reporting period (incorporate any instructional notes here)...",' : ""}${enabledSections.includes("tractionMilestones") ? '\n  "tractionMilestones": [\n    "Specific milestone 1",\n    "Specific milestone 2",\n    "Specific milestone 3"\n  ],' : ""}${enabledSections.includes("risksBottlenecks") ? '\n  "risksBottlenecks": "Analysis of current risks and bottlenecks (incorporate any instructional notes here)...",' : ""}${enabledSections.includes("productStrategy") ? '\n  "productStrategy": "Product strategy and roadmap insights (incorporate any instructional notes here)...",' : ""}${enabledSections.includes("forecastPriorities") ? '\n  "forecastPriorities": "Forward-looking priorities and forecasts (incorporate any instructional notes here)..."' : ""}}
+{${enabledSections.includes("startupDescription") ? '\n  "startupDescription": "Professional description of the startup and its mission (incorporate Type A instructions here)...",' : ""}${enabledSections.includes("progressOverview") ? '\n  "progressOverview": "Summary of progress during the reporting period (incorporate Type A instructions here)...",' : ""}${enabledSections.includes("tractionMilestones") ? '\n  "tractionMilestones": [\n    "Specific milestone 1",\n    "Specific milestone 2",\n    "Specific milestone 3"\n  ],' : ""}${enabledSections.includes("risksBottlenecks") ? '\n  "risksBottlenecks": "Analysis of current risks and bottlenecks (incorporate Type A instructions here)...",' : ""}${enabledSections.includes("productStrategy") ? '\n  "productStrategy": "Product strategy and roadmap insights (incorporate Type A instructions here)...",' : ""}${enabledSections.includes("forecastPriorities") ? '\n  "forecastPriorities": "Forward-looking priorities and forecasts (incorporate Type A instructions here)..."' : ""}}
 
-ONLY add "additionalNotes": "content here" field if the founder's notes contain truly additional standalone information that doesn't belong in the standard sections above AND contains no instructional language.
+ONLY add "additionalNotes": "content here" field if the founder's notes contain:
+- Type B: Requests for new sections (create professional section with heading)
+- Type C: Truly additional standalone information (analyze and enhance, don't copy-paste)
 
-CRITICAL: If ANY part of the notes is instructional, do NOT include additionalNotes field at all.
+CRITICAL: If notes are ONLY Type A (instructions for existing sections), do NOT include additionalNotes field at all.
 `
 
   return prompt
