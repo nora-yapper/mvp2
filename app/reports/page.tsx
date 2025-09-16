@@ -83,6 +83,26 @@ export default function ReportsPage() {
     return errors
   }
 
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      startDate: "",
+      endDate: "",
+      audience: "",
+      sections: {
+        startupDescription: true,
+        progressOverview: true,
+        tractionMilestones: true,
+        risksBottlenecks: true,
+        productStrategy: true,
+        forecastPriorities: true,
+      },
+      notes: "",
+    })
+    setValidationErrors([])
+    setGeneratedContent(null)
+  }
+
   const generateReport = async () => {
     console.log("[v0] Starting report generation")
     const errors = validateForm()
@@ -141,6 +161,7 @@ export default function ReportsPage() {
   }
 
   const createFirstReport = () => {
+    resetForm()
     setCurrentView("form")
   }
 
@@ -167,7 +188,6 @@ export default function ReportsPage() {
       tractionMilestones: report.content?.tractionMilestones || [
         "Completed major platform upgrade affecting 50,000+ users",
         "Reduced system downtime by 65% through infrastructure improvements",
-        "Onboarded 3 new team members with full integration success",
         "Reduced system downtime by 65% through infrastructure improvements",
         "Onboarded 3 new team members with full integration success",
         "Achieved 94% customer satisfaction score in latest survey",
@@ -726,7 +746,10 @@ ${reportToDownload.content.additionalNotes}
         History
       </button>
       <button
-        onClick={() => setCurrentView("form")}
+        onClick={() => {
+          resetForm()
+          setCurrentView("form")
+        }}
         style={{
           padding: "12px 24px",
           fontSize: "15px",
