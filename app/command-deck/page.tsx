@@ -63,7 +63,7 @@ const teamMembers = [
 ]
 
 export default function CommandDeck() {
-  const [activeView, setActiveView] = useState("Gantt")
+  const [activeView, setActiveView] = useState("List")
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: "1",
