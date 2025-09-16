@@ -9,22 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Plus,
-  Clock,
-  Kanban,
-  TableIcon,
-  Loader2,
-  Edit,
-  Save,
-  X,
-  AlertCircle,
-  BarChart3,
-  Trash2,
-  RotateCcw,
-} from "lucide-react"
+import { Plus, Loader2, AlertCircle } from "lucide-react"
 
 // import { checkTokenBalance } from "@/lib/token-integration"
 
@@ -371,27 +357,26 @@ export default function CommandDeck() {
       }
 
       const transformedSteps = data.steps.map((step: any, index: number) => {
-        // Smart assignee assignment based on category
         const getSmartAssignee = (category: string): string => {
           switch (category) {
             case "Product Development":
-              return "Tech Lead"
+              return "Alex Johnson" // Developer
             case "Sales":
-              return "Sales Manager"
+              return "James Wilson" // Sales
             case "Marketing":
-              return "Marketing Manager"
+              return "Emily Davis" // Marketing
             case "Research":
-              return "Research Lead"
+              return "Sarah Chen" // Product Manager
             case "Finance":
-              return "Finance Manager"
+              return "Sarah Chen" // Product Manager
             case "Operations":
-              return "Operations Manager"
+              return "Sarah Chen" // Product Manager
             case "Human Resources":
-              return "HR Manager"
+              return "Sarah Chen" // Product Manager
             case "Legal":
-              return "Legal Counsel"
+              return "Sarah Chen" // Product Manager
             default:
-              return "Project Manager"
+              return "Sarah Chen" // Product Manager as default
           }
         }
 
@@ -1076,640 +1061,77 @@ export default function CommandDeck() {
                                 )}
                               </div>
                             </div>
-                            <div>
-                              <label className="text-sm font-medium text-gray-200">Deadline</label>
-                              <Input
-                                type="date"
-                                value={newTask.deadline}
-                                onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
-                                className="bg-gray-700 border-gray-600 text-gray-100"
-                                style={{ colorScheme: "dark" }}
-                              />
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-gray-200">Priority</label>
-                              <Select
-                                value={newTask.priority}
-                                onValueChange={(value) =>
-                                  setNewTask({ ...newTask, priority: value as "High" | "Medium" | "Low" })
-                                }
-                              >
-                                <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="bg-gray-800 border-gray-600">
-                                  <SelectItem value="High" className="text-gray-100 hover:bg-gray-700">
-                                    High
-                                  </SelectItem>
-                                  <SelectItem value="Medium" className="text-gray-100 hover:bg-gray-700">
-                                    Medium
-                                  </SelectItem>
-                                  <SelectItem value="Low" className="text-gray-100 hover:bg-gray-700">
-                                    Low
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-sm font-medium text-gray-200">Deadline</label>
+                                <Input
+                                  type="date"
+                                  value={newTask.deadline}
+                                  onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
+                                  className="bg-gray-700 border-gray-600 text-gray-100"
+                                  style={{ colorScheme: "dark" }}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium text-gray-200">Priority</label>
+                                <Select
+                                  value={newTask.priority}
+                                  onValueChange={(value) =>
+                                    setNewTask({ ...newTask, priority: value as "High" | "Medium" | "Low" })
+                                  }
+                                >
+                                  <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-gray-800 border-gray-600">
+                                    <SelectItem value="High" className="text-gray-100 hover:bg-gray-700">
+                                      High
+                                    </SelectItem>
+                                    <SelectItem value="Medium" className="text-gray-100 hover:bg-gray-700">
+                                      Medium
+                                    </SelectItem>
+                                    <SelectItem value="Low" className="text-gray-100 hover:bg-gray-700">
+                                      Low
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
                             </div>
                             <div>
                               <label className="text-sm font-medium text-gray-200">Category</label>
-                              <div className="space-y-2">
-                                <Select
-                                  onValueChange={(value) => {
-                                    if (!newTask.category.includes(value)) {
-                                      setNewTask({ ...newTask, category: [...newTask.category, value] })
-                                    }
-                                  }}
-                                >
-                                  <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
-                                    <SelectValue placeholder="Select category" />
-                                  </SelectTrigger>
-                                  <SelectContent className="bg-gray-800 border-gray-600">
-                                    {departmentOptions.map((dept) => (
-                                      <SelectItem key={dept} value={dept} className="text-gray-100 hover:bg-gray-700">
-                                        {dept}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                {newTask.category.length > 0 && (
-                                  <div className="flex flex-wrap gap-1">
-                                    {newTask.category.map((cat, index) => (
-                                      <Badge
-                                        key={index}
-                                        variant="outline"
-                                        className="text-xs border-gray-500 text-gray-400 pr-1"
-                                      >
-                                        {cat}
-                                        <button
-                                          onClick={() => {
-                                            setNewTask({
-                                              ...newTask,
-                                              category: newTask.category.filter((_, i) => i !== index),
-                                            })
-                                          }}
-                                          className="ml-1 text-gray-400 hover:text-gray-200"
-                                        >
-                                          ×
-                                        </button>
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <Button onClick={handleAddTask} className="w-full bg-blue-600 hover:bg-blue-700">
-                              Add Task
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-
-                      <Dialog open={isTaskHistoryOpen} onOpenChange={setIsTaskHistoryOpen}>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="border-gray-600 text-gray-200 hover:bg-gray-700 bg-transparent"
-                          >
-                            <Clock className="mr-2 h-4 w-4" />
-                            Task History
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-gray-800 border-gray-700">
-                          <DialogHeader>
-                            <DialogTitle className="text-gray-100">Task History</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-3">
-                            {taskHistory.length === 0 ? (
-                              <p className="text-gray-400 text-center py-8">No completed or deleted tasks yet.</p>
-                            ) : (
-                              taskHistory.map((task) => (
-                                <Card key={task.id} className="bg-gray-700 border-gray-600">
-                                  <CardContent className="p-4">
-                                    <div className="flex items-start justify-between">
-                                      <div className="flex-1">
-                                        <h3 className="font-semibold text-gray-100">{task.title}</h3>
-                                        <p className="text-sm text-gray-300 mt-1">{task.description}</p>
-                                        <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                          {task.assignee.map((assignee, index) => (
-                                            <Badge
-                                              key={index}
-                                              variant="outline"
-                                              className="text-xs border-gray-500 text-gray-300"
-                                            >
-                                              {assignee}
-                                            </Badge>
-                                          ))}
-                                          <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>
-                                            {task.priority}
-                                          </Badge>
-                                          <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
-                                            {task.status === "Done" ? "Completed" : "Deleted"}
-                                          </Badge>
-                                          {task.category.map((cat, index) => (
-                                            <Badge
-                                              key={index}
-                                              variant="outline"
-                                              className="text-xs border-gray-500 text-gray-400"
-                                            >
-                                              {cat}
-                                            </Badge>
-                                          ))}
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <div className="text-right">
-                                          <p className="text-sm font-medium text-gray-100">{task.deadline}</p>
-                                          <p className="text-xs text-gray-400">{task.category}</p>
-                                        </div>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => handleRestoreTask(task.id)}
-                                          className="text-green-400 border-green-400 hover:bg-green-400 hover:text-white"
-                                        >
-                                          <RotateCcw className="h-4 w-4 mr-1" />
-                                          Restore
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))
-                            )}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-
-                      <div className="flex items-center gap-2">
-                        {[
-                          { name: "Gantt", icon: BarChart3 },
-                          { name: "Kanban", icon: Kanban },
-                          { name: "Table", icon: TableIcon },
-                        ].map((view) => (
-                          <Button
-                            key={view.name}
-                            variant={activeView === view.name ? "default" : "ghost"}
-                            onClick={() => setActiveView(view.name)}
-                            className={
-                              activeView === view.name
-                                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                : "text-gray-300 hover:text-gray-100 hover:bg-gray-700"
-                            }
-                          >
-                            <view.icon className="mr-2 h-4 w-4" />
-                            {view.name}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Filters */}
-                  <div className="flex items-center gap-4 mb-6">
-                    <Input
-                      placeholder="Search tasks..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="max-w-sm bg-gray-700 border-gray-600 text-gray-100 placeholder:text-gray-400"
-                    />
-                    <Select value={filterPriority} onValueChange={setFilterPriority}>
-                      <SelectTrigger className="w-32 bg-gray-700 border-gray-600 text-gray-100">
-                        <SelectValue placeholder="Priority" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-600">
-                        <SelectItem value="all" className="text-gray-100 hover:bg-gray-700">
-                          All Priority
-                        </SelectItem>
-                        <SelectItem value="High" className="text-gray-100 hover:bg-gray-700">
-                          High
-                        </SelectItem>
-                        <SelectItem value="Medium" className="text-gray-100 hover:bg-gray-700">
-                          Medium
-                        </SelectItem>
-                        <SelectItem value="Low" className="text-gray-100 hover:bg-gray-700">
-                          Low
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select value={filterStatus} onValueChange={setFilterStatus}>
-                      <SelectTrigger className="w-32 bg-gray-700 border-gray-600 text-gray-100">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-600">
-                        <SelectItem value="all" className="text-gray-100 hover:bg-gray-700">
-                          All Status
-                        </SelectItem>
-                        <SelectItem value="To Do" className="text-gray-100 hover:bg-gray-700">
-                          To Do
-                        </SelectItem>
-                        <SelectItem value="In Progress" className="text-gray-100 hover:bg-gray-700">
-                          In Progress
-                        </SelectItem>
-                        <SelectItem value="Done" className="text-gray-100 hover:bg-gray-700">
-                          Done
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* View Content */}
-                  {activeView === "Gantt" && renderGanttView()}
-                  {activeView === "Kanban" && renderKanbanView()}
-                  {activeView === "Table" && renderTableView()}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Team Workload Section */}
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-100 mb-6">Team Workload</h2>
-
-              <Card className="bg-gray-800 border-gray-700">
-                <CardContent className="p-6">
-                  <div className="space-y-6">
-                    {teamWorkload.map((member, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-lg font-medium text-gray-100">{member.name}</h4>
-                            <div className="flex items-center gap-4">
-                              <span className={`text-sm font-medium ${getWorkloadColor(member.status)}`}>
-                                {member.status}
-                              </span>
-                              <span className="text-sm text-gray-300">{member.workload}%</span>
-                            </div>
-                          </div>
-                          <Progress value={member.workload} className="h-2 bg-gray-700" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </main>
-      </div>
-
-      {/* Task Detail Modal */}
-      <Dialog open={isTaskDetailOpen} onOpenChange={setIsTaskDetailOpen}>
-        <DialogContent className="bg-gray-800 border-gray-700 max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-gray-100">Task Details</DialogTitle>
-          </DialogHeader>
-          {editingTask && (
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-200">Title</label>
-                <Input
-                  value={editingTask.title}
-                  onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
-                  className="bg-gray-700 border-gray-600 text-gray-100"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-200">Description</label>
-                <Textarea
-                  value={editingTask.description}
-                  onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
-                  className="bg-gray-700 border-gray-600 text-gray-100"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-200">Assignee</label>
-                <div className="space-y-2">
-                  <Select
-                    onValueChange={(value) => {
-                      if (!editingTask.assignee.includes(value)) {
-                        setEditingTask({ ...editingTask, assignee: [...editingTask.assignee, value] })
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
-                      <SelectValue placeholder="Select assignee" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
-                      {teamMembers.map((member) => (
-                        <SelectItem key={member.id} value={member.name} className="text-gray-100 hover:bg-gray-700">
-                          {member.name} - {member.role}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {editingTask.assignee.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {editingTask.assignee.map((assignee, index) => (
-                        <Badge key={index} variant="outline" className="text-xs border-gray-600 text-gray-300 pr-1">
-                          {assignee}
-                          <button
-                            onClick={() => {
-                              setEditingTask({
-                                ...editingTask,
-                                assignee: editingTask.assignee.filter((_, i) => i !== index),
-                              })
-                            }}
-                            className="ml-1 text-gray-400 hover:text-gray-200"
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-200">Priority</label>
-                  <Select
-                    value={editingTask.priority}
-                    onValueChange={(value) =>
-                      setEditingTask({ ...editingTask, priority: value as "High" | "Medium" | "Low" })
-                    }
-                  >
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
-                      <SelectItem value="High" className="text-gray-100 hover:bg-gray-700">
-                        High
-                      </SelectItem>
-                      <SelectItem value="Medium" className="text-gray-100 hover:bg-gray-700">
-                        Medium
-                      </SelectItem>
-                      <SelectItem value="Low" className="text-gray-100 hover:bg-gray-700">
-                        Low
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-200">Status</label>
-                  <Select
-                    value={editingTask.status}
-                    onValueChange={(value) =>
-                      setEditingTask({ ...editingTask, status: value as "To Do" | "In Progress" | "Done" })
-                    }
-                  >
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
-                      <SelectItem value="To Do" className="text-gray-100 hover:bg-gray-700">
-                        To Do
-                      </SelectItem>
-                      <SelectItem value="In Progress" className="text-gray-100 hover:bg-gray-700">
-                        In Progress
-                      </SelectItem>
-                      <SelectItem value="Done" className="text-gray-100 hover:bg-gray-700">
-                        Done
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-200">Deadline</label>
-                  <Input
-                    type="date"
-                    value={editingTask.deadline}
-                    onChange={(e) => setEditingTask({ ...editingTask, deadline: e.target.value })}
-                    className="bg-gray-700 border-gray-600 text-gray-100"
-                    style={{ colorScheme: "dark" }}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-200">Category</label>
-                  <div className="space-y-2">
-                    <Select
-                      onValueChange={(value) => {
-                        if (!editingTask.category.includes(value)) {
-                          setEditingTask({ ...editingTask, category: [...editingTask.category, value] })
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-600">
-                        {departmentOptions.map((dept) => (
-                          <SelectItem key={dept} value={dept} className="text-gray-100 hover:bg-gray-700">
-                            {dept}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {editingTask.category.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {editingTask.category.map((cat, index) => (
-                          <Badge key={index} variant="outline" className="text-xs border-gray-500 text-gray-400 pr-1">
-                            {cat}
-                            <button
-                              onClick={() => {
-                                setEditingTask({
-                                  ...editingTask,
-                                  category: editingTask.category.filter((_, i) => i !== index),
-                                })
-                              }}
-                              className="ml-1 text-gray-400 hover:text-gray-200"
-                            >
-                              ×
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-between pt-4">
-                <Button
-                  variant="destructive"
-                  onClick={() => handleDeleteTask(editingTask.id)}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Task
-                </Button>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsTaskDetailOpen(false)}
-                    className="border-gray-600 text-gray-200 hover:bg-gray-700"
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSaveTask} className="bg-blue-600 hover:bg-blue-700">
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Changes
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Generated Steps Modal */}
-      <Dialog open={isStepsModalOpen} onOpenChange={setIsStepsModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-gray-800 border-gray-700">
-          <DialogHeader>
-            <DialogTitle className="text-gray-100">Generated Startup Action Plan</DialogTitle>
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-gray-300">Mission: {mission}</p>
-              {apiSource && (
-                <Badge
-                  variant="outline"
-                  className={`text-xs ${
-                    apiSource === "openai"
-                      ? "border-green-500 text-green-400"
-                      : apiSource === "fallback"
-                        ? "border-yellow-500 text-yellow-400"
-                        : "border-red-500 text-red-400"
-                  }`}
-                >
-                  {apiSource === "openai" ? "🤖 OpenAI" : apiSource === "fallback" ? "⚠️ Fallback" : "❌ Error Fallback"}
-                </Badge>
-              )}
-            </div>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-gray-300">
-              Here are the startup-focused actionable steps to achieve your mission. You can edit, delete, or modify
-              these steps before implementing them:
-            </p>
-            <div className="space-y-3">
-              {generatedSteps.map((step, index) => (
-                <Card key={index} className="border-l-4 border-l-blue-500 bg-gray-700 border-gray-600">
-                  <CardContent className="p-4">
-                    {editingStepIndex === index ? (
-                      // Edit mode
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium text-gray-200">Title</label>
-                          <Input
-                            value={editingStep?.title || ""}
-                            onChange={(e) =>
-                              setEditingStep((prev) => (prev ? { ...prev, title: e.target.value } : null))
-                            }
-                            className="bg-gray-600 border-gray-500 text-gray-100"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-200">Description</label>
-                          <Textarea
-                            value={editingStep?.description || ""}
-                            onChange={(e) =>
-                              setEditingStep((prev) => (prev ? { ...prev, description: e.target.value } : null))
-                            }
-                            className="bg-gray-600 border-gray-500 text-gray-100"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-200">Assignee</label>
-                          <div className="space-y-2">
-                            <Select
-                              onValueChange={(value) => {
-                                if (editingStep && !editingStep.assignee.includes(value)) {
-                                  setEditingStep({ ...editingStep, assignee: [...editingStep.assignee, value] })
-                                }
-                              }}
-                            >
-                              <SelectTrigger className="bg-gray-600 border-gray-500 text-gray-100">
-                                <SelectValue placeholder="Select assignee" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-gray-800 border-gray-600">
-                                {teamMembers.map((member) => (
-                                  <SelectItem
-                                    key={member.id}
-                                    value={member.name}
-                                    className="text-gray-100 hover:bg-gray-700"
-                                  >
-                                    {member.name} - {member.role}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            {editingStep && editingStep.assignee.length > 0 && (
-                              <div className="flex flex-wrap gap-1">
-                                {editingStep.assignee.map((assignee, index) => (
-                                  <Badge
-                                    key={index}
-                                    variant="outline"
-                                    className="text-xs border-gray-600 text-gray-300 pr-1"
-                                  >
-                                    {assignee}
-                                    <button
-                                      onClick={() => {
-                                        if (editingStep) {
-                                          setEditingStep({
-                                            ...editingStep,
-                                            assignee: editingStep.assignee.filter((_, i) => i !== index),
-                                          })
-                                        }
-                                      }}
-                                      className="ml-1 text-gray-400 hover:text-gray-200"
-                                    >
-                                      ×
-                                    </button>
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-sm font-medium text-gray-200">Deadline</label>
-                            <Input
-                              type="date"
-                              value={editingStep?.deadline || ""}
-                              onChange={(e) =>
-                                setEditingStep((prev) => (prev ? { ...prev, deadline: e.target.value } : null))
-                              }
-                              className="bg-gray-600 border-gray-500 text-gray-100"
-                              style={{ colorScheme: "dark" }}
-                            />
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-gray-200">Category</label>
-                            <div className="space-y-2">
                               <Select
                                 onValueChange={(value) => {
-                                  if (editingStep && !editingStep.category.includes(value)) {
-                                    setEditingStep({ ...editingStep, category: [...editingStep.category, value] })
+                                  if (!newTask.category.includes(value)) {
+                                    setNewTask({ ...newTask, category: [...newTask.category, value] })
                                   }
                                 }}
                               >
-                                <SelectTrigger className="bg-gray-600 border-gray-500 text-gray-100">
+                                <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
                                   <SelectValue placeholder="Select category" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-gray-800 border-gray-600">
-                                  {departmentOptions.map((dept) => (
-                                    <SelectItem key={dept} value={dept} className="text-gray-100 hover:bg-gray-700">
-                                      {dept}
+                                  {departmentOptions.map((option) => (
+                                    <SelectItem key={option} value={option} className="text-gray-100 hover:bg-gray-700">
+                                      {option}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
-                              {editingStep && editingStep.category.length > 0 && (
+                              {newTask.category.length > 0 && (
                                 <div className="flex flex-wrap gap-1">
-                                  {editingStep.category.map((cat, index) => (
+                                  {newTask.category.map((category, index) => (
                                     <Badge
                                       key={index}
                                       variant="outline"
-                                      className="text-xs border-gray-500 text-gray-400 pr-1"
+                                      className="text-xs border-gray-600 text-gray-300 pr-1"
                                     >
-                                      {cat}
+                                      {category}
                                       <button
                                         onClick={() => {
-                                          if (editingStep) {
-                                            setEditingStep({
-                                              ...editingStep,
-                                              category: editingStep.category.filter((_, i) => i !== index),
-                                            })
-                                          }
+                                          setNewTask({
+                                            ...newTask,
+                                            category: newTask.category.filter((_, i) => i !== index),
+                                          })
                                         }}
                                         className="ml-1 text-gray-400 hover:text-gray-200"
                                       >
@@ -1721,93 +1143,21 @@ export default function CommandDeck() {
                               )}
                             </div>
                           </div>
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleCancelEdit}
-                            className="border-gray-500 text-gray-200 hover:bg-gray-600 bg-transparent"
-                          >
-                            <X className="h-4 w-4 mr-1" />
-                            Cancel
-                          </Button>
-                          <Button size="sm" onClick={handleSaveStep} className="bg-green-600 hover:bg-green-700">
-                            <Save className="h-4 w-4 mr-1" />
-                            Save
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      // View mode
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-100">{step.title}</h3>
-                          <p className="text-sm text-gray-300 mt-1">{step.description}</p>
-                          <div className="flex items-center gap-2 mt-2 flex-wrap">
-                            {(Array.isArray(step.assignee) ? step.assignee : [step.assignee]).map((assignee, index) => (
-                              <Badge key={index} variant="outline" className="text-xs border-gray-500 text-gray-300">
-                                {assignee}
-                              </Badge>
-                            ))}
-                            <Badge className={`text-xs text-white ${getPriorityColor(step.priority)}`}>
-                              {step.priority}
-                            </Badge>
-                            {(Array.isArray(step.category) ? step.category : [step.category]).map((cat, index) => (
-                              <Badge key={index} variant="outline" className="text-xs border-gray-500 text-gray-400">
-                                {cat}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 ml-4">
-                          <div className="text-right">
-                            <p className="text-sm font-medium text-gray-100">{step.deadline}</p>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditStep(index)}
-                              className="h-8 w-8 p-0 text-gray-400 hover:text-gray-100 hover:bg-gray-600"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteStep(index)}
-                              className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setIsStepsModalOpen(false)}
-                className="border-gray-500 text-gray-300 hover:bg-gray-600 hover:text-white bg-gray-700"
-              >
-                Dismiss
-              </Button>
-              <Button
-                onClick={handleImplementSteps}
-                className="bg-blue-600 hover:bg-blue-700"
-                disabled={generatedSteps.length === 0}
-              >
-                Implement All Steps ({generatedSteps.length})
-              </Button>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
+
+                  {/* Render views based on activeView state */}
+                  {activeView === "Gantt" && renderGanttView()}
+                  {activeView === "Kanban" && renderKanbanView()}
+                  {activeView === "Table" && renderTableView()}
+                </CardContent>
+              </Card>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </main>
+      </div>
     </div>
   )
 }
