@@ -347,7 +347,7 @@ export default function CommandDeck() {
         body: JSON.stringify({
           mission: mission.trim(),
           timeframe: timeframe || undefined,
-          accomplished: accomplished.filter((item) => item.trim()),
+          accomplished: accomplished.split("\n").filter((item) => item.trim()),
         }),
       })
 
