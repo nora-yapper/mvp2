@@ -8,8 +8,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Scenario is required" }, { status: 400 })
     }
 
-    // Token checks disabled for unlimited usage
-
     const prompt = `You are a startup advisor analyzing a what-if scenario. 
 
 Current startup context:

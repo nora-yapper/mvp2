@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { earnTokensForStep } from "@/lib/token-integration"
 import { useSearchParams } from "next/navigation"
 
 const ProductTaskPage = () => {
@@ -45,9 +44,6 @@ const ProductTaskPage = () => {
 
       // Save to session storage
       sessionStorage.setItem("productActionTablePostIts", JSON.stringify(updatedPostIts))
-
-      // Award tokens for adding post-its
-      earnTokensForStep("PRODUCT_ACTION_TABLE")
     }
   }
 
@@ -65,7 +61,6 @@ const ProductTaskPage = () => {
   const handleSave = () => {
     // Save logic here
     sessionStorage.setItem("productActionTablePostIts", JSON.stringify(postIts))
-    earnTokensForStep("PRODUCT_ACTION_TABLE")
     alert("Progress saved!")
   }
 
@@ -75,9 +70,6 @@ const ProductTaskPage = () => {
       const optionsParam = options.join(",")
       window.location.href = `/product/detail?step=${section}&options=${optionsParam}`
     }
-
-    // Completion logic here
-    earnTokensForStep("PRODUCT_ACTION_TABLE")
   }
 
   const handleBack = () => {

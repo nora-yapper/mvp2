@@ -29,8 +29,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Suggestion with title is required" }, { status: 400 })
     }
 
-    // Token checks disabled for unlimited usage
-
     // Create team context
     const teamContext =
       teamMembers.length > 0

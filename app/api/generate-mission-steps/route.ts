@@ -6,8 +6,6 @@ export async function POST(request: Request) {
       return Response.json({ error: "Mission is required" }, { status: 400 })
     }
 
-    // Token checks disabled for unlimited usage
-
     // Check if OpenAI API key is available
     if (!process.env.OPENAI_API_KEY) {
       console.log("No OpenAI API key found, using fallback")

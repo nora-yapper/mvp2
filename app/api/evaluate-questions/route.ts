@@ -8,8 +8,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Questions array is required" }, { status: 400 })
     }
 
-    // Token checks disabled for unlimited usage
-
+    // Mock evaluation instead of AI SDK
     const evaluations = questions.map((question: string, index: number) => {
       const questionLower = question.toLowerCase()
 

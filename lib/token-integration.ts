@@ -1,12 +1,10 @@
-import { TokenManager, type TOKEN_COSTS, TOKEN_REWARDS } from "./token-system"
+import { TokenManager, TOKEN_COSTS, TOKEN_REWARDS } from "./token-system"
 
 export function spendTokensForAI(feature: keyof typeof TOKEN_COSTS): boolean {
-  return true
+  const tokenManager = TokenManager.getInstance()
+  const cost = TOKEN_COSTS[feature]
 
-  // Original logic commented out for later restoration:
-  // const tokenManager = TokenManager.getInstance()
-  // const cost = TOKEN_COSTS[feature]
-  // return tokenManager.spendTokens(cost, getSpendReason(feature))
+  return tokenManager.spendTokens(cost, getSpendReason(feature))
 }
 
 export function earnTokensForStep(step: keyof typeof TOKEN_REWARDS): boolean {
@@ -47,10 +45,7 @@ export function checkTokenBalance(): number {
 }
 
 export function hasEnoughTokens(feature: keyof typeof TOKEN_COSTS): boolean {
-  return true
-
-  // Original logic commented out for later restoration:
-  // const tokenManager = TokenManager.getInstance()
-  // const cost = TOKEN_COSTS[feature]
-  // return tokenManager.canSpend(cost)
+  const tokenManager = TokenManager.getInstance()
+  const cost = TOKEN_COSTS[feature]
+  return tokenManager.canSpend(cost)
 }

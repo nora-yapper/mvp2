@@ -14,9 +14,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Messages array is required" }, { status: 400 })
     }
 
-    // Spend tokens for AI chat
-    // Token checks disabled for unlimited usage
-
     // Build context-aware system message
     let systemMessage = "You are a helpful startup advisor assistant."
 
