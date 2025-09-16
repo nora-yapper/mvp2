@@ -1422,7 +1422,7 @@ export default function CommandDeck() {
                   <Button
                     variant="outline"
                     onClick={() => setIsTaskDetailOpen(false)}
-                    className="border-gray-600 text-gray-100 hover:bg-gray-700 hover:text-white"
+                    className="border-gray-600 bg-gray-200 text-gray-800 hover:bg-gray-300 hover:text-gray-900"
                   >
                     Cancel
                   </Button>
