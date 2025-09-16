@@ -621,12 +621,14 @@ export default function CommandDeck() {
             <p className="text-sm text-gray-300 mt-1">{task.description}</p>
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               {(Array.isArray(task.assignee) ? task.assignee : [task.assignee]).map((assignee, index) => (
-                <Badge key={index} variant="outline" className="text-xs border-gray-600 text-gray-300">
+                <Badge key={index} variant="outline" className="text-xs border-gray-500 text-gray-300">
                   {assignee}
                 </Badge>
               ))}
               <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
-              <Badge className={`text-xs text-white ${getStatusColor(task.status)}`}>{task.status}</Badge>
+              <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
+                {task.status === "Done" ? "Completed" : "Deleted"}
+              </Badge>
               {(Array.isArray(task.category) ? task.category : [task.category]).map((cat, index) => (
                 <Badge key={index} variant="outline" className="text-xs border-gray-500 text-gray-400">
                   {cat}
@@ -1759,7 +1761,7 @@ export default function CommandDeck() {
                           <h3 className="font-semibold text-gray-100">{step.title}</h3>
                           <p className="text-sm text-gray-300 mt-1">{step.description}</p>
                           <div className="flex items-center gap-2 mt-2 flex-wrap">
-                            {step.assignee.map((assignee, index) => (
+                            {(Array.isArray(step.assignee) ? step.assignee : [step.assignee]).map((assignee, index) => (
                               <Badge key={index} variant="outline" className="text-xs border-gray-500 text-gray-300">
                                 {assignee}
                               </Badge>
@@ -1767,7 +1769,7 @@ export default function CommandDeck() {
                             <Badge className={`text-xs text-white ${getPriorityColor(step.priority)}`}>
                               {step.priority}
                             </Badge>
-                            {step.category.map((cat, index) => (
+                            {(Array.isArray(step.category) ? step.category : [step.category]).map((cat, index) => (
                               <Badge key={index} variant="outline" className="text-xs border-gray-500 text-gray-400">
                                 {cat}
                               </Badge>
