@@ -400,8 +400,8 @@ export default function CommandDeck() {
 
         return {
           id: Date.now() + index,
-          task: step.title || `Action Step ${index + 1}`, // Use title from AI response
-          description: step.description || "",
+          title: step.title || `Action Step ${index + 1}`, // This will be the task title
+          description: step.description || "", // This will be the task description
           assignee: [assignee], // Smart assignee based on category
           category: [category],
           priority:
@@ -463,8 +463,8 @@ export default function CommandDeck() {
   const handleImplementSteps = () => {
     const newTasks: Task[] = generatedSteps.map((step, index) => ({
       id: (Date.now() + index).toString(),
-      title: step.title,
-      description: step.description,
+      title: step.title, // Use the title from the transformed step
+      description: step.description, // Use the description from the transformed step
       assignee: step.assignee,
       deadline: step.deadline,
       priority: step.priority,
