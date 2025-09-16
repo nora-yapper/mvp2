@@ -578,14 +578,14 @@ export default function CommandDeck() {
             <h3 className="font-semibold text-gray-100">{task.title}</h3>
             <p className="text-sm text-gray-300 mt-1">{task.description}</p>
             <div className="flex items-center gap-2 mt-2 flex-wrap">
-              {task.assignee.map((assignee, index) => (
+              {(Array.isArray(task.assignee) ? task.assignee : [task.assignee]).map((assignee, index) => (
                 <Badge key={index} variant="outline" className="text-xs border-gray-600 text-gray-300">
                   {assignee}
                 </Badge>
               ))}
               <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
               <Badge className={`text-xs text-white ${getStatusColor(task.status)}`}>{task.status}</Badge>
-              {task.category.map((cat, index) => (
+              {(Array.isArray(task.category) ? task.category : [task.category]).map((cat, index) => (
                 <Badge key={index} variant="outline" className="text-xs border-gray-500 text-gray-400">
                   {cat}
                 </Badge>
