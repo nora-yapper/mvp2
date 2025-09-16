@@ -30,11 +30,11 @@ interface Task {
   id: string
   title: string
   description: string
-  assignee: string
+  assignee: string[]
   deadline: string
   priority: "High" | "Medium" | "Low"
   status: "To Do" | "In Progress" | "Done"
-  category: string
+  category: string[]
   createdAt: string
   deletedAt?: string
 }
@@ -42,10 +42,10 @@ interface Task {
 interface GeneratedStep {
   title: string
   description: string
-  assignee: string
+  assignee: string[]
   deadline: string
   priority: "High" | "Medium" | "Low"
-  category: string
+  category: string[]
 }
 
 interface TeamMemberWorkload {
@@ -62,6 +62,17 @@ const teamMembers = [
   { id: "5", name: "James Wilson", role: "Sales" },
 ]
 
+const departmentOptions = [
+  "Product Development",
+  "Sales",
+  "Marketing",
+  "Finance",
+  "Operations",
+  "Human Resources",
+  "Legal",
+  "Research & Development",
+]
+
 export default function CommandDeck() {
   const [activeView, setActiveView] = useState("Gantt")
   const [tasks, setTasks] = useState<Task[]>([
@@ -70,11 +81,11 @@ export default function CommandDeck() {
       title: "Define Features of MVP",
       description:
         "Identify and list down the 5-7 key features that your MVP must have to solve the problem it is designed for. Use tools like Trello or Asana for task management.",
-      assignee: "Alex Johnson",
+      assignee: ["Alex Johnson"],
       deadline: "2025-09-30",
       priority: "High",
       status: "To Do",
-      category: "Product Development", // Changed from Mission Critical
+      category: ["Product Development"], // Changed from Mission Critical
       createdAt: "2025-01-16",
     },
     {
@@ -82,11 +93,11 @@ export default function CommandDeck() {
       title: "Sketch UI/UX Wireframes",
       description:
         "Create detailed wireframes for your MVP using a tool like Sketch or Figma. Focus on user journey and functionality rather than aesthetics at this stage.",
-      assignee: "Emily Davis",
+      assignee: ["Emily Davis"],
       deadline: "2025-09-23",
       priority: "High",
       status: "To Do",
-      category: "Product Development", // Changed from Mission Critical
+      category: ["Product Development"], // Changed from Mission Critical
       createdAt: "2025-01-16",
     },
     {
@@ -94,11 +105,11 @@ export default function CommandDeck() {
       title: "Develop MVP",
       description:
         "Start the development process of your MVP. Use agile methodologies to manage your development process and tools like GitHub for version control.",
-      assignee: "Alex Johnson",
+      assignee: ["Alex Johnson"],
       deadline: "2025-09-30",
       priority: "High",
       status: "To Do",
-      category: "Product Development", // Changed from Critical
+      category: ["Product Development"], // Changed from Critical
       createdAt: "2025-01-16",
     },
     {
@@ -106,22 +117,22 @@ export default function CommandDeck() {
       title: "Test MVP",
       description:
         "Once the MVP is ready, perform thorough testing. Use tools like Jira for bug tracking and managing testing workflows.",
-      assignee: "James Wilson",
+      assignee: ["James Wilson"],
       deadline: "2025-09-30",
       priority: "Medium",
       status: "To Do",
-      category: "Product Development", // Changed from Critical
+      category: ["Product Development"], // Changed from Critical
       createdAt: "2025-01-16",
     },
     {
       id: "5",
       title: "Collect User Feedback",
       description: "Use tools like Google Forms or SurveyMonkey for collecting feedback.",
-      assignee: "James Wilson",
+      assignee: ["James Wilson"],
       deadline: "2025-09-30",
       priority: "Medium",
       status: "To Do",
-      category: "Marketing", // Changed from Critical
+      category: ["Marketing"], // Changed from Critical
       createdAt: "2025-01-16",
     },
   ])
@@ -149,10 +160,10 @@ export default function CommandDeck() {
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
-    assignee: "",
+    assignee: [] as string[],
     deadline: "",
     priority: "Medium" as "High" | "Medium" | "Low",
-    category: "Product Development",
+    category: [] as string[],
   })
 
   // Use ref to track if we're loading from storage to prevent infinite loops
@@ -253,10 +264,10 @@ export default function CommandDeck() {
       setNewTask({
         title: "",
         description: "",
-        assignee: "",
+        assignee: [] as string[],
         deadline: "",
         priority: "Medium",
-        category: "Product Development",
+        category: [] as string[],
       })
       setIsAddTaskOpen(false)
     }
@@ -374,10 +385,10 @@ export default function CommandDeck() {
         return {
           title: step.title || "Untitled Step",
           description: step.description || "No description provided",
-          assignee: teamMembers[Math.floor(Math.random() * teamMembers.length)]?.name || "Unassigned",
-          deadline: getDefaultDeadline(step.duration || "2 weeks"),
+          assignee: Array.isArray(step.assignee) ? step.assignee : [step.assignee || "Unassigned"],
+          deadline: step.deadline,
           priority: priority as "High" | "Medium" | "Low",
-          category: step.category || "Operations", // Use AI-suggested category with fallback
+          category: Array.isArray(step.category) ? step.category : [step.category || "Product Development"],
         }
       })
 
@@ -555,6 +566,44 @@ export default function CommandDeck() {
     return nextMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })
   }
 
+  const renderTaskCard = (task: Task, onClick: (task: Task) => void) => (
+    <Card
+      key={task.id}
+      className="border-l-4 border-l-blue-500 bg-gray-700 border-gray-600 cursor-pointer hover:bg-gray-600 transition-colors"
+      onClick={() => onClick(task)}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h3 className="font-semibold text-gray-100">{task.title}</h3>
+            <p className="text-sm text-gray-300 mt-1">{task.description}</p>
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              {task.assignee.map((assignee, index) => (
+                <Badge key={index} variant="outline" className="text-xs border-gray-600 text-gray-300">
+                  {assignee}
+                </Badge>
+              ))}
+              <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
+              <Badge className={`text-xs text-white ${getStatusColor(task.status)}`}>{task.status}</Badge>
+              {task.category.map((cat, index) => (
+                <Badge key={index} variant="outline" className="text-xs border-gray-500 text-gray-400">
+                  {cat}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          <div className="text-right flex flex-col gap-2">
+            <p className="text-sm font-medium text-gray-100">{task.deadline}</p>
+            {/* Gantt chart timeline bar */}
+            <div className="w-32 h-2 bg-gray-600 rounded-full overflow-hidden">
+              <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.random() * 100}%` }} />
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+
   const renderGanttView = () => {
     if (filteredTasks.length === 0) {
       return (
@@ -597,41 +646,7 @@ export default function CommandDeck() {
       )
     }
 
-    return (
-      <div className="space-y-4">
-        {filteredTasks.map((task) => (
-          <Card
-            key={task.id}
-            className="border-l-4 border-l-blue-500 bg-gray-700 border-gray-600 cursor-pointer hover:bg-gray-600 transition-colors"
-            onClick={() => handleTaskClick(task)}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-100">{task.title}</h3>
-                  <p className="text-sm text-gray-300 mt-1">{task.description}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
-                      {task.assignee}
-                    </Badge>
-                    <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
-                    <Badge className={`text-xs text-white ${getStatusColor(task.status)}`}>{task.status}</Badge>
-                  </div>
-                </div>
-                <div className="text-right flex flex-col gap-2">
-                  <p className="text-sm font-medium text-gray-100">{task.deadline}</p>
-                  <p className="text-xs text-gray-400">{task.category}</p>
-                  {/* Gantt chart timeline bar */}
-                  <div className="w-32 h-2 bg-gray-600 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.random() * 100}%` }} />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    )
+    return <div className="space-y-4">{filteredTasks.map((task) => renderTaskCard(task, handleTaskClick))}</div>
   }
 
   const renderKanbanView = () => {
@@ -984,25 +999,54 @@ export default function CommandDeck() {
                             </div>
                             <div>
                               <label className="text-sm font-medium text-gray-200">Assignee</label>
-                              <Select
-                                value={newTask.assignee}
-                                onValueChange={(value) => setNewTask({ ...newTask, assignee: value })}
-                              >
-                                <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
-                                  <SelectValue placeholder="Select assignee" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-gray-800 border-gray-600">
-                                  {teamMembers.map((member) => (
-                                    <SelectItem
-                                      key={member.id}
-                                      value={member.name}
-                                      className="text-gray-100 hover:bg-gray-700"
-                                    >
-                                      {member.name} - {member.role}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <div className="space-y-2">
+                                <Select
+                                  onValueChange={(value) => {
+                                    if (!newTask.assignee.includes(value)) {
+                                      setNewTask({ ...newTask, assignee: [...newTask.assignee, value] })
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
+                                    <SelectValue placeholder="Select assignee" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-gray-800 border-gray-600">
+                                    {teamMembers.map((member) => (
+                                      <SelectItem
+                                        key={member.id}
+                                        value={member.name}
+                                        className="text-gray-100 hover:bg-gray-700"
+                                      >
+                                        {member.name} - {member.role}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                {newTask.assignee.length > 0 && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {newTask.assignee.map((assignee, index) => (
+                                      <Badge
+                                        key={index}
+                                        variant="outline"
+                                        className="text-xs border-gray-600 text-gray-300 pr-1"
+                                      >
+                                        {assignee}
+                                        <button
+                                          onClick={() => {
+                                            setNewTask({
+                                              ...newTask,
+                                              assignee: newTask.assignee.filter((_, i) => i !== index),
+                                            })
+                                          }}
+                                          className="ml-1 text-gray-400 hover:text-gray-200"
+                                        >
+                                          ×
+                                        </button>
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                             <div>
                               <label className="text-sm font-medium text-gray-200">Deadline</label>
@@ -1040,43 +1084,50 @@ export default function CommandDeck() {
                             </div>
                             <div>
                               <label className="text-sm font-medium text-gray-200">Category</label>
-                              <Select
-                                value={newTask.category}
-                                onValueChange={(value) => setNewTask({ ...newTask, category: value })}
-                              >
-                                <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
-                                  <SelectValue placeholder="Select category" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-gray-800 border-gray-600">
-                                  <SelectItem value="Product Development" className="text-gray-100 hover:bg-gray-700">
-                                    Product Development
-                                  </SelectItem>
-                                  <SelectItem value="Sales" className="text-gray-100 hover:bg-gray-700">
-                                    Sales
-                                  </SelectItem>
-                                  <SelectItem value="Marketing" className="text-gray-100 hover:bg-gray-700">
-                                    Marketing
-                                  </SelectItem>
-                                  <SelectItem value="Finance" className="text-gray-100 hover:bg-gray-700">
-                                    Finance
-                                  </SelectItem>
-                                  <SelectItem value="Operations" className="text-gray-100 hover:bg-gray-700">
-                                    Operations
-                                  </SelectItem>
-                                  <SelectItem value="Human Resources" className="text-gray-100 hover:bg-gray-700">
-                                    Human Resources
-                                  </SelectItem>
-                                  <SelectItem value="Legal" className="text-gray-100 hover:bg-gray-700">
-                                    Legal
-                                  </SelectItem>
-                                  <SelectItem
-                                    value="Research & Development"
-                                    className="text-gray-100 hover:bg-gray-700"
-                                  >
-                                    Research & Development
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <div className="space-y-2">
+                                <Select
+                                  onValueChange={(value) => {
+                                    if (!newTask.category.includes(value)) {
+                                      setNewTask({ ...newTask, category: [...newTask.category, value] })
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
+                                    <SelectValue placeholder="Select category" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-gray-800 border-gray-600">
+                                    {departmentOptions.map((dept) => (
+                                      <SelectItem key={dept} value={dept} className="text-gray-100 hover:bg-gray-700">
+                                        {dept}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                {newTask.category.length > 0 && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {newTask.category.map((cat, index) => (
+                                      <Badge
+                                        key={index}
+                                        variant="outline"
+                                        className="text-xs border-gray-500 text-gray-400 pr-1"
+                                      >
+                                        {cat}
+                                        <button
+                                          onClick={() => {
+                                            setNewTask({
+                                              ...newTask,
+                                              category: newTask.category.filter((_, i) => i !== index),
+                                            })
+                                          }}
+                                          className="ml-1 text-gray-400 hover:text-gray-200"
+                                        >
+                                          ×
+                                        </button>
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                             <Button onClick={handleAddTask} className="w-full bg-blue-600 hover:bg-blue-700">
                               Add Task
@@ -1110,16 +1161,31 @@ export default function CommandDeck() {
                                       <div className="flex-1">
                                         <h3 className="font-semibold text-gray-100">{task.title}</h3>
                                         <p className="text-sm text-gray-300 mt-1">{task.description}</p>
-                                        <div className="flex items-center gap-2 mt-2">
-                                          <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
-                                            {task.assignee}
-                                          </Badge>
+                                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                          {task.assignee.map((assignee, index) => (
+                                            <Badge
+                                              key={index}
+                                              variant="outline"
+                                              className="text-xs border-gray-500 text-gray-300"
+                                            >
+                                              {assignee}
+                                            </Badge>
+                                          ))}
                                           <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>
                                             {task.priority}
                                           </Badge>
                                           <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
                                             {task.status === "Done" ? "Completed" : "Deleted"}
                                           </Badge>
+                                          {task.category.map((cat, index) => (
+                                            <Badge
+                                              key={index}
+                                              variant="outline"
+                                              className="text-xs border-gray-500 text-gray-400"
+                                            >
+                                              {cat}
+                                            </Badge>
+                                          ))}
                                         </div>
                                       </div>
                                       <div className="flex items-center gap-2">
@@ -1281,15 +1347,18 @@ export default function CommandDeck() {
                   className="bg-gray-700 border-gray-600 text-gray-100"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-200">Assignee</label>
+              <div>
+                <label className="text-sm font-medium text-gray-200">Assignee</label>
+                <div className="space-y-2">
                   <Select
-                    value={editingTask.assignee}
-                    onValueChange={(value) => setEditingTask({ ...editingTask, assignee: value })}
+                    onValueChange={(value) => {
+                      if (!editingTask.assignee.includes(value)) {
+                        setEditingTask({ ...editingTask, assignee: [...editingTask.assignee, value] })
+                      }
+                    }}
                   >
                     <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
-                      <SelectValue />
+                      <SelectValue placeholder="Select assignee" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 border-gray-600">
                       {teamMembers.map((member) => (
@@ -1299,7 +1368,29 @@ export default function CommandDeck() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {editingTask.assignee.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {editingTask.assignee.map((assignee, index) => (
+                        <Badge key={index} variant="outline" className="text-xs border-gray-600 text-gray-300 pr-1">
+                          {assignee}
+                          <button
+                            onClick={() => {
+                              setEditingTask({
+                                ...editingTask,
+                                assignee: editingTask.assignee.filter((_, i) => i !== index),
+                              })
+                            }}
+                            className="ml-1 text-gray-400 hover:text-gray-200"
+                          >
+                            ×
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-200">Priority</label>
                   <Select
@@ -1324,8 +1415,6 @@ export default function CommandDeck() {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-200">Status</label>
                   <Select
@@ -1350,6 +1439,8 @@ export default function CommandDeck() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-200">Deadline</label>
                   <Input
@@ -1360,43 +1451,49 @@ export default function CommandDeck() {
                     style={{ colorScheme: "dark" }}
                   />
                 </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-200">Category</label>
-                <Select
-                  value={editingTask.category}
-                  onValueChange={(value) => setEditingTask({ ...editingTask, category: value })}
-                >
-                  <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-600">
-                    <SelectItem value="Product Development" className="text-gray-100 hover:bg-gray-700">
-                      Product Development
-                    </SelectItem>
-                    <SelectItem value="Sales" className="text-gray-100 hover:bg-gray-700">
-                      Sales
-                    </SelectItem>
-                    <SelectItem value="Marketing" className="text-gray-100 hover:bg-gray-700">
-                      Marketing
-                    </SelectItem>
-                    <SelectItem value="Finance" className="text-gray-100 hover:bg-gray-700">
-                      Finance
-                    </SelectItem>
-                    <SelectItem value="Operations" className="text-gray-100 hover:bg-gray-700">
-                      Operations
-                    </SelectItem>
-                    <SelectItem value="Human Resources" className="text-gray-100 hover:bg-gray-700">
-                      Human Resources
-                    </SelectItem>
-                    <SelectItem value="Legal" className="text-gray-100 hover:bg-gray-700">
-                      Legal
-                    </SelectItem>
-                    <SelectItem value="Research & Development" className="text-gray-100 hover:bg-gray-700">
-                      Research & Development
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <div>
+                  <label className="text-sm font-medium text-gray-200">Category</label>
+                  <div className="space-y-2">
+                    <Select
+                      onValueChange={(value) => {
+                        if (!editingTask.category.includes(value)) {
+                          setEditingTask({ ...editingTask, category: [...editingTask.category, value] })
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-600">
+                        {departmentOptions.map((dept) => (
+                          <SelectItem key={dept} value={dept} className="text-gray-100 hover:bg-gray-700">
+                            {dept}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {editingTask.category.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {editingTask.category.map((cat, index) => (
+                          <Badge key={index} variant="outline" className="text-xs border-gray-500 text-gray-400 pr-1">
+                            {cat}
+                            <button
+                              onClick={() => {
+                                setEditingTask({
+                                  ...editingTask,
+                                  category: editingTask.category.filter((_, i) => i !== index),
+                                })
+                              }}
+                              className="ml-1 text-gray-400 hover:text-gray-200"
+                            >
+                              ×
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
               <div className="flex justify-between pt-4">
                 <Button
@@ -1481,17 +1578,18 @@ export default function CommandDeck() {
                             className="bg-gray-600 border-gray-500 text-gray-100"
                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-sm font-medium text-gray-200">Assignee</label>
+                        <div>
+                          <label className="text-sm font-medium text-gray-200">Assignee</label>
+                          <div className="space-y-2">
                             <Select
-                              value={editingStep?.assignee || ""}
-                              onChange={(value) =>
-                                setEditingStep((prev) => (prev ? { ...prev, assignee: value } : null))
-                              }
+                              onValueChange={(value) => {
+                                if (editingStep && !editingStep.assignee.includes(value)) {
+                                  setEditingStep({ ...editingStep, assignee: [...editingStep.assignee, value] })
+                                }
+                              }}
                             >
                               <SelectTrigger className="bg-gray-600 border-gray-500 text-gray-100">
-                                <SelectValue />
+                                <SelectValue placeholder="Select assignee" />
                               </SelectTrigger>
                               <SelectContent className="bg-gray-800 border-gray-600">
                                 {teamMembers.map((member) => (
@@ -1505,32 +1603,32 @@ export default function CommandDeck() {
                                 ))}
                               </SelectContent>
                             </Select>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-gray-200">Priority</label>
-                            <Select
-                              value={editingStep?.priority || "Medium"}
-                              onValueChange={(value) =>
-                                setEditingStep((prev) =>
-                                  prev ? { ...prev, priority: value as "High" | "Medium" | "Low" } : null,
-                                )
-                              }
-                            >
-                              <SelectTrigger className="bg-gray-600 border-gray-500 text-gray-100">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="bg-gray-800 border-gray-600">
-                                <SelectItem value="High" className="text-gray-100 hover:bg-gray-700">
-                                  High
-                                </SelectItem>
-                                <SelectItem value="Medium" className="text-gray-100 hover:bg-gray-700">
-                                  Medium
-                                </SelectItem>
-                                <SelectItem value="Low" className="text-gray-100 hover:bg-gray-700">
-                                  Low
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
+                            {editingStep && editingStep.assignee.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {editingStep.assignee.map((assignee, index) => (
+                                  <Badge
+                                    key={index}
+                                    variant="outline"
+                                    className="text-xs border-gray-600 text-gray-300 pr-1"
+                                  >
+                                    {assignee}
+                                    <button
+                                      onClick={() => {
+                                        if (editingStep) {
+                                          setEditingStep({
+                                            ...editingStep,
+                                            assignee: editingStep.assignee.filter((_, i) => i !== index),
+                                          })
+                                        }
+                                      }}
+                                      className="ml-1 text-gray-400 hover:text-gray-200"
+                                    >
+                                      ×
+                                    </button>
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -1548,42 +1646,52 @@ export default function CommandDeck() {
                           </div>
                           <div>
                             <label className="text-sm font-medium text-gray-200">Category</label>
-                            <Select
-                              value={editingStep?.category || "Product Development"}
-                              onValueChange={(value) =>
-                                setEditingStep((prev) => (prev ? { ...prev, category: value } : null))
-                              }
-                            >
-                              <SelectTrigger className="bg-gray-600 border-gray-500 text-gray-100">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="bg-gray-800 border-gray-600">
-                                <SelectItem value="Product Development" className="text-gray-100 hover:bg-gray-700">
-                                  Product Development
-                                </SelectItem>
-                                <SelectItem value="Sales" className="text-gray-100 hover:bg-gray-700">
-                                  Sales
-                                </SelectItem>
-                                <SelectItem value="Marketing" className="text-gray-100 hover:bg-gray-700">
-                                  Marketing
-                                </SelectItem>
-                                <SelectItem value="Finance" className="text-gray-100 hover:bg-gray-700">
-                                  Finance
-                                </SelectItem>
-                                <SelectItem value="Operations" className="text-gray-100 hover:bg-gray-700">
-                                  Operations
-                                </SelectItem>
-                                <SelectItem value="Human Resources" className="text-gray-100 hover:bg-gray-700">
-                                  Human Resources
-                                </SelectItem>
-                                <SelectItem value="Legal" className="text-gray-100 hover:bg-gray-700">
-                                  Legal
-                                </SelectItem>
-                                <SelectItem value="Research" className="text-gray-100 hover:bg-gray-700">
-                                  Research
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <div className="space-y-2">
+                              <Select
+                                onValueChange={(value) => {
+                                  if (editingStep && !editingStep.category.includes(value)) {
+                                    setEditingStep({ ...editingStep, category: [...editingStep.category, value] })
+                                  }
+                                }}
+                              >
+                                <SelectTrigger className="bg-gray-600 border-gray-500 text-gray-100">
+                                  <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-gray-800 border-gray-600">
+                                  {departmentOptions.map((dept) => (
+                                    <SelectItem key={dept} value={dept} className="text-gray-100 hover:bg-gray-700">
+                                      {dept}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {editingStep && editingStep.category.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  {editingStep.category.map((cat, index) => (
+                                    <Badge
+                                      key={index}
+                                      variant="outline"
+                                      className="text-xs border-gray-500 text-gray-400 pr-1"
+                                    >
+                                      {cat}
+                                      <button
+                                        onClick={() => {
+                                          if (editingStep) {
+                                            setEditingStep({
+                                              ...editingStep,
+                                              category: editingStep.category.filter((_, i) => i !== index),
+                                            })
+                                          }
+                                        }}
+                                        className="ml-1 text-gray-400 hover:text-gray-200"
+                                      >
+                                        ×
+                                      </button>
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="flex justify-end gap-2">
@@ -1608,16 +1716,20 @@ export default function CommandDeck() {
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-100">{step.title}</h3>
                           <p className="text-sm text-gray-300 mt-1">{step.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
-                              {step.assignee}
-                            </Badge>
+                          <div className="flex items-center gap-2 mt-2 flex-wrap">
+                            {step.assignee.map((assignee, index) => (
+                              <Badge key={index} variant="outline" className="text-xs border-gray-500 text-gray-300">
+                                {assignee}
+                              </Badge>
+                            ))}
                             <Badge className={`text-xs text-white ${getPriorityColor(step.priority)}`}>
                               {step.priority}
                             </Badge>
-                            <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
-                              {step.category}
-                            </Badge>
+                            {step.category.map((cat, index) => (
+                              <Badge key={index} variant="outline" className="text-xs border-gray-500 text-gray-400">
+                                {cat}
+                              </Badge>
+                            ))}
                           </div>
                         </div>
                         <div className="flex items-center gap-2 ml-4">
