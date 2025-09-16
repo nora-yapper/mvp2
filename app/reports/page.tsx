@@ -84,8 +84,10 @@ export default function ReportsPage() {
   }
 
   const generateReport = async () => {
+    console.log("[v0] Starting report generation")
     const errors = validateForm()
     if (errors.length > 0) {
+      console.log("[v0] Validation errors found:", errors)
       setValidationErrors(errors)
       const reportOverview = document.getElementById("report-overview")
       if (reportOverview) {
@@ -95,6 +97,7 @@ export default function ReportsPage() {
     }
     setValidationErrors([])
 
+    console.log("[v0] Form validation passed, calling API")
     // Generate AI content
     try {
       const response = await fetch("/api/generate-report", {
@@ -105,20 +108,27 @@ export default function ReportsPage() {
         body: JSON.stringify({ formData }),
       })
 
+      console.log("[v0] API response status:", response.status)
+
       if (response.ok) {
         const data = await response.json()
+        console.log("[v0] API response data:", data)
         // Store the generated content for use in the report
         setGeneratedContent(data.content)
+        console.log("[v0] Generated content set successfully")
       } else {
-        console.error("Failed to generate report content")
-        // Use fallback content
+        const errorText = await response.text()
+        console.error("[v0] API response not ok:", response.status, errorText)
+        alert("Unable to generate AI content. Using fallback content instead.")
         setGeneratedContent(null)
       }
     } catch (error) {
-      console.error("Error generating report:", error)
+      console.error("[v0] Error generating report:", error)
+      alert("Network error occurred. Using fallback content instead.")
       setGeneratedContent(null)
     }
 
+    console.log("[v0] Setting view to generated")
     setCurrentView("generated")
   }
 
