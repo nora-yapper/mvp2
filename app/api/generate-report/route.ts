@@ -156,29 +156,36 @@ CRITICAL INSTRUCTIONS:
    STEP 1: Analyze the founder's notes to determine if they are INSTRUCTIONAL or ADDITIONAL:
    
    INSTRUCTIONAL NOTES (these modify existing sections, DO NOT create additionalNotes field):
-   - "add [something] to [section]" → incorporate into that section
-   - "make [section] more [adjective]" → modify that section accordingly  
-   - "focus on [topic] in [section]" → emphasize that topic in the specified section
-   - "include [information] in [section]" → add that information to the specified section
-   - Any directive that tells you HOW to modify existing report sections
-   - Example: "add pets are awesome to startup description" = INSTRUCTIONAL
+   - Any command or directive that tells you to modify existing sections
+   - Phrases like: "add [X] to [section]", "make [section] more [Y]", "focus on [Z] in [section]", "include [A] in [section]"
+   - Phrases like: "mention [X]", "emphasize [Y]", "highlight [Z]", "talk about [A]"
+   - Phrases like: "update [section] with [info]", "change [section] to include [X]"
+   - Any sentence that starts with action verbs: "add", "include", "mention", "focus", "emphasize", "highlight", "update", "change", "make", "ensure"
+   - Any content that references specific report sections by name
+   - ANY instruction about HOW to write or WHAT to include in the report
    
    ADDITIONAL CONTENT (these are standalone info, DO create additionalNotes field):
-   - New topics not covered in existing sections
-   - Supplementary information that doesn't belong in standard sections
-   - Context that stands alone as additional information
-   - Example: "We also have a partnership with XYZ Corp that wasn't mentioned elsewhere"
+   - New factual information that doesn't fit in standard sections
+   - Supplementary context that stands alone
+   - Background information not covered elsewhere
+   - Statements that provide additional context without instructing changes
+   - Information that would naturally appear as a separate "Additional Notes" section
    
-   STEP 2: If notes are INSTRUCTIONAL:
-   - Apply the instructions to the relevant sections
+   STEP 2: If notes are INSTRUCTIONAL (even partially):
+   - Apply ALL instructions to the relevant sections
    - DO NOT include any "additionalNotes" field in your JSON response
-   - The instructional content should be seamlessly integrated into existing sections
+   - Seamlessly integrate the instructional content into existing sections
    
-   STEP 3: If notes contain ADDITIONAL content:
-   - Include only the truly additional parts in the "additionalNotes" field
-   - Do not include any instructional parts in additionalNotes
+   STEP 3: If notes contain ONLY truly additional standalone content:
+   - Include ONLY the non-instructional parts in the "additionalNotes" field
+   - Never include instructional phrases in additionalNotes
 
-7. CRITICAL: The example "add pets are awesome to startup description" is INSTRUCTIONAL - it should modify the startupDescription section and NOT appear in additionalNotes
+7. EXAMPLES OF INSTRUCTIONAL vs ADDITIONAL:
+   - "add pets are awesome to startup description" = INSTRUCTIONAL → modify startupDescription
+   - "mention our new office in the overview" = INSTRUCTIONAL → modify progressOverview  
+   - "focus on AI features in product strategy" = INSTRUCTIONAL → modify productStrategy
+   - "We have a partnership with XYZ Corp" = ADDITIONAL → include in additionalNotes
+   - "Our team loves working remotely" = ADDITIONAL → include in additionalNotes
 
 Generate content for each enabled section. Make the content:
 1. Professional and business-appropriate
@@ -193,12 +200,11 @@ RESPONSE FORMAT:
 Respond with ONLY valid JSON. Include ONLY the fields for enabled sections: ${enabledSections.join(", ")}
 
 Base JSON structure (only include enabled sections):
-{${enabledSections.includes("startupDescription") ? '\n  "startupDescription": "Professional description of the startup and its mission (incorporate any instructional notes here)...",' : ""}${enabledSections.includes("progressOverview") ? '\n  "progressOverview": "Summary of progress during the reporting period (incorporate any instructional notes here)...",' : ""}${enabledSections.includes("tractionMilestones") ? '\n  "tractionMilestones": [\n    "Specific milestone 1",\n    "Specific milestone 2",\n    "Specific milestone 3"\n  ],' : ""}${enabledSections.includes("risksBottlenecks") ? '\n  "risksBottlenecks": "Analysis of current risks and bottlenecks (incorporate any instructional notes here)...",' : ""}${enabledSections.includes("productStrategy") ? '\n  "productStrategy": "Product strategy and roadmap insights (incorporate any instructional notes here)...",' : ""}${enabledSections.includes("forecastPriorities") ? '\n  "forecastPriorities": "Forward-looking priorities and forecasts (incorporate any instructional notes here)..."' : ""}
-}
+{${enabledSections.includes("startupDescription") ? '\n  "startupDescription": "Professional description of the startup and its mission (incorporate any instructional notes here)...",' : ""}${enabledSections.includes("progressOverview") ? '\n  "progressOverview": "Summary of progress during the reporting period (incorporate any instructional notes here)...",' : ""}${enabledSections.includes("tractionMilestones") ? '\n  "tractionMilestones": [\n    "Specific milestone 1",\n    "Specific milestone 2",\n    "Specific milestone 3"\n  ],' : ""}${enabledSections.includes("risksBottlenecks") ? '\n  "risksBottlenecks": "Analysis of current risks and bottlenecks (incorporate any instructional notes here)...",' : ""}${enabledSections.includes("productStrategy") ? '\n  "productStrategy": "Product strategy and roadmap insights (incorporate any instructional notes here)...",' : ""}${enabledSections.includes("forecastPriorities") ? '\n  "forecastPriorities": "Forward-looking priorities and forecasts (incorporate any instructional notes here)..."' : ""}}
 
-ONLY add "additionalNotes": "content here" field if the founder's notes contain truly additional standalone information that doesn't belong in the standard sections above.
+ONLY add "additionalNotes": "content here" field if the founder's notes contain truly additional standalone information that doesn't belong in the standard sections above AND contains no instructional language.
 
-REMEMBER: "add pets are awesome to startup description" = INSTRUCTIONAL → modify startupDescription, DO NOT include additionalNotes field.
+CRITICAL: If ANY part of the notes is instructional, do NOT include additionalNotes field at all.
 `
 
   return prompt
@@ -257,7 +263,19 @@ function getFallbackContent(formData: any) {
             !note.startsWith("add") &&
             !note.startsWith("make") &&
             !note.startsWith("focus") &&
-            !note.startsWith("include"),
+            !note.startsWith("include") &&
+            !note.startsWith("mention") &&
+            !note.startsWith("emphasize") &&
+            !note.startsWith("highlight") &&
+            !note.startsWith("update") &&
+            !note.startsWith("change") &&
+            !note.startsWith("ensure") &&
+            !note.includes("startupDescription") &&
+            !note.includes("progressOverview") &&
+            !note.includes("tractionMilestones") &&
+            !note.includes("risksBottlenecks") &&
+            !note.includes("productStrategy") &&
+            !note.includes("forecastPriorities"),
         )
         .join("\n")
     : ""
