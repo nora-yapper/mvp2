@@ -109,6 +109,10 @@ CRITICAL INSTRUCTIONS:
 3. Use terms like "our startup", "the company", "our organization" instead of using the report title
 4. Generate realistic startup content that stands on its own, independent of the report title
 5. NEVER refer to the person writing this report as "user" - always use "founder", "founders", or "co-founders" depending on context
+6. ANALYZE THE ADDITIONAL NOTES CAREFULLY:
+   - If the notes contain instructions about existing sections (e.g., "make the startup description more technical", "focus on AI in market analysis"), incorporate those instructions into the relevant sections but DO NOT display an "Additional Notes" section
+   - Only include an "Additional Notes" section if the notes contain truly additional content that doesn't belong in existing sections (new topics, supplementary information, etc.)
+   - The goal is to use instructional notes to improve existing sections, not create redundant content
 
 Generate content for each enabled section. Make the content:
 1. Professional and business-appropriate
@@ -118,30 +122,14 @@ Generate content for each enabled section. Make the content:
 5. Appropriate length for each section (2-4 sentences for most, bullet points for milestones)
 6. NEVER use the report title "${title}" as the startup/company name in any section
 7. Always refer to the report writer as "founder" or "co-founders", never as "user"
+8. If additional notes are instructional (referring to how to modify existing sections), apply those instructions to the relevant sections and do NOT include an additionalNotes field
 
 IMPORTANT: 
 - If additional context is provided, analyze it and incorporate relevant insights throughout ALL report sections
 - Use the context to make the report more specific and tailored
 - Write about a startup/company generically - do not assume any specific company name
 - When referencing the person who provided context, use "founder" or "co-founders"
-- ${notes ? "Include meaningful additional notes based on founder context" : "Do NOT include additionalNotes in the response if no founder context was provided"}
-
-Respond with ONLY valid JSON in this exact format:
-{
-  "startupDescription": "Professional description of the startup and its mission (do NOT use '${title}' as company name)...",
-  "progressOverview": "Summary of progress during the reporting period...",
-  "tractionMilestones": [
-    "Specific milestone 1",
-    "Specific milestone 2",
-    "Specific milestone 3"
-  ],
-  "risksBottlenecks": "Analysis of current risks and bottlenecks...",
-  "productStrategy": "Product strategy and roadmap insights...",
-  "forecastPriorities": "Forward-looking priorities and forecasts..."${notes ? ',\n  "additionalNotes": "Meaningful insights based on founder context..."' : ""}
-}
-
-Only include fields for sections that are enabled: ${enabledSections.join(", ")}
-${notes ? "" : "Do NOT include additionalNotes field if no founder context was provided."}
+- Only include additionalNotes if the founder context contains truly additional content that doesn't belong in existing sections
 `
 
   return prompt
