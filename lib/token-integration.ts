@@ -1,10 +1,12 @@
-import { TokenManager, TOKEN_COSTS, TOKEN_REWARDS } from "./token-system"
+import { TokenManager, type TOKEN_COSTS, TOKEN_REWARDS } from "./token-system"
 
 export function spendTokensForAI(feature: keyof typeof TOKEN_COSTS): boolean {
-  const tokenManager = TokenManager.getInstance()
-  const cost = TOKEN_COSTS[feature]
+  return true
 
-  return tokenManager.spendTokens(cost, getSpendReason(feature))
+  // Original logic commented out for later restoration:
+  // const tokenManager = TokenManager.getInstance()
+  // const cost = TOKEN_COSTS[feature]
+  // return tokenManager.spendTokens(cost, getSpendReason(feature))
 }
 
 export function earnTokensForStep(step: keyof typeof TOKEN_REWARDS): boolean {
