@@ -1,10 +1,21 @@
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
+  console.log("[v0] API route called - starting execution")
+
   try {
-    console.log("[v0] API route called")
-    const { formData } = await request.json()
-    console.log("[v0] Form data received:", formData)
+    console.log("[v0] Attempting to parse request body")
+    let requestBody
+    try {
+      requestBody = await request.json()
+      console.log("[v0] Request body parsed successfully")
+    } catch (parseError) {
+      console.error("[v0] Failed to parse request body:", parseError)
+      return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 })
+    }
+
+    const { formData } = requestBody
+    console.log("[v0] Form data extracted:", formData ? "present" : "missing")
 
     if (!formData) {
       console.log("[v0] No form data provided")
@@ -12,16 +23,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if OpenAI API key is available
+    console.log("[v0] Checking OpenAI API key")
     if (!process.env.OPENAI_API_KEY) {
       console.log("[v0] No OpenAI API key found, using fallback content")
       return getFallbackContent(formData)
     }
 
+    console.log("[v0] OpenAI API key found, proceeding with AI generation")
+
     try {
       console.log("[v0] Creating prompt")
       const prompt = createReportPrompt(formData)
-      console.log("[v0] Prompt created, calling OpenAI API")
+      console.log("[v0] Prompt created successfully, length:", prompt.length)
 
+      console.log("[v0] Making OpenAI API call")
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -46,21 +61,23 @@ export async function POST(request: NextRequest) {
         }),
       })
 
-      console.log("[v0] OpenAI API response status:", response.status)
+      console.log("[v0] OpenAI API response received, status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
         console.error("[v0] OpenAI API error:", response.status, errorText)
-        throw new Error(`OpenAI API error: ${response.status} - ${errorText}`)
+        console.log("[v0] Falling back to fallback content due to API error")
+        return getFallbackContent(formData)
       }
 
       const data = await response.json()
-      console.log("[v0] OpenAI response received")
+      console.log("[v0] OpenAI response parsed successfully")
       const aiResponse = data.choices[0]?.message?.content
 
       if (!aiResponse) {
         console.error("[v0] No response content from OpenAI")
-        throw new Error("No response from OpenAI")
+        console.log("[v0] Falling back to fallback content due to empty response")
+        return getFallbackContent(formData)
       }
 
       // Parse the AI response
@@ -80,20 +97,30 @@ export async function POST(request: NextRequest) {
       } catch (parseError) {
         console.error("[v0] Failed to parse OpenAI response:", parseError)
         console.error("[v0] Raw AI response:", aiResponse)
+        console.log("[v0] Falling back to fallback content due to parse error")
         return getFallbackContent(formData)
       }
 
+      console.log("[v0] Returning successful AI-generated content")
       return NextResponse.json({
         content: parsedResponse,
         source: "openai",
       })
     } catch (openaiError) {
       console.error("[v0] OpenAI API error:", openaiError)
+      console.log("[v0] Falling back to fallback content due to OpenAI error")
       return getFallbackContent(formData)
     }
   } catch (error) {
     console.error("[v0] API route error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("[v0] Error stack:", error instanceof Error ? error.stack : "No stack trace")
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
   }
 }
 
