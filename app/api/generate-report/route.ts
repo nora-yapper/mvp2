@@ -171,6 +171,23 @@ IMPORTANT:
 - Write about a startup/company generically - do not assume any specific company name
 - When referencing the person who provided context, use "founder" or "co-founders"
 - Only include additionalNotes if the founder context contains truly additional content that doesn't belong in existing sections
+
+Respond with ONLY valid JSON in this exact format:
+{
+  "startupDescription": "Professional description of the startup and its mission (do NOT use '${title}' as company name)...",
+  "progressOverview": "Summary of progress during the reporting period...",
+  "tractionMilestones": [
+    "Specific milestone 1",
+    "Specific milestone 2",
+    "Specific milestone 3"
+  ],
+  "risksBottlenecks": "Analysis of current risks and bottlenecks...",
+  "productStrategy": "Product strategy and roadmap insights...",
+  "forecastPriorities": "Forward-looking priorities and forecasts..."${notes ? ',\n  "additionalNotes": "Only include this if notes contain truly additional content, not instructions for existing sections..."' : ""}
+}
+
+Only include fields for sections that are enabled: ${enabledSections.join(", ")}
+${notes ? "Only include additionalNotes field if the founder context contains truly additional content that doesn't belong in existing sections." : "Do NOT include additionalNotes field if no founder context was provided."}
 `
 
   return prompt
