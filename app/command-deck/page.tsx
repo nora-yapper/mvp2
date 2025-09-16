@@ -505,6 +505,15 @@ export default function CommandDeck() {
     }
   }
 
+  const getPriorityTextColor = (priority: string) => {
+    switch (priority) {
+      case "Medium":
+        return "text-black" // Black text on yellow background for better contrast
+      default:
+        return "text-white" // White text for all other priority colors
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "To Do":
@@ -519,22 +528,7 @@ export default function CommandDeck() {
   }
 
   const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "Product Development":
-        return "bg-purple-500"
-      case "Research":
-        return "bg-blue-500"
-      case "Sales":
-        return "bg-green-500"
-      case "Marketing":
-        return "bg-orange-500"
-      case "Human Resources":
-        return "bg-pink-500"
-      case "Operations":
-        return "bg-indigo-500"
-      default:
-        return "bg-gray-500"
-    }
+    return "bg-gray-500"
   }
 
   const getWorkloadColor = (status: string) => {
@@ -620,7 +614,11 @@ export default function CommandDeck() {
                     <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
                       {task.assignee}
                     </Badge>
-                    <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
+                    <Badge
+                      className={`text-xs ${getPriorityTextColor(task.priority)} ${getPriorityColor(task.priority)}`}
+                    >
+                      {task.priority}
+                    </Badge>
                     <Badge className={`text-xs text-white ${getStatusColor(task.status)}`}>{task.status}</Badge>
                     <Badge className={`text-xs text-white ${getCategoryColor(task.category)}`}>{task.category}</Badge>
                   </div>
@@ -673,7 +671,9 @@ export default function CommandDeck() {
                         <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
                           {task.assignee}
                         </Badge>
-                        <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>
+                        <Badge
+                          className={`text-xs ${getPriorityTextColor(task.priority)} ${getPriorityColor(task.priority)}`}
+                        >
                           {task.priority}
                         </Badge>
                       </div>
