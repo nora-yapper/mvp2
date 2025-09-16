@@ -86,8 +86,7 @@ const ProductTaskPage = () => {
         <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
           <h1 style={{ fontSize: "2.5rem", marginBottom: "10px", color: "#333" }}>Action Table - Part 1</h1>
           <p style={{ fontSize: "16px", color: "#666", marginBottom: "40px" }}>
-            Turn your interview insights into early product ideas and note any possible issues or risks each idea could
-            bring.
+            Turn your interview insights into early product ideas, list possible directions and note potential issues.
           </p>
 
           {/* Add Post-it Section */}
