@@ -153,7 +153,7 @@ CRITICAL INSTRUCTIONS:
 
 6. FOUNDER'S NOTES PARSING - COMPREHENSIVE TRAINING:
 
-   STEP 1: Split notes on connectors: "and", "also", "plus", "additionally", "furthermore", "moreover", "as well as"
+   STEP 1: Split notes on connectors: "and", "also", "plus", "additionally", "furthermore", "moreover", "as well as", periods, commas
    
    STEP 2: Classify each segment:
    
@@ -169,6 +169,7 @@ CRITICAL INSTRUCTIONS:
    • "add new section about X"
    • "create Y section"
    • "add section for Z"
+   • "write new section about..."
    • Standalone information that doesn't fit existing sections
    
    COMPREHENSIVE EXAMPLES:
@@ -178,46 +179,69 @@ CRITICAL INSTRUCTIONS:
    → "add that we finished incubation program in a new section" = TYPE B (additionalNotes)
    → Result: Include additionalNotes with incubation program content
    
-   Example 2: "mention John joining our team and add 5M funding to forecast"
+   Example 2: "add that we finished incubation program and that john is joining our team in a new section"
+   → "add that we finished incubation program and that john is joining our team in a new section" = TYPE B (multiple items in ONE new section)
+   → Result: Include additionalNotes with BOTH incubation program AND John joining content in one section
+   
+   Example 3: "add 10m funding to forecast and priorities. Write a new section about finishing incubation program. Add new mentor arthur to startup description."
+   → "add 10m funding to forecast and priorities" = TYPE A (apply to forecastPriorities)
+   → "Write a new section about finishing incubation program" = TYPE B (new section)
+   → "Add new mentor arthur to startup description" = TYPE A (apply to startupDescription)
+   → Result: Include additionalNotes with ONLY incubation program content
+   
+   Example 4: "mention John joining our team and add 5M funding to forecast"
    → "mention John joining our team" = TYPE B (standalone team info)
    → "add 5M funding to forecast" = TYPE A (apply to forecastPriorities)
    → Result: Include additionalNotes with John joining content
    
-   Example 3: "add pets policy to startup description and mention office move in progress"
+   Example 5: "add pets policy to startup description and mention office move in progress"
    → "add pets policy to startup description" = TYPE A (apply to startupDescription)
    → "mention office move in progress" = TYPE A (apply to progressOverview)
    → Result: NO additionalNotes (all TYPE A)
    
-   Example 4: "create team culture section and add new hiring section"
+   Example 6: "create team culture section and add new hiring section"
    → "create team culture section" = TYPE B (new section)
    → "add new hiring section" = TYPE B (new section)
-   → Result: Include additionalNotes with both sections
+   → Result: Include additionalNotes with BOTH team culture AND hiring sections
    
-   Example 5: "we hired 3 developers and add this to progress overview"
+   Example 7: "we hired 3 developers and add this to progress overview"
    → "we hired 3 developers" = TYPE B (standalone info)
    → "add this to progress overview" = TYPE A (instruction to apply above to progress)
    → Result: NO additionalNotes (instruction overrides standalone)
    
-   Example 6: "add funding milestone to traction also we completed Y Combinator"
+   Example 8: "add funding milestone to traction also we completed Y Combinator"
    → "add funding milestone to traction" = TYPE A (apply to tractionMilestones)
    → "we completed Y Combinator" = TYPE B (standalone achievement)
    → Result: Include additionalNotes with Y Combinator content
    
-   Example 7: "John joined as CTO plus add office expansion to forecast"
+   Example 9: "John joined as CTO plus add office expansion to forecast"
    → "John joined as CTO" = TYPE B (standalone team update)
    → "add office expansion to forecast" = TYPE A (apply to forecastPriorities)
    → Result: Include additionalNotes with John CTO content
    
-   Example 8: "add new partnerships section furthermore mention revenue growth in progress"
+   Example 10: "add new partnerships section furthermore mention revenue growth in progress"
    → "add new partnerships section" = TYPE B (new section)
    → "mention revenue growth in progress" = TYPE A (apply to progressOverview)
    → Result: Include additionalNotes with partnerships section
+   
+   Example 11: "we launched beta version, add user feedback to progress, create metrics section"
+   → "we launched beta version" = TYPE B (standalone achievement)
+   → "add user feedback to progress" = TYPE A (apply to progressOverview)
+   → "create metrics section" = TYPE B (new section)
+   → Result: Include additionalNotes with BOTH beta launch AND metrics section
+   
+   Example 12: "add new team member Sarah to description and create onboarding section and mention Q4 goals in forecast"
+   → "add new team member Sarah to description" = TYPE A (apply to startupDescription)
+   → "create onboarding section" = TYPE B (new section)
+   → "mention Q4 goals in forecast" = TYPE A (apply to forecastPriorities)
+   → Result: Include additionalNotes with ONLY onboarding section
    
    DECISION LOGIC:
    • If ANY segment is TYPE B → Include additionalNotes with ONLY TYPE B content
    • If ALL segments are TYPE A → NO additionalNotes field
    • TYPE A content gets applied to existing sections silently
    • TYPE B content becomes professional additionalNotes content
+   • Multiple TYPE B items can be combined into one additionalNotes section
 
 Generate content for each enabled section. Make the content professional, realistic, and appropriate for the target audience.
 
