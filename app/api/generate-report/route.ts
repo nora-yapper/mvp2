@@ -128,7 +128,7 @@ function createReportPrompt(formData: any) {
   const { title, startDate, endDate, audience, sections, notes } = formData
 
   const dateRange = startDate && endDate ? `${startDate} to ${endDate}` : "current period"
-  const additionalContext = notes ? `\n\nADDITIONAL CONTEXT FROM FOUNDER:\n${notes}` : ""
+  const additionalContext = notes ? `\n\nFOUNDER'S NOTES:\n${notes}` : ""
 
   const enabledSections = Object.entries(sections)
     .filter(([_, enabled]) => enabled)
@@ -149,71 +149,32 @@ CRITICAL INSTRUCTIONS:
 2. Create content about a generic startup/company - do NOT reference "${title}" as the company name
 3. Use terms like "our startup", "the company", "our organization" instead of using the report title
 4. Generate realistic startup content that stands on its own, independent of the report title
-5. NEVER refer to the person writing this report as "user" - always use "founder", "founders", or "co-founders" depending on context
+5. NEVER refer to the person writing this report as "user" - always use "founder", "founders", or "co-founders"
 
-6. ADDITIONAL NOTES ANALYSIS - THIS IS THE MOST CRITICAL RULE:
+6. FOUNDER'S NOTES HANDLING:
    
-   STEP 1: Analyze the founder's notes to categorize them:
+   IF the founder's notes contain instructions that modify existing sections:
+   - Examples: "add X to startup description", "mention Y in overview", "include Z in milestones"
+   - Action: Apply these instructions to the relevant sections
+   - Result: DO NOT include "additionalNotes" field in response
    
-   A) INSTRUCTIONS FOR EXISTING SECTIONS (DO NOT create additionalNotes field):
-   - Commands that modify existing report sections: "add [X] to startup description", "mention [Y] in overview"
-   - Action verbs targeting existing sections: "add", "include", "mention", "focus", "emphasize", "highlight", "update", "change", "make", "ensure"
-   - References to specific section names: "startup description", "overview", "milestones", "risks", "product strategy", "priorities"
-   - ANY instruction about HOW to write or WHAT to include in existing sections
+   IF the founder's notes request NEW sections or contain additional information:
+   - Examples: "add a team culture section", "create partnerships section", "we have great office culture"
+   - Action: Create professional content in "additionalNotes" field
+   - Result: Include "additionalNotes" field with enhanced, professional content
    
-   B) REQUESTS FOR NEW SECTIONS (DO create additionalNotes field):
-   - Instructions to create entirely new sections not in the standard report format
-   - "Add a section about [topic]", "Create a new section for [X]", "Include a [new topic] section"
-   - Content that doesn't fit into any existing section categories
-   - Requests for custom sections like "Team Culture", "Office Environment", "Partnership Details", etc.
-   
-   C) TRULY ADDITIONAL CONTENT (DO create additionalNotes field, analyze and rewrite):
-   - Standalone factual information that supplements the report
-   - Background context that doesn't instruct changes
-   - Additional details that provide context but don't modify existing sections
-   - Information that would naturally appear as supplementary notes
-   
-   STEP 2: Processing Logic:
-   - Type A (Instructions for existing sections): Apply to relevant sections, NO additionalNotes field
-   - Type B (New section requests): Create new content in additionalNotes field with appropriate heading
-   - Type C (Additional content): Analyze, enhance, and include in additionalNotes field
-   
-   STEP 3: For additionalNotes content:
-   - Don't copy-paste user input
-   - Analyze and rewrite in professional business language
-   - Create proper section headings if it's a new section request
-   - Enhance with relevant business context
+   Simple test: If the notes tell you HOW to modify existing sections = no additionalNotes
+                If the notes add NEW information or sections = include additionalNotes
 
-7. EXAMPLES:
-   - "add pets are awesome to startup description" = Type A → modify startupDescription, no additionalNotes
-   - "mention our new office in the overview" = Type A → modify progressOverview, no additionalNotes
-   - "add a section about team culture" = Type B → create additionalNotes with "Team Culture" heading
-   - "create a partnerships section" = Type B → create additionalNotes with "Strategic Partnerships" heading
-   - "We have a great remote work policy" = Type C → analyze and include in additionalNotes
-   - "Our office is pet-friendly and has great coffee" = Type C → enhance and include in additionalNotes
-
-Generate content for each enabled section. Make the content:
-1. Professional and business-appropriate
-2. Specific to the reporting period and audience
-3. Incorporate any Type A instructions into the relevant sections
-4. Create new sections in additionalNotes for Type B requests
-5. Enhance and include Type C content in additionalNotes
-6. Realistic and actionable
-7. Appropriate length for each section (2-4 sentences for most, bullet points for milestones)
-8. NEVER use the report title "${title}" as the startup/company name in any section
-9. Always refer to the report writer as "founder" or "co-founders", never as "user"
+Generate content for each enabled section. Make the content professional, realistic, and appropriate for the target audience.
 
 RESPONSE FORMAT:
 Respond with ONLY valid JSON. Include ONLY the fields for enabled sections: ${enabledSections.join(", ")}
 
 Base JSON structure (only include enabled sections):
-{${enabledSections.includes("startupDescription") ? '\n  "startupDescription": "Professional description of the startup and its mission (incorporate Type A instructions here)...",' : ""}${enabledSections.includes("progressOverview") ? '\n  "progressOverview": "Summary of progress during the reporting period (incorporate Type A instructions here)...",' : ""}${enabledSections.includes("tractionMilestones") ? '\n  "tractionMilestones": [\n    "Specific milestone 1",\n    "Specific milestone 2",\n    "Specific milestone 3"\n  ],' : ""}${enabledSections.includes("risksBottlenecks") ? '\n  "risksBottlenecks": "Analysis of current risks and bottlenecks (incorporate Type A instructions here)...",' : ""}${enabledSections.includes("productStrategy") ? '\n  "productStrategy": "Product strategy and roadmap insights (incorporate Type A instructions here)...",' : ""}${enabledSections.includes("forecastPriorities") ? '\n  "forecastPriorities": "Forward-looking priorities and forecasts (incorporate Type A instructions here)..."' : ""}}
+{${enabledSections.includes("startupDescription") ? '\n  "startupDescription": "Professional description...",' : ""}${enabledSections.includes("progressOverview") ? '\n  "progressOverview": "Summary of progress...",' : ""}${enabledSections.includes("tractionMilestones") ? '\n  "tractionMilestones": [\n    "Milestone 1",\n    "Milestone 2"\n  ],' : ""}${enabledSections.includes("risksBottlenecks") ? '\n  "risksBottlenecks": "Analysis of risks...",' : ""}${enabledSections.includes("productStrategy") ? '\n  "productStrategy": "Product strategy...",' : ""}${enabledSections.includes("forecastPriorities") ? '\n  "forecastPriorities": "Forward-looking priorities..."' : ""}}
 
-ONLY add "additionalNotes": "content here" field if the founder's notes contain:
-- Type B: Requests for new sections (create professional section with heading)
-- Type C: Truly additional standalone information (analyze and enhance, don't copy-paste)
-
-CRITICAL: If notes are ONLY Type A (instructions for existing sections), do NOT include additionalNotes field at all.
+ONLY add "additionalNotes": "content here" field if the founder's notes contain NEW information or section requests.
 `
 
   return prompt
