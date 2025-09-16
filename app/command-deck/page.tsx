@@ -275,7 +275,11 @@ export default function CommandDeck() {
 
   const handleTaskClick = (task: Task) => {
     setSelectedTask(task)
-    setEditingTask({ ...task })
+    setEditingTask({
+      ...task,
+      assignee: Array.isArray(task.assignee) ? task.assignee : [task.assignee],
+      category: Array.isArray(task.category) ? task.category : [task.category],
+    })
     setIsTaskDetailOpen(true)
   }
 
