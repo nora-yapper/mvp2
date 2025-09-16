@@ -1487,7 +1487,7 @@ export default function CommandDeck() {
               <Button
                 variant="outline"
                 onClick={() => setIsStepsModalOpen(false)}
-                className="border-gray-600 text-gray-200 hover:bg-gray-700"
+                className="border-gray-500 text-gray-300 hover:bg-gray-600 bg-gray-700"
               >
                 Dismiss
               </Button>
