@@ -152,7 +152,7 @@ export default function CommandDeck() {
     assignee: "",
     deadline: "",
     priority: "Medium" as "High" | "Medium" | "Low",
-    category: "General",
+    category: "Product Development",
   })
 
   // Use ref to track if we're loading from storage to prevent infinite loops
@@ -256,7 +256,7 @@ export default function CommandDeck() {
         assignee: "",
         deadline: "",
         priority: "Medium",
-        category: "General",
+        category: "Product Development",
       })
       setIsAddTaskOpen(false)
     }
@@ -1005,7 +1005,7 @@ export default function CommandDeck() {
                               <label className="text-sm font-medium text-gray-200">Priority</label>
                               <Select
                                 value={newTask.priority}
-                                onChange={(value) =>
+                                onValueChange={(value) =>
                                   setNewTask({ ...newTask, priority: value as "High" | "Medium" | "Low" })
                                 }
                               >
@@ -1027,12 +1027,43 @@ export default function CommandDeck() {
                             </div>
                             <div>
                               <label className="text-sm font-medium text-gray-200">Category</label>
-                              <Input
+                              <Select
                                 value={newTask.category}
-                                onChange={(e) => setNewTask({ ...newTask, category: e.target.value })}
-                                placeholder="Task category"
-                                className="bg-gray-700 border-gray-600 text-gray-100 placeholder:text-gray-400"
-                              />
+                                onValueChange={(value) => setNewTask({ ...newTask, category: value })}
+                              >
+                                <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
+                                  <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-gray-800 border-gray-600">
+                                  <SelectItem value="Product Development" className="text-gray-100 hover:bg-gray-700">
+                                    Product Development
+                                  </SelectItem>
+                                  <SelectItem value="Sales" className="text-gray-100 hover:bg-gray-700">
+                                    Sales
+                                  </SelectItem>
+                                  <SelectItem value="Marketing" className="text-gray-100 hover:bg-gray-700">
+                                    Marketing
+                                  </SelectItem>
+                                  <SelectItem value="Finance" className="text-gray-100 hover:bg-gray-700">
+                                    Finance
+                                  </SelectItem>
+                                  <SelectItem value="Operations" className="text-gray-100 hover:bg-gray-700">
+                                    Operations
+                                  </SelectItem>
+                                  <SelectItem value="Human Resources" className="text-gray-100 hover:bg-gray-700">
+                                    Human Resources
+                                  </SelectItem>
+                                  <SelectItem value="Legal" className="text-gray-100 hover:bg-gray-700">
+                                    Legal
+                                  </SelectItem>
+                                  <SelectItem
+                                    value="Research & Development"
+                                    className="text-gray-100 hover:bg-gray-700"
+                                  >
+                                    Research & Development
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
                             <Button onClick={handleAddTask} className="w-full bg-blue-600 hover:bg-blue-700">
                               Add Task
