@@ -1,4 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { generateText } from "ai"
+import { openai } from "@ai-sdk/openai"
 
 export async function POST(request: NextRequest) {
   console.log("[v0] API route called - starting execution")
@@ -36,45 +38,27 @@ export async function POST(request: NextRequest) {
       const prompt = createReportPrompt(formData)
       console.log("[v0] Prompt created successfully, length:", prompt.length)
 
-      console.log("[v0] Making OpenAI API call")
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are a professional business report writer who creates comprehensive startup reports. Always respond with valid JSON in the exact format requested.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 2000,
-        }),
+      console.log("[v0] Making OpenAI API call using AI SDK")
+      const { text } = await generateText({
+        model: openai("gpt-4o-mini"),
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a professional business report writer who creates comprehensive startup reports. Always respond with valid JSON in the exact format requested.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        maxTokens: 2000,
       })
 
-      console.log("[v0] OpenAI API response received, status:", response.status)
+      console.log("[v0] OpenAI API response received successfully")
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error("[v0] OpenAI API error:", response.status, errorText)
-        console.log("[v0] Falling back to fallback content due to API error")
-        return getFallbackContent(formData)
-      }
-
-      const data = await response.json()
-      console.log("[v0] OpenAI response parsed successfully")
-      const aiResponse = data.choices[0]?.message?.content
-
-      if (!aiResponse) {
+      if (!text) {
         console.error("[v0] No response content from OpenAI")
         console.log("[v0] Falling back to fallback content due to empty response")
         return getFallbackContent(formData)
@@ -85,7 +69,7 @@ export async function POST(request: NextRequest) {
       try {
         console.log("[v0] Parsing AI response")
         // Clean the response text
-        let cleanedText = aiResponse.trim()
+        let cleanedText = text.trim()
         if (cleanedText.startsWith("```json")) {
           cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
         } else if (cleanedText.startsWith("```")) {
@@ -96,7 +80,7 @@ export async function POST(request: NextRequest) {
         console.log("[v0] AI response parsed successfully")
       } catch (parseError) {
         console.error("[v0] Failed to parse OpenAI response:", parseError)
-        console.error("[v0] Raw AI response:", aiResponse)
+        console.error("[v0] Raw AI response:", text)
         console.log("[v0] Falling back to fallback content due to parse error")
         return getFallbackContent(formData)
       }
