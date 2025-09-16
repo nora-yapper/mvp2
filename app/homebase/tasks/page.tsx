@@ -194,6 +194,19 @@ export default function CommandDeckTasksPage() {
             Command Deck
           </button>
           <button
+            onClick={() => (window.location.href = "/health-check")}
+            style={{
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              backgroundColor: "white",
+              width: "100%",
+            }}
+          >
+            Health Check
+          </button>
+          <button
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -219,6 +232,7 @@ export default function CommandDeckTasksPage() {
             Forecast
           </button>
           <button
+            onClick={() => (window.location.href = "/reports")}
             style={{
               padding: "15px",
               fontSize: "16px",
@@ -231,6 +245,7 @@ export default function CommandDeckTasksPage() {
             Reports
           </button>
           <button
+            onClick={() => (window.location.href = "/network")}
             style={{
               padding: "15px",
               fontSize: "16px",

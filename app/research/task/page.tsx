@@ -1553,7 +1553,7 @@ export default function ResearchTaskPage() {
               width: "100%",
             }}
           >
-            Health Analysis
+            Health Check
           </button>
           <button
             style={{

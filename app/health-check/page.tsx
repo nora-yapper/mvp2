@@ -111,7 +111,7 @@ export default function HealthCheckPage() {
             {
               role: "system",
               content:
-                "You are Nora AI-stronaut, a helpful AI assistant for startup health analysis. You help entrepreneurs understand their metrics and provide actionable advice. Keep responses concise and actionable. Use a friendly, professional tone with occasional space/rocket emojis.",
+                "You are Nora AI-stronaut, a helpful AI assistant for startup health check. You help entrepreneurs understand their metrics and provide actionable advice. Keep responses concise and actionable. Use a friendly, professional tone with occasional space/rocket emojis.",
             },
             ...chatMessages.map((msg) => ({ role: msg.role, content: msg.content })),
             { role: "user", content: chatInput },
@@ -123,7 +123,7 @@ export default function HealthCheckPage() {
 
       const assistantMessage: ChatMessage = {
         role: "assistant",
-        content: data.message || "I'm here to help you with your startup health analysis!",
+        content: data.message || "I'm here to help you with your startup health check!",
         timestamp: new Date(),
       }
 

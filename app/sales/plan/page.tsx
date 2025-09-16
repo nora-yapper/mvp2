@@ -192,7 +192,7 @@ export default function SalesPlanPage() {
           {[
             { label: "Map", onClick: () => (window.location.href = "/main") },
             { label: "Command Deck", onClick: () => {} },
-            { label: "Health Analysis", onClick: () => {} },
+            { label: "Health Check", onClick: () => {} },
             { label: "Forecast", onClick: () => {} },
             { label: "Reports", onClick: () => {} },
             { label: "Network", onClick: () => {} },
