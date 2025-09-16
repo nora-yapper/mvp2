@@ -60,6 +60,14 @@ export default function ProductDetailPage() {
   const handleTaskClick = (sectionId: string, taskId: string) => {
     // Only allow clicks for Overview and Action Table
     if (sectionId === "overview" || sectionId === "action-table") {
+      if (taskId === "development-plan") {
+        const part01Completed = sessionStorage.getItem("productActionTablePart01Completed")
+        if (!part01Completed) {
+          alert("Please complete Action Table Part 01 first before accessing Part 02.")
+          return
+        }
+      }
+
       const optionsParam = selectedOptions.join(",")
       // Navigate to the product task page with proper parameters
       window.location.href = `/product/task?section=${sectionId}&task=${taskId}&options=${optionsParam}`
@@ -167,74 +175,112 @@ export default function ProductDetailPage() {
   )
 
   // Action Table Section Component
-  const ActionTableSection = ({ isUnlocked }: { isUnlocked: boolean }) => (
-    <div
-      style={{
-        backgroundColor: "#1a1a1a",
-        minHeight: "100vh",
-        padding: "60px 40px",
-        position: "relative",
-      }}
-    >
-      <h1
+  const ActionTableSection = ({ isUnlocked }: { isUnlocked: boolean }) => {
+    const [part01Completed, setPart01Completed] = useState(false)
+
+    useEffect(() => {
+      const completed = sessionStorage.getItem("productActionTablePart01Completed")
+      setPart01Completed(!!completed)
+    }, [])
+
+    return (
+      <div
         style={{
-          fontSize: "3.5rem",
-          color: "#666",
-          fontWeight: "bold",
-          marginBottom: "60px",
-          textAlign: "center",
-          letterSpacing: "0.1em",
+          backgroundColor: "#1a1a1a",
+          minHeight: "100vh",
+          padding: "60px 40px",
+          position: "relative",
         }}
       >
-        ACTION TABLE
-      </h1>
+        <h1
+          style={{
+            fontSize: "3.5rem",
+            color: "#666",
+            fontWeight: "bold",
+            marginBottom: "60px",
+            textAlign: "center",
+            letterSpacing: "0.1em",
+          }}
+        >
+          ACTION TABLE
+        </h1>
 
-      <div style={{ display: "flex", gap: "40px", maxWidth: "1000px", margin: "0 auto" }}>
-        {/* Priority Tasks Card */}
-        <div style={{ flex: "0 0 300px" }}>
-          <GeometricCard clickable={isUnlocked} onClick={() => handleTaskClick("action-table", "priority-tasks")}>
-            <h3
-              style={{
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "20px",
-                color: "#ccc",
-                textAlign: "center",
-              }}
-            >
-              ACTION TABLE PART 01
-            </h3>
-            <p style={{ fontSize: "14px", lineHeight: "1.5" }}>
-              Turn your interview insights into early product ideas and note any possible issues or risks each idea
-              could bring.
-            </p>
-          </GeometricCard>
-        </div>
-
-        {/* Development Plan Card */}
-        <div style={{ flex: 1 }}>
-          <GeometricCard clickable={isUnlocked} onClick={() => handleTaskClick("action-table", "development-plan")}>
-            <h3
-              style={{
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "20px",
-                color: "#ccc",
-                textAlign: "center",
-              }}
-            >
-              ACTION TABLE PART 02
-            </h3>
-            <div style={{ fontSize: "14px", lineHeight: "1.6" }}>
-              <p style={{ marginBottom: "15px" }}>
-                Now turn those early product ideas into actual features. Define their relevance and priority.
+        <div style={{ display: "flex", gap: "40px", maxWidth: "1000px", margin: "0 auto" }}>
+          {/* Priority Tasks Card */}
+          <div style={{ flex: "0 0 300px" }}>
+            <GeometricCard clickable={isUnlocked} onClick={() => handleTaskClick("action-table", "priority-tasks")}>
+              <h3
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  marginBottom: "20px",
+                  color: "#ccc",
+                  textAlign: "center",
+                }}
+              >
+                ACTION TABLE PART 01
+              </h3>
+              <p style={{ fontSize: "14px", lineHeight: "1.5" }}>
+                Turn your interview insights into early product ideas, list possible directions and note potential
+                issues.
               </p>
-            </div>
-          </GeometricCard>
+            </GeometricCard>
+          </div>
+
+          {/* Development Plan Card */}
+          <div style={{ flex: 1, position: "relative" }}>
+            <GeometricCard
+              clickable={isUnlocked && part01Completed}
+              onClick={() => handleTaskClick("action-table", "development-plan")}
+              style={{
+                opacity: part01Completed ? 1 : 0.5,
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  marginBottom: "20px",
+                  color: "#ccc",
+                  textAlign: "center",
+                }}
+              >
+                ACTION TABLE PART 02
+              </h3>
+              <div style={{ fontSize: "14px", lineHeight: "1.6" }}>
+                <p style={{ marginBottom: "15px" }}>
+                  Now turn those early product ideas into actual features. Define their relevance and priority.
+                </p>
+              </div>
+            </GeometricCard>
+
+            {!part01Completed && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.8)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10,
+                  clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
+                }}
+              >
+                <div style={{ textAlign: "center", color: "white" }}>
+                  <div style={{ fontSize: "48px", marginBottom: "10px" }}>🔒</div>
+                  <div style={{ fontSize: "16px" }}>Complete Part 01 first</div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   // Features Section Component (Non-clickable)
   const FeaturesSection = ({ isUnlocked }: { isUnlocked: boolean }) => (

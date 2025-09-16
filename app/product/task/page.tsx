@@ -70,6 +70,11 @@ const ProductTaskPage = () => {
   }
 
   const handleCompletion = () => {
+    if (section === "action-table" && task === "priority-tasks") {
+      sessionStorage.setItem("productActionTablePart01Completed", "true")
+      alert("Action Table Part 01 completed! Part 02 is now unlocked.")
+    }
+
     // Completion logic here
     earnTokensForStep("PRODUCT_ACTION_TABLE")
   }
@@ -462,6 +467,24 @@ const ProductTaskPage = () => {
             >
               Complete Task
             </button>
+          </div>
+        </div>
+      )
+    }
+
+    if (section === "action-table" && task === "development-plan") {
+      return (
+        <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
+          <h1 style={{ fontSize: "2.5rem", marginBottom: "10px", color: "#333" }}>Action Table - Part 2</h1>
+          <p style={{ fontSize: "16px", color: "#666", marginBottom: "40px" }}>
+            Now turn those early product ideas into actual features. Define their relevance and priority.
+          </p>
+
+          <div style={{ textAlign: "center", padding: "60px", backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
+            <h3 style={{ color: "#666", marginBottom: "20px" }}>Part 2 Interface</h3>
+            <p style={{ color: "#999" }}>
+              This interface will be implemented to convert ideas into features with priority ranking.
+            </p>
           </div>
         </div>
       )
