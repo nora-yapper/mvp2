@@ -1148,7 +1148,7 @@ export default function CommandDeck() {
 
                       <div className="flex items-center gap-2">
                         {[
-                          { name: "Gantt", icon: BarChart3 },
+                          { name: "List", icon: BarChart3 },
                           { name: "Kanban", icon: Kanban },
                           { name: "Table", icon: TableIcon },
                         ].map((view) => (
@@ -1219,7 +1219,7 @@ export default function CommandDeck() {
                   </div>
 
                   {/* View Content */}
-                  {activeView === "Gantt" && renderGanttView()}
+                  {activeView === "List" && renderGanttView()}
                   {activeView === "Kanban" && renderKanbanView()}
                   {activeView === "Table" && renderTableView()}
                 </CardContent>
@@ -1510,7 +1510,7 @@ export default function CommandDeck() {
                             <label className="text-sm font-medium text-gray-200">Priority</label>
                             <Select
                               value={editingStep?.priority || "Medium"}
-                              onValueChange={(value) =>
+                              onChange={(value) =>
                                 setEditingStep((prev) =>
                                   prev ? { ...prev, priority: value as "High" | "Medium" | "Low" } : null,
                                 )
@@ -1550,7 +1550,7 @@ export default function CommandDeck() {
                             <label className="text-sm font-medium text-gray-200">Category</label>
                             <Select
                               value={editingStep?.category || "Product Development"}
-                              onValueChange={(value) =>
+                              onChange={(value) =>
                                 setEditingStep((prev) => (prev ? { ...prev, category: value } : null))
                               }
                             >
