@@ -64,7 +64,67 @@ const teamMembers = [
 
 export default function CommandDeck() {
   const [activeView, setActiveView] = useState("Gantt")
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: "1",
+      title: "Define Features of MVP",
+      description:
+        "Identify and list down the 5-7 key features that your MVP must have to solve the problem it is designed for. Use tools like Trello or Asana for task management.",
+      assignee: "Alex Johnson",
+      deadline: "2025-09-30",
+      priority: "High",
+      status: "To Do",
+      category: "Product Development", // Changed from Mission Critical
+      createdAt: "2025-01-16",
+    },
+    {
+      id: "2",
+      title: "Sketch UI/UX Wireframes",
+      description:
+        "Create detailed wireframes for your MVP using a tool like Sketch or Figma. Focus on user journey and functionality rather than aesthetics at this stage.",
+      assignee: "Emily Davis",
+      deadline: "2025-09-23",
+      priority: "High",
+      status: "To Do",
+      category: "Product Development", // Changed from Mission Critical
+      createdAt: "2025-01-16",
+    },
+    {
+      id: "3",
+      title: "Develop MVP",
+      description:
+        "Start the development process of your MVP. Use agile methodologies to manage your development process and tools like GitHub for version control.",
+      assignee: "Alex Johnson",
+      deadline: "2025-09-30",
+      priority: "High",
+      status: "To Do",
+      category: "Product Development", // Changed from Critical
+      createdAt: "2025-01-16",
+    },
+    {
+      id: "4",
+      title: "Test MVP",
+      description:
+        "Once the MVP is ready, perform thorough testing. Use tools like Jira for bug tracking and managing testing workflows.",
+      assignee: "James Wilson",
+      deadline: "2025-09-30",
+      priority: "Medium",
+      status: "To Do",
+      category: "Product Development", // Changed from Critical
+      createdAt: "2025-01-16",
+    },
+    {
+      id: "5",
+      title: "Collect User Feedback",
+      description: "Use tools like Google Forms or SurveyMonkey for collecting feedback.",
+      assignee: "James Wilson",
+      deadline: "2025-09-30",
+      priority: "Medium",
+      status: "To Do",
+      category: "Marketing", // Changed from Critical
+      createdAt: "2025-01-16",
+    },
+  ])
   const [taskHistory, setTaskHistory] = useState<Task[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [filterPriority, setFilterPriority] = useState("all")
@@ -305,7 +365,7 @@ export default function CommandDeck() {
         assignee: teamMembers[Math.floor(Math.random() * teamMembers.length)]?.name || "Unassigned",
         deadline: getDefaultDeadline(step.duration || "2 weeks"),
         priority: capitalizeFirst(step.priority || "medium") as "High" | "Medium" | "Low",
-        category: "Mission Critical",
+        category: "Product Development", // Default to Product Development instead of Mission Critical
       }))
 
       setGeneratedSteps(transformedSteps)
