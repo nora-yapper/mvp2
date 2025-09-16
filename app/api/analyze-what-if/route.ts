@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { spendTokensForAI, hasEnoughTokens } from "@/lib/token-integration"
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,18 +8,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Scenario is required" }, { status: 400 })
     }
 
-    // Check if user has enough tokens
-    if (!hasEnoughTokens("WHAT_IF_ANALYSIS")) {
-      return NextResponse.json(
-        {
-          error: "Insufficient tokens. You need 20 tokens for what-if analysis.",
-        },
-        { status: 402 },
-      )
-    }
-
-    // Spend tokens for AI analysis
-    spendTokensForAI("WHAT_IF_ANALYSIS")
+    // Token checks disabled for unlimited usage
 
     const prompt = `You are a startup advisor analyzing a what-if scenario. 
 

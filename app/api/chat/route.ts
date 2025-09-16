@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { spendTokensForAI, hasEnoughTokens } from "@/lib/token-integration"
 
 // Add function to get startup context
 function getStartupContext() {
@@ -15,15 +14,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Messages array is required" }, { status: 400 })
     }
 
-    // Check if user has enough tokens
-    if (!hasEnoughTokens("AI_CHAT_MESSAGE")) {
-      return NextResponse.json({
-        message: "Insufficient tokens. You need 5 tokens to chat with AI assistant.",
-      })
-    }
-
     // Spend tokens for AI chat
-    spendTokensForAI("AI_CHAT_MESSAGE")
+    // Token checks disabled for unlimited usage
 
     // Build context-aware system message
     let systemMessage = "You are a helpful startup advisor assistant."

@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { spendTokensForAI, hasEnoughTokens } from "@/lib/token-integration"
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,20 +8,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Questions array is required" }, { status: 400 })
     }
 
-    // Check if user has enough tokens
-    if (!hasEnoughTokens("QUESTION_EVALUATION")) {
-      return NextResponse.json(
-        {
-          error: "Insufficient tokens. You need 10 tokens for question evaluation.",
-        },
-        { status: 402 },
-      )
-    }
+    // Token checks disabled for unlimited usage
 
-    // Spend tokens for AI evaluation
-    spendTokensForAI("QUESTION_EVALUATION")
-
-    // Mock evaluation instead of AI SDK
     const evaluations = questions.map((question: string, index: number) => {
       const questionLower = question.toLowerCase()
 

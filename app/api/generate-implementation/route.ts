@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { spendTokensForAI, hasEnoughTokens } from "@/lib/token-integration"
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,18 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Suggestion with title is required" }, { status: 400 })
     }
 
-    // Check if user has enough tokens
-    if (!hasEnoughTokens("IMPLEMENTATION_GENERATION")) {
-      return NextResponse.json(
-        {
-          error: "Insufficient tokens. You need 25 tokens for implementation generation.",
-        },
-        { status: 402 },
-      )
-    }
-
-    // Spend tokens for AI generation
-    spendTokensForAI("IMPLEMENTATION_GENERATION")
+    // Token checks disabled for unlimited usage
 
     // Create team context
     const teamContext =

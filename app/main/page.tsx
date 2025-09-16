@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Send, MessageCircle, X } from "lucide-react"
-import { TokenDisplay } from "@/components/token-display"
+// import { TokenDisplay } from "@/components/token-display"
 
 export default function MainPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -91,9 +91,6 @@ Current conversation context: The user is in the main dashboard of their startup
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0", position: "relative" }}>
-      {/* Token Display */}
-      <TokenDisplay />
-
       {/* Hamburger Menu - Top Left */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}

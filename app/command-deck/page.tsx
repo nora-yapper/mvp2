@@ -26,7 +26,7 @@ import {
   RotateCcw,
 } from "lucide-react"
 
-import { checkTokenBalance } from "@/lib/token-integration"
+// import { checkTokenBalance } from "@/lib/token-integration"
 
 interface Task {
   id: string
@@ -336,39 +336,18 @@ export default function CommandDeck() {
   const handleGenerateMissionSteps = async () => {
     if (!mission.trim()) return
 
-    const currentBalance = checkTokenBalance()
-    if (currentBalance < 20) {
-      setErrorMessage(
-        `Insufficient tokens. You have ${currentBalance} tokens but need 20 for mission step generation. Complete more tasks to earn tokens!`,
-      )
-      setTimeout(() => {
-        setErrorMessage("")
-      }, 8000)
-      return
-    }
-
     setIsGenerating(true)
-    setApiSource("")
-    setErrorMessage("")
 
     try {
-      // Parse accomplished items from textarea
-      const accomplishedList = accomplished
-        .split("\n")
-        .map((item) => item.trim())
-        .filter((item) => item.length > 0)
-
-      console.log("Sending request to generate mission steps...")
-
       const response = await fetch("/api/generate-mission-steps", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mission,
+          mission: mission.trim(),
           timeframe: timeframe || undefined,
-          accomplished: accomplishedList.length > 0 ? accomplishedList : undefined,
+          accomplished: accomplished.filter((item) => item.trim()),
         }),
       })
 
@@ -376,57 +355,44 @@ export default function CommandDeck() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
-        if (response.status === 402) {
-          const balance = checkTokenBalance()
-          setErrorMessage(
-            `Insufficient tokens. You have ${balance} tokens but need 20. Complete tasks to earn more tokens!`,
-          )
-        } else {
-          setErrorMessage(`Error generating mission steps: ${errorData.error || `HTTP ${response.status}`}`)
-        }
+        setErrorMessage(`Error generating mission steps: ${errorData.error || `HTTP ${response.status}`}`)
 
-        // Show error for 8 seconds for token errors, 5 seconds for others
-        setTimeout(
-          () => {
-            setErrorMessage("")
-          },
-          response.status === 402 ? 8000 : 5000,
-        )
+        setTimeout(() => {
+          setErrorMessage("")
+        }, 5000)
         return
       }
 
       const data = await response.json()
-      console.log("Received data:", data)
+      console.log("API Response:", data)
 
       if (!data.steps || !Array.isArray(data.steps)) {
         throw new Error("Invalid response format: missing steps array")
       }
 
-      // Transform API response to match UI expectations
-      const transformedSteps = data.steps.map((step: any) => {
-        let priority = "Medium" // Default priority
-        const stepPriority = (step.priority || "medium").toLowerCase()
+      // Transform API response to match our task format
+      const transformedSteps = data.steps.map((step: any, index: number) => ({
+        id: Date.now() + index,
+        task: step.title || step.task || `Step ${index + 1}`,
+        description: step.description || "",
+        assignee: Array.isArray(step.assignee) ? step.assignee : [step.assignee || "Unassigned"],
+        category: Array.isArray(step.category) ? step.category : [step.category || "Operations"],
+        priority:
+          step.priority === "critical"
+            ? "High"
+            : step.priority === "high"
+              ? "High"
+              : step.priority === "medium"
+                ? "Medium"
+                : "Medium",
+        deadline: step.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+        status: "todo",
+        duration: step.duration || "1 week",
+      }))
 
-        if (stepPriority === "high" || stepPriority === "critical") {
-          priority = "High"
-        } else if (stepPriority === "low") {
-          priority = "Low"
-        } else {
-          priority = "Medium"
-        }
-
-        return {
-          title: step.title || "Untitled Step",
-          description: step.description || "No description provided",
-          assignee: Array.isArray(step.assignee) ? step.assignee : [step.assignee || "Unassigned"],
-          deadline: step.deadline,
-          priority: priority as "High" | "Medium" | "Low",
-          category: Array.isArray(step.category) ? step.category : [step.category || "Product Development"],
-        }
-      })
+      console.log("Transformed steps:", transformedSteps)
 
       setGeneratedSteps(transformedSteps)
-      setApiSource(data.source || "unknown")
       setIsStepsModalOpen(true)
 
       console.log("Successfully generated", transformedSteps.length, "steps")
@@ -434,20 +400,10 @@ export default function CommandDeck() {
       console.error("Error generating mission steps:", error)
       const errorMsg = error instanceof Error ? error.message : "Unknown error occurred"
 
-      if (errorMsg.includes("Insufficient tokens") || errorMsg.includes("tokens")) {
-        const balance = checkTokenBalance()
-        setErrorMessage(
-          `Insufficient tokens. You have ${balance} tokens but need 20. Complete more tasks to earn tokens!`,
-        )
-        setTimeout(() => {
-          setErrorMessage("")
-        }, 8000)
-      } else {
-        setErrorMessage(`Failed to generate steps: ${errorMsg}`)
-        setTimeout(() => {
-          setErrorMessage("")
-        }, 5000)
-      }
+      setErrorMessage(`Failed to generate steps: ${errorMsg}`)
+      setTimeout(() => {
+        setErrorMessage("")
+      }, 5000)
     } finally {
       setIsGenerating(false)
     }

@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { spendTokensForAI, hasEnoughTokens } from "@/lib/token-integration"
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,19 +7,6 @@ export async function POST(request: NextRequest) {
     if (!problemDescription) {
       return NextResponse.json({ error: "Problem description is required" }, { status: 400 })
     }
-
-    // Check if user has enough tokens
-    if (!hasEnoughTokens("RESEARCH_ANALYSIS")) {
-      return NextResponse.json(
-        {
-          error: "Insufficient tokens. You need 15 tokens for AI analysis.",
-        },
-        { status: 402 },
-      )
-    }
-
-    // Spend tokens for AI analysis
-    spendTokensForAI("RESEARCH_ANALYSIS")
 
     // Build context-aware system prompt
     let systemPrompt = `You are a startup advisor helping analyze problem statements. Based on the user's problem description, generate a structured analysis with exactly these sections:
