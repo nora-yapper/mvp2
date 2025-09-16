@@ -518,6 +518,25 @@ export default function CommandDeck() {
     }
   }
 
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "Product Development":
+        return "bg-purple-500"
+      case "Research":
+        return "bg-blue-500"
+      case "Sales":
+        return "bg-green-500"
+      case "Marketing":
+        return "bg-orange-500"
+      case "Human Resources":
+        return "bg-pink-500"
+      case "Operations":
+        return "bg-indigo-500"
+      default:
+        return "bg-gray-500"
+    }
+  }
+
   const getWorkloadColor = (status: string) => {
     switch (status) {
       case "Underloaded":
@@ -603,11 +622,11 @@ export default function CommandDeck() {
                     </Badge>
                     <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
                     <Badge className={`text-xs text-white ${getStatusColor(task.status)}`}>{task.status}</Badge>
+                    <Badge className={`text-xs text-white ${getCategoryColor(task.category)}`}>{task.category}</Badge>
                   </div>
                 </div>
                 <div className="text-right flex flex-col gap-2">
                   <p className="text-sm font-medium text-gray-100">{task.deadline}</p>
-                  <p className="text-xs text-gray-400">{task.category}</p>
                   {/* Gantt chart timeline bar */}
                   <div className="w-32 h-2 bg-gray-600 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.random() * 100}%` }} />
@@ -656,6 +675,11 @@ export default function CommandDeck() {
                         </Badge>
                         <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>
                           {task.priority}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <Badge className={`text-xs text-white ${getCategoryColor(task.category)}`}>
+                          {task.category}
                         </Badge>
                       </div>
                       <p className="text-xs text-gray-400 mt-1">{task.deadline}</p>
