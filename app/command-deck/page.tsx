@@ -481,6 +481,7 @@ export default function CommandDeck() {
   }
 
   const handleDragStart = (task: Task) => {
+    console.log("[v0] Drag started for task:", task.title)
     setDraggedTask(task)
   }
 
@@ -644,7 +645,7 @@ export default function CommandDeck() {
           <div
             key={task.id}
             draggable
-            onDragStart={(e) => handleDragStart(e, task)}
+            onDragStart={() => handleDragStart(task)} // Fix function call signature
             onDragOver={(e) => handleListDragOver(e, index)}
             onDrop={(e) => handleListDrop(e, index)}
             className={`${dragOverIndex === index ? "border-t-2 border-blue-500" : ""}`}
@@ -694,86 +695,49 @@ export default function CommandDeck() {
 
   const handleListDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault()
+    console.log("[v0] Drop event triggered at index:", dropIndex)
     setDragOverIndex(null)
 
-    if (!draggedTask) return
+    if (!draggedTask) {
+      console.log("[v0] No dragged task found")
+      return
+    }
+
+    console.log("[v0] Dragged task:", draggedTask.title)
 
     const draggedIndex = filteredTasks.findIndex((task) => task.id === draggedTask.id)
-    if (draggedIndex === dropIndex) return
+    console.log("[v0] Dragged index:", draggedIndex, "Drop index:", dropIndex)
 
-    // Create a copy of filtered tasks and reorder them
-    const reorderedFilteredTasks = [...filteredTasks]
-    const [movedTask] = reorderedFilteredTasks.splice(draggedIndex, 1)
-    reorderedFilteredTasks.splice(dropIndex, 0, movedTask)
+    if (draggedIndex === dropIndex) {
+      console.log("[v0] Same position, no change needed")
+      return
+    }
 
-    // Update the main tasks array with new order
+    // Reorder the filtered tasks
+    const reorderedTasks = [...filteredTasks]
+    const [movedTask] = reorderedTasks.splice(draggedIndex, 1)
+    reorderedTasks.splice(dropIndex, 0, movedTask)
+
+    // Update the main tasks array by finding and updating the corresponding tasks
     const updatedTasks = tasks.map((task) => {
-      const newIndex = reorderedFilteredTasks.findIndex((ft) => ft.id === task.id)
-      if (newIndex !== -1) {
-        return { ...task, order: newIndex }
+      // Find this task in the reordered filtered tasks
+      const reorderedIndex = reorderedTasks.findIndex((rt) => rt.id === task.id)
+      if (reorderedIndex !== -1) {
+        // This task is in the current filter, update its order
+        return { ...task, order: reorderedIndex }
       }
+      // This task is not in current filter, keep its existing order
       return task
     })
 
+    console.log(
+      "[v0] Updated tasks:",
+      updatedTasks
+        .filter((t) => reorderedTasks.some((rt) => rt.id === t.id))
+        .map((t) => ({ title: t.title, order: t.order })),
+    )
     setTasks(updatedTasks)
     setDraggedTask(null)
-  }
-
-  const renderKanbanView = () => {
-    const columns = ["To Do", "In Progress", "Done"]
-
-    return (
-      <div className="grid grid-cols-3 gap-6">
-        {columns.map((column) => (
-          <div
-            key={column}
-            className="bg-gray-700 rounded-lg p-4 border border-gray-600"
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, column as "To Do" | "In Progress" | "Done")}
-          >
-            <h3 className="font-semibold text-gray-100 mb-4">{column}</h3>
-            <div className="space-y-3">
-              {filteredTasks
-                .filter((task) => task.status === column)
-                .map((task) => (
-                  <Card
-                    key={task.id}
-                    className={`cursor-pointer hover:shadow-md transition-shadow bg-gray-600 border-gray-500 ${
-                      dragOverTask === task.id ? "border-blue-400 border-2" : ""
-                    }`}
-                    draggable
-                    onDragStart={() => handleDragStart(task)}
-                    onDragOver={(e) => handleDragOverTask(e, task.id)}
-                    onDrop={(e) => handleDropOnTask(e, task)}
-                    onClick={() => handleTaskClick(task)}
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-medium text-sm text-gray-100">{task.title}</h4>
-                      </div>
-                      <p className="text-xs text-gray-300 mt-1">{task.description}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
-                          {task.assignee}
-                        </Badge>
-                        <Badge
-                          className={`text-xs ${getPriorityTextColor(task.priority)} ${getPriorityColor(task.priority)}`}
-                        >
-                          {task.priority}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between mt-1">
-                        <Badge className="text-xs bg-gray-500 text-white">{task.category}</Badge>
-                        <span className="text-xs text-gray-400">{task.deadline}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    )
   }
 
   const renderTableView = () => (
@@ -825,6 +789,115 @@ export default function CommandDeck() {
       </Table>
     </div>
   )
+
+  const renderKanbanView = () => {
+    const todoTasks = filteredTasks.filter((task) => task.status === "To Do")
+    const inProgressTasks = filteredTasks.filter((task) => task.status === "In Progress")
+    const doneTasks = filteredTasks.filter((task) => task.status === "Done")
+
+    return (
+      <div className="grid grid-cols-3 gap-4">
+        {/* To Do Column */}
+        <div
+          className="bg-gray-700 rounded-lg p-4 border border-gray-600 min-h-[300px]"
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, "To Do")}
+        >
+          <h4 className="text-lg font-semibold text-gray-100 mb-4">To Do</h4>
+          {todoTasks.map((task) => (
+            <Card
+              key={task.id}
+              draggable
+              onDragStart={() => handleDragStart(task)}
+              onDragOver={(e) => handleDragOverTask(e, task.id)}
+              onDrop={(e) => handleDropOnTask(e, task)}
+              className={`bg-gray-800 border-gray-700 mb-4 cursor-move ${
+                dragOverTask === task.id ? "border-2 border-blue-500" : ""
+              }`}
+              onClick={() => handleTaskClick(task)}
+            >
+              <CardContent className="p-4">
+                <h5 className="text-md font-medium text-gray-100">{task.title}</h5>
+                <p className="text-sm text-gray-300 mt-1">{task.description}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
+                    {task.assignee}
+                  </Badge>
+                  <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* In Progress Column */}
+        <div
+          className="bg-gray-700 rounded-lg p-4 border border-gray-600 min-h-[300px]"
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, "In Progress")}
+        >
+          <h4 className="text-lg font-semibold text-gray-100 mb-4">In Progress</h4>
+          {inProgressTasks.map((task) => (
+            <Card
+              key={task.id}
+              draggable
+              onDragStart={() => handleDragStart(task)}
+              onDragOver={(e) => handleDragOverTask(e, task.id)}
+              onDrop={(e) => handleDropOnTask(e, task)}
+              className={`bg-gray-800 border-gray-700 mb-4 cursor-move ${
+                dragOverTask === task.id ? "border-2 border-blue-500" : ""
+              }`}
+              onClick={() => handleTaskClick(task)}
+            >
+              <CardContent className="p-4">
+                <h5 className="text-md font-medium text-gray-100">{task.title}</h5>
+                <p className="text-sm text-gray-300 mt-1">{task.description}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
+                    {task.assignee}
+                  </Badge>
+                  <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Done Column */}
+        <div
+          className="bg-gray-700 rounded-lg p-4 border border-gray-600 min-h-[300px]"
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, "Done")}
+        >
+          <h4 className="text-lg font-semibold text-gray-100 mb-4">Done</h4>
+          {doneTasks.map((task) => (
+            <Card
+              key={task.id}
+              draggable
+              onDragStart={() => handleDragStart(task)}
+              onDragOver={(e) => handleDragOverTask(e, task.id)}
+              onDrop={(e) => handleDropOnTask(e, task)}
+              className={`bg-gray-800 border-gray-700 mb-4 cursor-move ${
+                dragOverTask === task.id ? "border-2 border-blue-500" : ""
+              }`}
+              onClick={() => handleTaskClick(task)}
+            >
+              <CardContent className="p-4">
+                <h5 className="text-md font-medium text-gray-100">{task.title}</h5>
+                <p className="text-sm text-gray-300 mt-1">{task.description}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
+                    {task.assignee}
+                  </Badge>
+                  <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#1a1a1a", color: "#e0e0e0", position: "relative" }}>
