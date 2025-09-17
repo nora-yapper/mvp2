@@ -512,6 +512,10 @@ export default function CommandDeck() {
 
   const handleDrop = (e: React.DragEvent, newStatus: "To Do" | "In Progress" | "Done") => {
     e.preventDefault()
+    if (activeView !== "Kanban") {
+      return
+    }
+
     if (draggedTask) {
       updateTaskStatus(draggedTask.id, newStatus)
       setDraggedTask(null)
@@ -522,6 +526,10 @@ export default function CommandDeck() {
   const handleDropOnTask = (e: React.DragEvent, targetTask: Task) => {
     e.preventDefault()
     e.stopPropagation()
+
+    if (activeView !== "Kanban") {
+      return
+    }
 
     if (draggedTask && draggedTask.id !== targetTask.id) {
       // If dropping in the same column, reorder tasks
@@ -722,6 +730,10 @@ export default function CommandDeck() {
 
   const handleListDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault()
+    if (activeView !== "List") {
+      return
+    }
+
     console.log("[v0] Drop event triggered at index:", dropIndex)
     setDragOverIndex(null)
 
