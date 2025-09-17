@@ -218,16 +218,14 @@ export default function CommandDeck() {
     localStorage.setItem("commandDeckTaskHistory", JSON.stringify(taskHistory))
   }, [taskHistory])
 
-  const filteredTasks = tasks
-    .filter((task) => {
-      const matchesSearch =
-        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.description.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesPriority = filterPriority === "all" || task.priority === filterPriority
-      const matchesStatus = filterStatus === "all" || task.status === filterStatus
-      return matchesSearch && matchesPriority && matchesStatus
-    })
-    .sort((a, b) => (a.order || 0) - (b.order || 0))
+  const filteredTasks = tasks.filter((task) => {
+    const matchesSearch =
+      task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesPriority = filterPriority === "all" || task.priority === filterPriority
+    const matchesStatus = filterStatus === "all" || task.status === filterStatus
+    return matchesSearch && matchesPriority && matchesStatus
+  })
 
   const handleAddTask = () => {
     if (newTask.title && newTask.assignee && newTask.deadline) {
