@@ -701,24 +701,18 @@ export default function CommandDeck() {
     const draggedIndex = filteredTasks.findIndex((task) => task.id === draggedTask.id)
     if (draggedIndex === dropIndex) return
 
-    // Reorder tasks in the list
-    const updatedTasks = [...tasks]
-    const taskToMove = updatedTasks.find((task) => task.id === draggedTask.id)
-    if (!taskToMove) return
+    // Create a copy of filtered tasks and reorder them
+    const reorderedFilteredTasks = [...filteredTasks]
+    const [movedTask] = reorderedFilteredTasks.splice(draggedIndex, 1)
+    reorderedFilteredTasks.splice(dropIndex, 0, movedTask)
 
-    // Remove the dragged task from its current position
-    const filteredTasksCopy = [...filteredTasks]
-    filteredTasksCopy.splice(draggedIndex, 1)
-
-    // Insert it at the new position
-    filteredTasksCopy.splice(dropIndex, 0, draggedTask)
-
-    // Update the order property for all affected tasks
-    filteredTasksCopy.forEach((task, index) => {
-      const taskInMainArray = updatedTasks.find((t) => t.id === task.id)
-      if (taskInMainArray) {
-        taskInMainArray.order = index
+    // Update the main tasks array with new order
+    const updatedTasks = tasks.map((task) => {
+      const newIndex = reorderedFilteredTasks.findIndex((ft) => ft.id === task.id)
+      if (newIndex !== -1) {
+        return { ...task, order: newIndex }
       }
+      return task
     })
 
     setTasks(updatedTasks)
