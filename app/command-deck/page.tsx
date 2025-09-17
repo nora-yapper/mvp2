@@ -517,16 +517,16 @@ export default function CommandDeck() {
         const targetIndex = columnTasks.findIndex((task) => task.id === targetTask.id)
 
         if (draggedIndex !== -1 && targetIndex !== -1) {
+          // Remove dragged task and insert at target position
+          const reorderedColumnTasks = [...columnTasks]
+          const [movedTask] = reorderedColumnTasks.splice(draggedIndex, 1)
+          reorderedColumnTasks.splice(targetIndex, 0, movedTask)
+
+          // Update order values for all tasks in this column
           const updatedTasks = tasks.map((task) => {
             if (task.status === targetTask.status) {
-              const currentIndex = columnTasks.findIndex((t) => t.id === task.id)
-              if (task.id === draggedTask.id) {
-                return { ...task, order: targetIndex }
-              } else if (draggedIndex < targetIndex && currentIndex > draggedIndex && currentIndex <= targetIndex) {
-                return { ...task, order: currentIndex - 1 }
-              } else if (draggedIndex > targetIndex && currentIndex >= targetIndex && currentIndex < draggedIndex) {
-                return { ...task, order: currentIndex + 1 }
-              }
+              const newIndex = reorderedColumnTasks.findIndex((t) => t.id === task.id)
+              return { ...task, order: newIndex }
             }
             return task
           })
