@@ -793,9 +793,15 @@ export default function CommandDeck() {
   )
 
   const renderKanbanView = () => {
-    const todoTasks = filteredTasks.filter((task) => task.status === "To Do")
-    const inProgressTasks = filteredTasks.filter((task) => task.status === "In Progress")
-    const doneTasks = filteredTasks.filter((task) => task.status === "Done")
+    const todoTasks = filteredTasks
+      .filter((task) => task.status === "To Do")
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+    const inProgressTasks = filteredTasks
+      .filter((task) => task.status === "In Progress")
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+    const doneTasks = filteredTasks
+      .filter((task) => task.status === "Done")
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
 
     return (
       <div className="grid grid-cols-3 gap-4">
