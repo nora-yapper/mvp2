@@ -24,6 +24,7 @@ interface Task {
   category: string
   createdAt: string
   deletedAt?: string
+  order?: number
 }
 
 interface GeneratedStep {
@@ -155,6 +156,7 @@ export default function CommandDeck() {
 
   const [draggedTask, setDraggedTask] = useState<Task | null>(null)
   const [dragOverTask, setDragOverTask] = useState<string | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   // Load tasks from localStorage on component mount
   useEffect(() => {
@@ -638,43 +640,89 @@ export default function CommandDeck() {
 
     return (
       <div className="space-y-4">
-        {filteredTasks.map((task) => (
-          <Card
+        {filteredTasks.map((task, index) => (
+          <div
             key={task.id}
-            className="border-l-4 border-l-blue-500 bg-gray-700 border-gray-600 cursor-pointer hover:bg-gray-600 transition-colors"
-            onClick={() => handleTaskClick(task)}
+            draggable
+            onDragStart={(e) => handleDragStart(e, task)}
+            onDragOver={(e) => handleListDragOver(e, index)}
+            onDrop={(e) => handleListDrop(e, index)}
+            className={`${dragOverIndex === index ? "border-t-2 border-blue-500" : ""}`}
           >
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-100">{task.title}</h3>
-                  <p className="text-sm text-gray-300 mt-1">{task.description}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
-                      {task.assignee}
-                    </Badge>
-                    <Badge
-                      className={`text-xs ${getPriorityTextColor(task.priority)} ${getPriorityColor(task.priority)}`}
-                    >
-                      {task.priority}
-                    </Badge>
-                    <Badge className={`text-xs text-white ${getStatusColor(task.status)}`}>{task.status}</Badge>
-                    <Badge className={`text-xs text-white ${getCategoryColor(task.category)}`}>{task.category}</Badge>
+            <Card
+              className="border-l-4 border-l-blue-500 bg-gray-700 border-gray-600 cursor-pointer hover:bg-gray-600 transition-colors"
+              onClick={() => handleTaskClick(task)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-100">{task.title}</h3>
+                    <p className="text-sm text-gray-300 mt-1">{task.description}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
+                        {task.assignee}
+                      </Badge>
+                      <Badge
+                        className={`text-xs ${getPriorityTextColor(task.priority)} ${getPriorityColor(task.priority)}`}
+                      >
+                        {task.priority}
+                      </Badge>
+                      <Badge className={`text-xs text-white ${getStatusColor(task.status)}`}>{task.status}</Badge>
+                      <Badge className={`text-xs text-white ${getCategoryColor(task.category)}`}>{task.category}</Badge>
+                    </div>
+                  </div>
+                  <div className="text-right flex flex-col gap-2">
+                    <p className="text-sm font-medium text-gray-100">{task.deadline}</p>
+                    {/* Gantt chart timeline bar */}
+                    <div className="w-32 h-2 bg-gray-600 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.random() * 100}%` }} />
+                    </div>
                   </div>
                 </div>
-                <div className="text-right flex flex-col gap-2">
-                  <p className="text-sm font-medium text-gray-100">{task.deadline}</p>
-                  {/* Gantt chart timeline bar */}
-                  <div className="w-32 h-2 bg-gray-600 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.random() * 100}%` }} />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         ))}
       </div>
     )
+  }
+
+  const handleListDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    setDragOverIndex(index)
+  }
+
+  const handleListDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault()
+    setDragOverIndex(null)
+
+    if (!draggedTask) return
+
+    const draggedIndex = filteredTasks.findIndex((task) => task.id === draggedTask.id)
+    if (draggedIndex === dropIndex) return
+
+    // Reorder tasks in the list
+    const updatedTasks = [...tasks]
+    const taskToMove = updatedTasks.find((task) => task.id === draggedTask.id)
+    if (!taskToMove) return
+
+    // Remove the dragged task from its current position
+    const filteredTasksCopy = [...filteredTasks]
+    filteredTasksCopy.splice(draggedIndex, 1)
+
+    // Insert it at the new position
+    filteredTasksCopy.splice(dropIndex, 0, draggedTask)
+
+    // Update the order property for all affected tasks
+    filteredTasksCopy.forEach((task, index) => {
+      const taskInMainArray = updatedTasks.find((t) => t.id === task.id)
+      if (taskInMainArray) {
+        taskInMainArray.order = index
+      }
+    })
+
+    setTasks(updatedTasks)
+    setDraggedTask(null)
   }
 
   const renderKanbanView = () => {
