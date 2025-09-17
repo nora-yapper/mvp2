@@ -482,6 +482,20 @@ export default function CommandDeck() {
     }
   }
 
+  const handleKanbanDragStart = (task: Task) => {
+    if (activeView === "Kanban") {
+      console.log("[v0] Kanban drag started for task:", task.title)
+      setDraggedTask(task)
+    }
+  }
+
+  const handleListDragStart = (task: Task) => {
+    if (activeView === "List") {
+      console.log("[v0] List drag started for task:", task.title)
+      setDraggedTask(task)
+    }
+  }
+
   const handleDragStart = (task: Task) => {
     console.log("[v0] Drag started for task:", task.title)
     setDraggedTask(task)
@@ -658,7 +672,7 @@ export default function CommandDeck() {
           <div
             key={task.id}
             draggable
-            onDragStart={() => handleDragStart(task)} // Fix function call signature
+            onDragStart={() => handleListDragStart(task)} // Use List-specific drag start
             onDragOver={(e) => handleListDragOver(e, index)}
             onDrop={(e) => handleListDrop(e, index)}
             className={`${dragOverIndex === index ? "border-t-2 border-blue-500" : ""}`}
@@ -827,7 +841,7 @@ export default function CommandDeck() {
             <Card
               key={task.id}
               draggable
-              onDragStart={() => handleDragStart(task)}
+              onDragStart={() => handleKanbanDragStart(task)} // Use Kanban-specific drag start
               onDragOver={(e) => handleDragOverTask(e, task.id)}
               onDrop={(e) => handleDropOnTask(e, task)}
               className={`bg-gray-800 border-gray-700 mb-4 cursor-move ${
@@ -865,7 +879,7 @@ export default function CommandDeck() {
             <Card
               key={task.id}
               draggable
-              onDragStart={() => handleDragStart(task)}
+              onDragStart={() => handleKanbanDragStart(task)} // Use Kanban-specific drag start
               onDragOver={(e) => handleDragOverTask(e, task.id)}
               onDrop={(e) => handleDropOnTask(e, task)}
               className={`bg-gray-800 border-gray-700 mb-4 cursor-move ${
@@ -903,7 +917,7 @@ export default function CommandDeck() {
             <Card
               key={task.id}
               draggable
-              onDragStart={() => handleDragStart(task)}
+              onDragStart={() => handleKanbanDragStart(task)} // Use Kanban-specific drag start
               onDragOver={(e) => handleDragOverTask(e, task.id)}
               onDrop={(e) => handleDropOnTask(e, task)}
               className={`bg-gray-800 border-gray-700 mb-4 cursor-move ${
