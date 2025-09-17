@@ -218,14 +218,16 @@ export default function CommandDeck() {
     localStorage.setItem("commandDeckTaskHistory", JSON.stringify(taskHistory))
   }, [taskHistory])
 
-  const filteredTasks = tasks.filter((task) => {
-    const matchesSearch =
-      task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesPriority = filterPriority === "all" || task.priority === filterPriority
-    const matchesStatus = filterStatus === "all" || task.status === filterStatus
-    return matchesSearch && matchesPriority && matchesStatus
-  })
+  const filteredTasks = tasks
+    .filter((task) => {
+      const matchesSearch =
+        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        task.description.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesPriority = filterPriority === "all" || task.priority === filterPriority
+      const matchesStatus = filterStatus === "all" || task.status === filterStatus
+      return matchesSearch && matchesPriority && matchesStatus
+    })
+    .sort((a, b) => (a.order || 0) - (b.order || 0))
 
   const handleAddTask = () => {
     if (newTask.title && newTask.assignee && newTask.deadline) {
@@ -805,72 +807,6 @@ export default function CommandDeck() {
         >
           <h4 className="text-lg font-semibold text-gray-100 mb-4">To Do</h4>
           {todoTasks.map((task) => (
-            <Card
-              key={task.id}
-              draggable
-              onDragStart={() => handleDragStart(task)}
-              onDragOver={(e) => handleDragOverTask(e, task.id)}
-              onDrop={(e) => handleDropOnTask(e, task)}
-              className={`bg-gray-800 border-gray-700 mb-4 cursor-move ${
-                dragOverTask === task.id ? "border-2 border-blue-500" : ""
-              }`}
-              onClick={() => handleTaskClick(task)}
-            >
-              <CardContent className="p-4">
-                <h5 className="text-md font-medium text-gray-100">{task.title}</h5>
-                <p className="text-sm text-gray-300 mt-1">{task.description}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
-                    {task.assignee}
-                  </Badge>
-                  <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* In Progress Column */}
-        <div
-          className="bg-gray-700 rounded-lg p-4 border border-gray-600 min-h-[300px]"
-          onDragOver={handleDragOver}
-          onDrop={(e) => handleDrop(e, "In Progress")}
-        >
-          <h4 className="text-lg font-semibold text-gray-100 mb-4">In Progress</h4>
-          {inProgressTasks.map((task) => (
-            <Card
-              key={task.id}
-              draggable
-              onDragStart={() => handleDragStart(task)}
-              onDragOver={(e) => handleDragOverTask(e, task.id)}
-              onDrop={(e) => handleDropOnTask(e, task)}
-              className={`bg-gray-800 border-gray-700 mb-4 cursor-move ${
-                dragOverTask === task.id ? "border-2 border-blue-500" : ""
-              }`}
-              onClick={() => handleTaskClick(task)}
-            >
-              <CardContent className="p-4">
-                <h5 className="text-md font-medium text-gray-100">{task.title}</h5>
-                <p className="text-sm text-gray-300 mt-1">{task.description}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <Badge variant="outline" className="text-xs border-gray-500 text-gray-300">
-                    {task.assignee}
-                  </Badge>
-                  <Badge className={`text-xs text-white ${getPriorityColor(task.priority)}`}>{task.priority}</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Done Column */}
-        <div
-          className="bg-gray-700 rounded-lg p-4 border border-gray-600 min-h-[300px]"
-          onDragOver={handleDragOver}
-          onDrop={(e) => handleDrop(e, "Done")}
-        >
-          <h4 className="text-lg font-semibold text-gray-100 mb-4">Done</h4>
-          {doneTasks.map((task) => (
             <Card
               key={task.id}
               draggable
