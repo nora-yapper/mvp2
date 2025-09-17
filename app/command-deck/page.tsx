@@ -132,7 +132,6 @@ export default function CommandDeck() {
   const [editingStep, setEditingStep] = useState<GeneratedStep | null>(null)
   const [apiSource, setApiSource] = useState<string>("")
   const [errorMessage, setErrorMessage] = useState<string>("")
-  const [draggedTask, setDraggedTask] = useState<Task | null>(null)
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -153,6 +152,9 @@ export default function CommandDeck() {
     { name: "Emily Davis", workload: 68, status: "Balanced" },
     { name: "James Wilson", workload: 34, status: "Underloaded" },
   ]
+
+  const [draggedTask, setDraggedTask] = useState<Task | null>(null)
+  const [dragOverTask, setDragOverTask] = useState<string | null>(null)
 
   // Load tasks from localStorage on component mount
   useEffect(() => {
@@ -484,12 +486,49 @@ export default function CommandDeck() {
     e.preventDefault()
   }
 
+  const handleDragOverTask = (e: React.DragEvent, taskId: string) => {
+    e.preventDefault()
+    setDragOverTask(taskId)
+  }
+
   const handleDrop = (e: React.DragEvent, newStatus: "To Do" | "In Progress" | "Done") => {
     e.preventDefault()
     if (draggedTask) {
       updateTaskStatus(draggedTask.id, newStatus)
       setDraggedTask(null)
+      setDragOverTask(null)
     }
+  }
+
+  const handleDropOnTask = (e: React.DragEvent, targetTask: Task) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (draggedTask && draggedTask.id !== targetTask.id) {
+      // If dropping in the same column, reorder tasks
+      if (draggedTask.status === targetTask.status) {
+        const columnTasks = tasks.filter((task) => task.status === targetTask.status)
+        const draggedIndex = columnTasks.findIndex((task) => task.id === draggedTask.id)
+        const targetIndex = columnTasks.findIndex((task) => task.id === targetTask.id)
+
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+          // Remove dragged task and insert at target position
+          const reorderedTasks = [...columnTasks]
+          const [removed] = reorderedTasks.splice(draggedIndex, 1)
+          reorderedTasks.splice(targetIndex, 0, removed)
+
+          // Update the tasks array with new order
+          const otherTasks = tasks.filter((task) => task.status !== targetTask.status)
+          setTasks([...otherTasks, ...reorderedTasks])
+        }
+      } else {
+        // Different column, change status
+        updateTaskStatus(draggedTask.id, targetTask.status)
+      }
+    }
+
+    setDraggedTask(null)
+    setDragOverTask(null)
   }
 
   const getPriorityColor = (priority: string) => {
@@ -657,9 +696,13 @@ export default function CommandDeck() {
                 .map((task) => (
                   <Card
                     key={task.id}
-                    className="cursor-pointer hover:shadow-md transition-shadow bg-gray-600 border-gray-500"
+                    className={`cursor-pointer hover:shadow-md transition-shadow bg-gray-600 border-gray-500 ${
+                      dragOverTask === task.id ? "border-blue-400 border-2" : ""
+                    }`}
                     draggable
                     onDragStart={() => handleDragStart(task)}
+                    onDragOver={(e) => handleDragOverTask(e, task.id)}
+                    onDrop={(e) => handleDropOnTask(e, task)}
                     onClick={() => handleTaskClick(task)}
                   >
                     <CardContent className="p-3">
@@ -678,11 +721,9 @@ export default function CommandDeck() {
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between mt-1">
-                        <Badge className={`text-xs text-white ${getCategoryColor(task.category)}`}>
-                          {task.category}
-                        </Badge>
+                        <Badge className="text-xs bg-gray-500 text-white">{task.category}</Badge>
+                        <span className="text-xs text-gray-400">{task.deadline}</span>
                       </div>
-                      <p className="text-xs text-gray-400 mt-1">{task.deadline}</p>
                     </CardContent>
                   </Card>
                 ))}
@@ -1297,7 +1338,7 @@ export default function CommandDeck() {
                   <label className="text-sm font-medium text-gray-200">Assignee</label>
                   <Select
                     value={editingTask.assignee}
-                    onValueChange={(value) => setEditingTask({ ...editingTask, assignee: value })}
+                    onChange={(value) => setEditingTask({ ...editingTask, assignee: value })}
                   >
                     <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
                       <SelectValue />
@@ -1315,7 +1356,7 @@ export default function CommandDeck() {
                   <label className="text-sm font-medium text-gray-200">Priority</label>
                   <Select
                     value={editingTask.priority}
-                    onValueChange={(value) =>
+                    onChange={(value) =>
                       setEditingTask({ ...editingTask, priority: value as "High" | "Medium" | "Low" })
                     }
                   >
@@ -1341,7 +1382,7 @@ export default function CommandDeck() {
                   <label className="text-sm font-medium text-gray-200">Status</label>
                   <Select
                     value={editingTask.status}
-                    onValueChange={(value) =>
+                    onChange={(value) =>
                       setEditingTask({ ...editingTask, status: value as "To Do" | "In Progress" | "Done" })
                     }
                   >
@@ -1376,7 +1417,7 @@ export default function CommandDeck() {
                 <label className="text-sm font-medium text-gray-200">Category</label>
                 <Select
                   value={editingTask.category}
-                  onValueChange={(value) => setEditingTask({ ...editingTask, category: value })}
+                  onChange={(value) => setEditingTask({ ...editingTask, category: value })}
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-gray-100">
                     <SelectValue />
