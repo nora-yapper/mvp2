@@ -483,23 +483,25 @@ export default function CommandDeck() {
   }
 
   const handleKanbanDragStart = (task: Task) => {
-    if (activeView === "Kanban") {
-      console.log("[v0] Kanban drag started for task:", task.title)
-      setDraggedTask(task)
+    if (activeView !== "Kanban") {
+      return
     }
+    console.log("[v0] Kanban drag started for task:", task.title)
+    setDraggedTask(task)
   }
 
   const handleListDragStart = (task: Task) => {
-    if (activeView === "List") {
-      console.log("[v0] List drag started for task:", task.title)
-      setDraggedTask(task)
+    if (activeView !== "List") {
+      return
     }
-  }
-
-  const handleDragStart = (task: Task) => {
-    console.log("[v0] Drag started for task:", task.title)
+    console.log("[v0] List drag started for task:", task.title)
     setDraggedTask(task)
   }
+
+  // const handleDragStart = (task: Task) => {
+  //   console.log("[v0] Drag started for task:", task.title)
+  //   setDraggedTask(task)
+  // }
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -510,19 +512,6 @@ export default function CommandDeck() {
     setDragOverTask(taskId)
   }
 
-  const handleDrop = (e: React.DragEvent, newStatus: "To Do" | "In Progress" | "Done") => {
-    e.preventDefault()
-    if (activeView !== "Kanban") {
-      return
-    }
-
-    if (draggedTask) {
-      updateTaskStatus(draggedTask.id, newStatus)
-      setDraggedTask(null)
-      setDragOverTask(null)
-    }
-  }
-
   const handleDropOnTask = (e: React.DragEvent, targetTask: Task) => {
     e.preventDefault()
     e.stopPropagation()
@@ -531,38 +520,56 @@ export default function CommandDeck() {
       return
     }
 
-    if (draggedTask && draggedTask.id !== targetTask.id) {
-      // If dropping in the same column, reorder tasks
-      if (draggedTask.status === targetTask.status) {
-        const columnTasks = tasks.filter((task) => task.status === targetTask.status)
-        const draggedIndex = columnTasks.findIndex((task) => task.id === draggedTask.id)
-        const targetIndex = columnTasks.findIndex((task) => task.id === targetTask.id)
+    if (!draggedTask || draggedTask.id === targetTask.id) {
+      return
+    }
 
-        if (draggedIndex !== -1 && targetIndex !== -1) {
-          // Remove dragged task and insert at target position
-          const reorderedColumnTasks = [...columnTasks]
-          const [movedTask] = reorderedColumnTasks.splice(draggedIndex, 1)
-          reorderedColumnTasks.splice(targetIndex, 0, movedTask)
+    // If dropping in the same column, reorder tasks
+    if (draggedTask.status === targetTask.status) {
+      const columnTasks = tasks.filter((task) => task.status === targetTask.status)
+      const draggedIndex = columnTasks.findIndex((task) => task.id === draggedTask.id)
+      const targetIndex = columnTasks.findIndex((task) => task.id === targetTask.id)
 
-          // Update order values for all tasks in this column
-          const updatedTasks = tasks.map((task) => {
-            if (task.status === targetTask.status) {
-              const newIndex = reorderedColumnTasks.findIndex((t) => t.id === task.id)
-              return { ...task, order: newIndex }
-            }
-            return task
-          })
+      if (draggedIndex !== -1 && targetIndex !== -1) {
+        console.log("[v0] Swapping positions - dragged:", draggedIndex, "target:", targetIndex)
 
-          console.log(
-            "[v0] Updated tasks with order:",
-            updatedTasks.filter((t) => t.status === targetTask.status).map((t) => ({ title: t.title, order: t.order })),
-          )
-          setTasks(updatedTasks)
-        }
-      } else {
-        // Different column, change status
-        updateTaskStatus(draggedTask.id, targetTask.status)
+        // Create new array with swapped positions
+        const reorderedColumnTasks = [...columnTasks]
+        const [movedTask] = reorderedColumnTasks.splice(draggedIndex, 1)
+        reorderedColumnTasks.splice(targetIndex, 0, movedTask)
+
+        // Update order values for all tasks in this column
+        const updatedTasks = tasks.map((task) => {
+          if (task.status === targetTask.status) {
+            const newIndex = reorderedColumnTasks.findIndex((t) => t.id === task.id)
+            return { ...task, order: newIndex }
+          }
+          return task
+        })
+
+        console.log(
+          "[v0] Updated column tasks with new order:",
+          reorderedColumnTasks.map((t) => ({
+            title: t.title,
+            order: reorderedColumnTasks.findIndex((rt) => rt.id === t.id),
+          })),
+        )
+
+        setTasks(updatedTasks)
       }
+    } else {
+      // If dropping in a different column, change status and put at the end
+      const targetColumnTasks = tasks.filter((task) => task.status === targetTask.status)
+      const newOrder = targetColumnTasks.length
+
+      const updatedTasks = tasks.map((task) => {
+        if (task.id === draggedTask.id) {
+          return { ...task, status: targetTask.status, order: newOrder }
+        }
+        return task
+      })
+
+      setTasks(updatedTasks)
     }
 
     setDraggedTask(null)
@@ -723,13 +730,9 @@ export default function CommandDeck() {
     )
   }
 
-  const handleListDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault()
-    setDragOverIndex(index)
-  }
-
   const handleListDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault()
+
     if (activeView !== "List") {
       return
     }
@@ -748,33 +751,29 @@ export default function CommandDeck() {
     console.log("[v0] Dragged index:", draggedIndex, "Drop index:", dropIndex)
 
     if (draggedIndex === dropIndex) {
-      console.log("[v0] Same position, no change needed")
+      setDraggedTask(null)
       return
     }
 
-    // Reorder the filtered tasks
+    // Create new array with reordered tasks
     const reorderedTasks = [...filteredTasks]
     const [movedTask] = reorderedTasks.splice(draggedIndex, 1)
     reorderedTasks.splice(dropIndex, 0, movedTask)
 
-    // Update the main tasks array by finding and updating the corresponding tasks
+    // Update order values
     const updatedTasks = tasks.map((task) => {
-      // Find this task in the reordered filtered tasks
-      const reorderedIndex = reorderedTasks.findIndex((rt) => rt.id === task.id)
-      if (reorderedIndex !== -1) {
-        // This task is in the current filter, update its order
-        return { ...task, order: reorderedIndex }
+      const newIndex = reorderedTasks.findIndex((t) => t.id === task.id)
+      if (newIndex !== -1) {
+        return { ...task, order: newIndex }
       }
-      // This task is not in current filter, keep its existing order
       return task
     })
 
     console.log(
       "[v0] Updated tasks:",
-      updatedTasks
-        .filter((t) => reorderedTasks.some((rt) => rt.id === t.id))
-        .map((t) => ({ title: t.title, order: t.order })),
+      updatedTasks.slice(0, 3).map((t) => ({ title: t.title, order: t.order })),
     )
+
     setTasks(updatedTasks)
     setDraggedTask(null)
   }
@@ -828,6 +827,27 @@ export default function CommandDeck() {
       </Table>
     </div>
   )
+
+  const handleDrop = (e: React.DragEvent, status: string) => {
+    e.preventDefault()
+    if (!draggedTask) return
+
+    const updatedTasks = tasks.map((task) => {
+      if (task.id === draggedTask.id) {
+        return { ...task, status: status }
+      }
+      return task
+    })
+
+    setTasks(updatedTasks)
+    setDraggedTask(null)
+    setDragOverTask(null)
+  }
+
+  const handleListDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    setDragOverIndex(index)
+  }
 
   const renderKanbanView = () => {
     const todoTasks = filteredTasks
