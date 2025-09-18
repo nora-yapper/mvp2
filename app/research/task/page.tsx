@@ -791,6 +791,21 @@ export default function ResearchTaskPage() {
     }
 
     if (currentSection === "questions" && currentTask === "get-started") {
+      const scrollToQuestions = () => {
+        // Navigate to the Questions interface with smooth transition
+        const newUrl = new URL(window.location.href)
+        newUrl.searchParams.set("task", "question-bank")
+        window.history.pushState({}, "", newUrl.toString())
+
+        // Update the current task state
+        setCurrentTask("question-bank")
+
+        // Smooth scroll to top of the new interface
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: "smooth" })
+        }, 100)
+      }
+
       return (
         <div style={{ maxWidth: "800px", margin: "0 auto" }}>
           <div
@@ -806,7 +821,7 @@ export default function ResearchTaskPage() {
               How to Write Great Interview Questions
             </h3>
             <p style={{ marginBottom: "30px", lineHeight: "1.6" }}>
-              Want honest insights? It starts with asking the right questions - here’s how.
+              Want honest insights? It starts with asking the right questions - here's how.
             </p>
 
             <div style={{ display: "flex", gap: "15px", marginBottom: "40px" }}>
@@ -878,6 +893,44 @@ export default function ResearchTaskPage() {
                   </button>
                 )}
               </div>
+            </div>
+
+            <div
+              style={{
+                marginTop: "40px",
+                textAlign: "center",
+                borderTop: "1px solid #444",
+                paddingTop: "30px",
+              }}
+            >
+              <p
+                style={{
+                  marginBottom: "20px",
+                  color: "#ccc",
+                  fontSize: "16px",
+                }}
+              >
+                Ready to start writing your interview questions?
+              </p>
+              <button
+                onClick={scrollToQuestions}
+                style={{
+                  padding: "12px 24px",
+                  backgroundColor: "#007bff",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  fontSize: "16px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  margin: "0 auto",
+                }}
+              >
+                Go to Questions Canvas
+                <span style={{ fontSize: "18px" }}>↓</span>
+              </button>
             </div>
           </div>
         </div>
