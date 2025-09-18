@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { earnTokensForStep } from "@/lib/token-integration"
+import { BookOpen } from "lucide-react"
 
 export default function ResearchTaskPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -790,8 +791,12 @@ export default function ResearchTaskPage() {
                   borderRadius: "4px",
                   fontSize: "16px",
                   cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
                 }}
               >
+                <BookOpen size={18} />
                 How to Write Great Questions
               </button>
             </div>
