@@ -2279,7 +2279,7 @@ export default function ResearchTaskPage() {
                             borderRadius: "4px",
                             fontSize: "14px",
                             fontWeight: "bold",
-                            backgroundColor: "#007bff",
+                            backgroundColor: "#6c757d",
                             color: "#fff",
                             border: "none",
                             cursor: "pointer",
