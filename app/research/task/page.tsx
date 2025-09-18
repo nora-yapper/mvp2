@@ -812,7 +812,8 @@ export default function ResearchTaskPage() {
             >
               <h4 style={{ fontSize: "20px", marginBottom: "15px", color: "#fff" }}>Put Your Skills to the Test</h4>
               <p style={{ marginBottom: "25px", lineHeight: "1.6", color: "#ccc" }}>
-                Play the MomTest Game to practice identifying good and bad interview questions.
+                Play the MomTest Game to practice identifying good and bad interview questions. The game is based on Rob
+                Fitzpatrick's book "Mom Test", and it currently uses default questions.
               </p>
 
               <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
