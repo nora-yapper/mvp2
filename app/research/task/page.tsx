@@ -83,6 +83,8 @@ export default function ResearchTaskPage() {
   const [showEvaluation, setShowEvaluation] = useState(false)
   const [isEvaluating, setIsEvaluating] = useState(false)
 
+  const [showQuestionsInline, setShowQuestionsInline] = useState(false)
+
   useEffect(() => {
     // Load saved analysis from session storage
     const saved = sessionStorage.getItem("researchOverview")
@@ -792,18 +794,126 @@ export default function ResearchTaskPage() {
 
     if (currentSection === "questions" && currentTask === "get-started") {
       const scrollToQuestions = () => {
-        // Navigate to the Questions interface with smooth transition
-        const newUrl = new URL(window.location.href)
-        newUrl.searchParams.set("task", "question-bank")
-        window.history.pushState({}, "", newUrl.toString())
+        setShowQuestionsInline(true)
 
-        // Update the current task state
-        setCurrentTask("question-bank")
-
-        // Smooth scroll to top of the new interface
+        // Smooth scroll to the Questions interface
         setTimeout(() => {
-          window.scrollTo({ top: 0, behavior: "smooth" })
+          const questionsElement = document.getElementById("inline-questions-interface")
+          if (questionsElement) {
+            questionsElement.scrollIntoView({ behavior: "smooth" })
+          }
         }, 100)
+      }
+
+      const sendMessage = async () => {
+        if (!questionBankChatInput.trim()) return
+
+        const userMessage = {
+          id: questionBankChatMessages.length + 1,
+          text: questionBankChatInput,
+          sender: "user",
+          timestamp: new Date().toLocaleTimeString(),
+        }
+
+        setQuestionBankChatMessages((prev) => [...prev, userMessage])
+        setQuestionBankChatInput("")
+        setQuestionBankIsTyping(true)
+
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You are an AI assistant specialized in helping create effective customer interview questions. Focus on behavioral questions, avoid hypotheticals, and help users create questions that reveal real user problems and behaviors. Keep responses concise and actionable.",
+                },
+                ...questionBankChatMessages.map((msg) => ({
+                  role: msg.sender === "user" ? "user" : "assistant",
+                  content: msg.text,
+                })),
+                {
+                  role: "user",
+                  content: questionBankChatInput,
+                },
+              ],
+            }),
+          })
+
+          if (!response.ok) {
+            throw new Error("Failed to get AI response")
+          }
+
+          const data = await response.json()
+
+          const assistantMessage = {
+            id: questionBankChatMessages.length + 2,
+            text: data.message || "I'm here to help you create better interview questions!",
+            sender: "assistant",
+            timestamp: new Date().toLocaleTimeString(),
+          }
+
+          setQuestionBankChatMessages((prev) => [...prev, assistantMessage])
+        } catch (error) {
+          console.error("Error getting AI response:", error)
+          const errorMessage = {
+            id: questionBankChatMessages.length + 2,
+            text: "Sorry, I'm having trouble connecting right now. Please try again!",
+            sender: "assistant",
+            timestamp: new Date().toLocaleTimeString(),
+          }
+          setQuestionBankChatMessages((prev) => [...prev, errorMessage])
+        } finally {
+          setQuestionBankIsTyping(false)
+        }
+      }
+
+      const addNewQuestion = () => {
+        setQuestionBankInterviewQuestions((prev) => [...prev, ""])
+      }
+
+      const updateQuestion = (index: number, value: string) => {
+        setQuestionBankInterviewQuestions((prev) => prev.map((q, i) => (i === index ? value : q)))
+      }
+
+      const deleteQuestion = (index: number) => {
+        setQuestionBankInterviewQuestions((prev) => prev.filter((_, i) => i !== index))
+      }
+
+      const evaluateQuestions = async () => {
+        const questions = questionBankInterviewQuestions.filter((q) => q.trim() !== "")
+        if (questions.length === 0) {
+          alert("No questions to evaluate. Please add some questions first.")
+          return
+        }
+
+        setIsEvaluating(true)
+
+        try {
+          const response = await fetch("/api/evaluate-questions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ questions }),
+          })
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+
+          const data = await response.json()
+          setEvaluationResults(data.evaluations || [])
+          setShowEvaluation(true)
+
+          // Award tokens for first question evaluation (only once)
+          earnTokensForStep("FIRST_QUESTION_EVALUATION")
+        } catch (error) {
+          console.error("Error evaluating questions:", error)
+          alert("Error evaluating questions. Please try again.")
+        } finally {
+          setIsEvaluating(false)
+        }
       }
 
       return (
@@ -932,6 +1042,490 @@ export default function ResearchTaskPage() {
                 <span style={{ fontSize: "18px" }}>↓</span>
               </button>
             </div>
+
+            {showQuestionsInline && (
+              <div
+                id="inline-questions-interface"
+                style={{ marginTop: "40px", paddingTop: "40px", borderTop: "2px solid #333" }}
+              >
+                <h2 style={{ fontSize: "28px", color: "#fff", marginBottom: "20px", textAlign: "center" }}>
+                  Question Bank & Templates
+                </h2>
+
+                {/* Copy exact Questions interface implementation */}
+                <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+                  {/* Two-column layout */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                      gap: "30px",
+                    }}
+                  >
+                    {/* Left Column - AI-stronaut Assistant */}
+                    <div style={{ minWidth: "300px" }}>
+                      <div
+                        style={{
+                          backgroundColor: "#2a2a2a",
+                          borderRadius: "8px",
+                          overflow: "hidden",
+                          height: "600px",
+                          display: "flex",
+                          flexDirection: "column",
+                        }}
+                      >
+                        {/* Chat Header */}
+                        <div
+                          style={{
+                            padding: "20px",
+                            borderBottom: "1px solid #444",
+                            backgroundColor: "#1a1a1a",
+                          }}
+                        >
+                          <h3 style={{ fontSize: "18px", color: "#fff", margin: 0 }}>AI-stronaut Assistant</h3>
+                        </div>
+
+                        {/* Messages Area */}
+                        <div
+                          style={{
+                            flex: 1,
+                            padding: "20px",
+                            overflowY: "auto",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "15px",
+                          }}
+                        >
+                          {questionBankChatMessages.map((message) => (
+                            <div
+                              key={message.id}
+                              style={{
+                                alignSelf: message.sender === "user" ? "flex-end" : "flex-start",
+                                maxWidth: "80%",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  padding: "12px 16px",
+                                  borderRadius: "12px",
+                                  backgroundColor: message.sender === "user" ? "#007bff" : "#1a1a1a",
+                                  color: "#fff",
+                                  fontSize: "14px",
+                                  lineHeight: "1.4",
+                                }}
+                              >
+                                {message.text}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: "11px",
+                                  color: "#888",
+                                  marginTop: "4px",
+                                  textAlign: message.sender === "user" ? "right" : "left",
+                                }}
+                              >
+                                {message.timestamp}
+                              </div>
+                            </div>
+                          ))}
+
+                          {questionBankIsTyping && (
+                            <div style={{ alignSelf: "flex-start", maxWidth: "80%" }}>
+                              <div
+                                style={{
+                                  padding: "12px 16px",
+                                  borderRadius: "12px",
+                                  backgroundColor: "#1a1a1a",
+                                  color: "#888",
+                                  fontSize: "14px",
+                                }}
+                              >
+                                AI-stronaut is typing...
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Input Area */}
+                        <div
+                          style={{
+                            padding: "20px",
+                            borderTop: "1px solid #444",
+                            backgroundColor: "#1a1a1a",
+                          }}
+                        >
+                          <div style={{ display: "flex", gap: "10px" }}>
+                            <input
+                              type="text"
+                              value={questionBankChatInput}
+                              onChange={(e) => setQuestionBankChatInput(e.target.value)}
+                              onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                              placeholder="Ask for interview question suggestions..."
+                              style={{
+                                flex: 1,
+                                padding: "12px",
+                                backgroundColor: "#2a2a2a",
+                                border: "1px solid #444",
+                                borderRadius: "6px",
+                                color: "#fff",
+                                fontSize: "14px",
+                              }}
+                            />
+                            <button
+                              onClick={sendMessage}
+                              disabled={!questionBankChatInput.trim()}
+                              style={{
+                                padding: "12px 16px",
+                                backgroundColor: questionBankChatInput.trim() ? "#007bff" : "#444",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "6px",
+                                cursor: questionBankChatInput.trim() ? "pointer" : "not-allowed",
+                                fontSize: "14px",
+                              }}
+                            >
+                              Send
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column - Interview Questions Canvas */}
+                    <div style={{ minWidth: "300px" }}>
+                      <div
+                        style={{
+                          backgroundColor: "#fff",
+                          borderRadius: "8px",
+                          overflow: "hidden",
+                          minHeight: "600px",
+                          border: "1px solid #ddd",
+                        }}
+                      >
+                        {/* Canvas Header */}
+                        <div
+                          style={{
+                            padding: "20px",
+                            borderBottom: "1px solid #ddd",
+                            backgroundColor: "#f8f9fa",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <h3 style={{ fontSize: "18px", color: "#333", margin: 0 }}>Interview Questions Canvas</h3>
+                          <div style={{ display: "flex", gap: "10px" }}>
+                            <button
+                              onClick={() => {
+                                // Create PDF content with interview questions
+                                const questions = questionBankInterviewQuestions.filter((q) => q.trim() !== "")
+                                if (questions.length === 0) {
+                                  alert("No questions to export. Please add some questions first.")
+                                  return
+                                }
+
+                                // Create a simple text content for PDF
+                                const pdfContent = `Interview Questions Canvas\n\nGenerated on: ${new Date().toLocaleDateString()}\n\n${questions.map((q, i) => `${i + 1}. ${q}`).join("\n\n")}`
+
+                                // Create a blob and download
+                                const blob = new Blob([pdfContent], { type: "text/plain" })
+                                const url = URL.createObjectURL(blob)
+                                const a = document.createElement("a")
+                                a.href = url
+                                a.download = `interview-questions-${new Date().toISOString().split("T")[0]}.txt`
+                                document.body.appendChild(a)
+                                a.click()
+                                document.body.removeChild(a)
+                                URL.revokeObjectURL(url)
+                              }}
+                              style={{
+                                padding: "8px 12px",
+                                backgroundColor: "#6c757d",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "4px",
+                                fontSize: "12px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              Download PDF
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Canvas Content */}
+                        <div style={{ padding: "30px" }}>
+                          <h2 style={{ fontSize: "24px", color: "#333", marginBottom: "30px" }}>Interview Questions</h2>
+
+                          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                            {questionBankInterviewQuestions.map((question, index) => (
+                              <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: "15px" }}>
+                                <span style={{ color: "#333", fontSize: "16px", marginTop: "12px" }}>•</span>
+                                <div style={{ flex: 1 }}>
+                                  <textarea
+                                    value={question}
+                                    onChange={(e) => updateQuestion(index, e.target.value)}
+                                    style={{
+                                      width: "100%",
+                                      minHeight: "50px",
+                                      padding: "12px",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "4px",
+                                      fontSize: "14px",
+                                      color: "#333",
+                                      resize: "vertical",
+                                      fontFamily: "inherit",
+                                    }}
+                                    placeholder="Enter your interview question..."
+                                  />
+                                </div>
+                                <button
+                                  onClick={() => deleteQuestion(index)}
+                                  style={{
+                                    padding: "8px",
+                                    backgroundColor: "#dc3545",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: "4px",
+                                    cursor: "pointer",
+                                    fontSize: "12px",
+                                    marginTop: "8px",
+                                  }}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+
+                          <button
+                            onClick={addNewQuestion}
+                            style={{
+                              marginTop: "20px",
+                              padding: "12px 20px",
+                              backgroundColor: "#28a745",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "4px",
+                              fontSize: "14px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            + Add Question
+                          </button>
+                        </div>
+
+                        {/* Canvas Footer */}
+                        <div
+                          style={{
+                            padding: "20px",
+                            borderTop: "1px solid #ddd",
+                            backgroundColor: "#f8f9fa",
+                            display: "flex",
+                            gap: "15px",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <button
+                            onClick={evaluateQuestions}
+                            disabled={isEvaluating}
+                            style={{
+                              padding: "10px 20px",
+                              backgroundColor: isEvaluating ? "#444" : "#6c757d",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "4px",
+                              fontSize: "14px",
+                              cursor: isEvaluating ? "not-allowed" : "pointer",
+                            }}
+                          >
+                            {isEvaluating ? "Evaluating..." : "Evaluate"}
+                          </button>
+                        </div>
+
+                        {/* Evaluation Results Section */}
+                        {showEvaluation && evaluationResults.length > 0 && (
+                          <div
+                            style={{
+                              padding: "20px",
+                              backgroundColor: "#f8f9fa",
+                              borderTop: "1px solid #ddd",
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginBottom: "20px",
+                              }}
+                            >
+                              <h4 style={{ fontSize: "16px", color: "#333", margin: 0 }}>
+                                Question Evaluation Results
+                              </h4>
+                              <button
+                                onClick={() => setShowEvaluation(false)}
+                                style={{
+                                  padding: "6px 12px",
+                                  backgroundColor: "#6c757d",
+                                  color: "#fff",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  fontSize: "12px",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Hide Evaluation
+                              </button>
+                            </div>
+
+                            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                              {evaluationResults.map((result, index) => (
+                                <div
+                                  key={index}
+                                  style={{
+                                    backgroundColor: "#fff",
+                                    padding: "20px",
+                                    borderRadius: "6px",
+                                    border: `2px solid ${result.isStrong ? "#28a745" : "#ffc107"}`,
+                                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                                  }}
+                                >
+                                  <div style={{ marginBottom: "15px" }}>
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "10px",
+                                        marginBottom: "10px",
+                                      }}
+                                    >
+                                      <span
+                                        style={{
+                                          fontSize: "18px",
+                                          color: result.isStrong ? "#28a745" : "#ffc107",
+                                        }}
+                                      >
+                                        {result.isStrong ? "✅" : "⚠️"}
+                                      </span>
+                                      <strong style={{ fontSize: "14px", color: "#333" }}>
+                                        Question {index + 1}: {result.isStrong ? "Strong" : "Needs Improvement"}
+                                      </strong>
+                                    </div>
+                                    <div
+                                      style={{
+                                        fontSize: "14px",
+                                        color: "#666",
+                                        fontStyle: "italic",
+                                        backgroundColor: "#f8f9fa",
+                                        padding: "10px",
+                                        borderRadius: "4px",
+                                        marginBottom: "15px",
+                                      }}
+                                    >
+                                      "{result.question}"
+                                    </div>
+                                  </div>
+
+                                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                    <div>
+                                      <strong style={{ fontSize: "13px", color: "#333" }}>Analysis:</strong>
+                                      <p
+                                        style={{ fontSize: "13px", color: "#666", margin: "5px 0", lineHeight: "1.4" }}
+                                      >
+                                        {result.reasoning}
+                                      </p>
+                                    </div>
+
+                                    <div>
+                                      <strong style={{ fontSize: "13px", color: "#333" }}>Response Type:</strong>
+                                      <p
+                                        style={{ fontSize: "13px", color: "#666", margin: "5px 0", lineHeight: "1.4" }}
+                                      >
+                                        {result.responseType}
+                                      </p>
+                                    </div>
+
+                                    <div>
+                                      <strong style={{ fontSize: "13px", color: "#333" }}>
+                                        Early-Stage Suitability:
+                                      </strong>
+                                      <p
+                                        style={{
+                                          fontSize: "13px",
+                                          color: result.isGoodForEarlyStage ? "#28a745" : "#dc3545",
+                                          margin: "5px 0",
+                                          lineHeight: "1.4",
+                                          fontWeight: "500",
+                                        }}
+                                      >
+                                        {result.isGoodForEarlyStage
+                                          ? "✅ Good for early-stage interviews"
+                                          : "❌ Not ideal for early-stage interviews"}
+                                      </p>
+                                    </div>
+
+                                    {result.improvement && (
+                                      <div
+                                        style={{
+                                          backgroundColor: "#e3f2fd",
+                                          padding: "12px",
+                                          borderRadius: "4px",
+                                          borderLeft: "4px solid #2196f3",
+                                        }}
+                                      >
+                                        <strong style={{ fontSize: "13px", color: "#1976d2" }}>
+                                          💡 Improvement Suggestion:
+                                        </strong>
+                                        <p
+                                          style={{
+                                            fontSize: "13px",
+                                            color: "#1565c0",
+                                            margin: "5px 0",
+                                            lineHeight: "1.4",
+                                          }}
+                                        >
+                                          {result.improvement}
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Save Button */}
+                  <div style={{ textAlign: "center", marginTop: "30px" }}>
+                    <button
+                      onClick={() => {
+                        // Save questions to session storage
+                        sessionStorage.setItem("interviewQuestions", JSON.stringify(questionBankInterviewQuestions))
+                        alert("Interview questions saved!")
+
+                        // Award tokens for saving interview questions
+                        earnTokensForStep("INTERVIEW_QUESTIONS_SAVED")
+                      }}
+                      style={{
+                        padding: "12px 24px",
+                        backgroundColor: "#007bff",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Save Interview Questions
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )
@@ -941,94 +1535,21 @@ export default function ResearchTaskPage() {
       const sendMessage = async () => {
         if (!questionBankChatInput.trim()) return
 
-        const userMessage = {
-          id: questionBankChatMessages.length + 1,
+        setQuestionBankIsTyping(true)
+        const newUserMessage = {
+          id: Date.now(),
           text: questionBankChatInput,
           sender: "user",
           timestamp: new Date().toLocaleTimeString(),
         }
-
-        setQuestionBankChatMessages((prev) => [...prev, userMessage])
+        setQuestionBankChatMessages((prevMessages) => [...prevMessages, newUserMessage])
         setQuestionBankChatInput("")
-        setQuestionBankIsTyping(true)
 
         try {
-          const response = await fetch("/api/chat", {
+          const response = await fetch("/api/generate-question", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "You are an AI assistant specialized in helping create effective customer interview questions. Focus on behavioral questions, avoid hypotheticals, and help users create questions that reveal real user problems and behaviors. Keep responses concise and actionable.",
-                },
-                ...questionBankChatMessages.map((msg) => ({
-                  role: msg.sender === "user" ? "user" : "assistant",
-                  content: msg.text,
-                })),
-                {
-                  role: "user",
-                  content: questionBankChatInput,
-                },
-              ],
-            }),
-          })
-
-          if (!response.ok) {
-            throw new Error("Failed to get AI response")
-          }
-
-          const data = await response.json()
-
-          const assistantMessage = {
-            id: questionBankChatMessages.length + 2,
-            text: data.message || "I'm here to help you create better interview questions!",
-            sender: "assistant",
-            timestamp: new Date().toLocaleTimeString(),
-          }
-
-          setQuestionBankChatMessages((prev) => [...prev, assistantMessage])
-        } catch (error) {
-          console.error("Error getting AI response:", error)
-          const errorMessage = {
-            id: questionBankChatMessages.length + 2,
-            text: "Sorry, I'm having trouble connecting right now. Please try again!",
-            sender: "assistant",
-            timestamp: new Date().toLocaleTimeString(),
-          }
-          setQuestionBankChatMessages((prev) => [...prev, errorMessage])
-        } finally {
-          setQuestionBankIsTyping(false)
-        }
-      }
-
-      const addNewQuestion = () => {
-        setQuestionBankInterviewQuestions((prev) => [...prev, ""])
-      }
-
-      const updateQuestion = (index: number, value: string) => {
-        setQuestionBankInterviewQuestions((prev) => prev.map((q, i) => (i === index ? value : q)))
-      }
-
-      const deleteQuestion = (index: number) => {
-        setQuestionBankInterviewQuestions((prev) => prev.filter((_, i) => i !== index))
-      }
-
-      const evaluateQuestions = async () => {
-        const questions = questionBankInterviewQuestions.filter((q) => q.trim() !== "")
-        if (questions.length === 0) {
-          alert("No questions to evaluate. Please add some questions first.")
-          return
-        }
-
-        setIsEvaluating(true)
-
-        try {
-          const response = await fetch("/api/evaluate-questions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ questions }),
+            body: JSON.stringify({ prompt: newUserMessage.text }),
           })
 
           if (!response.ok) {
@@ -1036,14 +1557,86 @@ export default function ResearchTaskPage() {
           }
 
           const data = await response.json()
-          setEvaluationResults(data.evaluations || [])
-          setShowEvaluation(true)
+          const aiResponse = data.text.trim()
 
-          // Award tokens for first question evaluation (only once)
-          earnTokensForStep("FIRST_QUESTION_EVALUATION")
+          const newAssistantMessage = {
+            id: Date.now(),
+            text: aiResponse,
+            sender: "assistant",
+            timestamp: new Date().toLocaleTimeString(),
+          }
+          setQuestionBankChatMessages((prevMessages) => [...prevMessages, newAssistantMessage])
+
+          // Add the generated question to the interview questions canvas
+          setQuestionBankInterviewQuestions((prevQuestions) => [...prevQuestions, aiResponse])
+        } catch (error) {
+          console.error("Error generating question:", error)
+          const errorAssistantMessage = {
+            id: Date.now(),
+            text: "Sorry, I encountered an error generating a question. Please try again.",
+            sender: "assistant",
+            timestamp: new Date().toLocaleTimeString(),
+          }
+          setQuestionBankChatMessages((prevMessages) => [...prevMessages, errorAssistantMessage])
+        } finally {
+          setQuestionBankIsTyping(false)
+        }
+      }
+
+      const updateQuestion = (index: number, newValue: string) => {
+        const updatedQuestions = [...questionBankInterviewQuestions]
+        updatedQuestions[index] = newValue
+        setQuestionBankInterviewQuestions(updatedQuestions)
+      }
+
+      const deleteQuestion = (index: number) => {
+        const updatedQuestions = [...questionBankInterviewQuestions]
+        updatedQuestions.splice(index, 1)
+        setQuestionBankInterviewQuestions(updatedQuestions)
+      }
+
+      const addNewQuestion = () => {
+        setQuestionBankInterviewQuestions((prevQuestions) => [...prevQuestions, ""])
+      }
+
+      const evaluateQuestions = async () => {
+        setIsEvaluating(true)
+        setShowEvaluation(false) // Hide previous results
+
+        try {
+          const evaluationPromises = questionBankInterviewQuestions.map(async (question) => {
+            const response = await fetch("/api/evaluate-question", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ question }),
+            })
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`)
+            }
+
+            return response.json()
+          })
+
+          const results = await Promise.all(evaluationPromises)
+
+          // Process results to match the expected structure
+          const formattedResults = results.map((data, index) => {
+            return {
+              question: questionBankInterviewQuestions[index],
+              isStrong: data.isStrong,
+              reasoning: data.reasoning,
+              responseType: data.responseType,
+              isGoodForEarlyStage: data.isGoodForEarlyStage,
+              improvement: data.improvement,
+            }
+          })
+
+          setEvaluationResults(formattedResults)
+          setShowEvaluation(true)
         } catch (error) {
           console.error("Error evaluating questions:", error)
-          alert("Error evaluating questions. Please try again.")
+          alert("Failed to evaluate questions. Please try again.")
         } finally {
           setIsEvaluating(false)
         }
@@ -1498,229 +2091,24 @@ export default function ResearchTaskPage() {
                 color: "white",
                 border: "none",
                 borderRadius: "4px",
-                fontSize: "16px",
+                fontSize: "14px",
                 cursor: "pointer",
               }}
             >
-              Save Questions
+              Save Interview Questions
             </button>
           </div>
         </div>
       )
     }
 
-    return <div>Task content not found</div>
+    return <div>Task Content</div>
   }
 
   return (
-    <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#1a1a1a" }}>
-      {/* Top Bar */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "60px",
-          backgroundColor: "white",
-          borderBottom: "1px solid #ccc",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
-          zIndex: 1000,
-        }}
-      >
-        {/* Sidebar Toggle */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{
-            background: "none",
-            border: "none",
-            fontSize: "24px",
-            cursor: "pointer",
-            marginRight: "15px",
-          }}
-        >
-          ☰
-        </button>
-
-        {/* Back Arrow */}
-        <button
-          onClick={() => {
-            const optionsParam = selectedOptions.join(",")
-            window.location.href = `/research/detail?step=${currentSection}&options=${optionsParam}`
-          }}
-          style={{
-            background: "none",
-            border: "none",
-            fontSize: "24px",
-            cursor: "pointer",
-          }}
-        >
-          ←
-        </button>
-
-        {/* Task Title */}
-        <h2 style={{ marginLeft: "20px", fontSize: "18px", color: "#333" }}>{getTaskTitle()}</h2>
-      </div>
-
-      {/* Sidebar */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: sidebarOpen ? 0 : "-300px",
-          width: "300px",
-          height: "100vh",
-          backgroundColor: "#f0f0f0",
-          transition: "left 0.3s ease",
-          zIndex: 999,
-          padding: "20px",
-        }}
-      >
-        {/* Top section - Settings and Profile icons */}
-        <div style={{ marginTop: "0px", marginBottom: "30px" }}>
-          <div style={{ display: "flex", gap: "20px", justifyContent: "right" }}>
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                fontSize: "24px",
-                cursor: "pointer",
-              }}
-            >
-              ⚙️
-            </button>
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                fontSize: "24px",
-                cursor: "pointer",
-              }}
-            >
-              👤
-            </button>
-          </div>
-        </div>
-
-        {/* Six vertically stacked buttons */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <button
-            onClick={() => (window.location.href = "/main")}
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Map
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Command Deck
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Health Check
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Forecast
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Reports
-          </button>
-          <button
-            style={{
-              padding: "15px",
-              fontSize: "16px",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-              width: "100%",
-            }}
-          >
-            Network
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div
-        style={{
-          marginTop: "60px",
-          padding: "40px 20px",
-          color: "#e0e0e0",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "3rem",
-            color: "#666",
-            fontWeight: "bold",
-            marginBottom: "40px",
-            textAlign: "center",
-            letterSpacing: "0.1em",
-          }}
-        >
-          {getTaskTitle().toUpperCase()}
-        </h1>
-
-        {getTaskContent()}
-      </div>
-
-      {/* Overlay for sidebar */}
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.3)",
-            zIndex: 998,
-          }}
-        />
-      )}
+    <div style={{ padding: "20px" }}>
+      <h2 style={{ marginBottom: "20px" }}>{getTaskTitle()}</h2>
+      {getTaskContent()}
 
       {/* History Modal */}
       {showHistory && (
@@ -1729,61 +2117,55 @@ export default function ResearchTaskPage() {
             position: "fixed",
             top: 0,
             left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.8)",
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000,
+            alignItems: "center",
+            zIndex: 1000,
           }}
-          onClick={() => setShowHistory(false)}
         >
           <div
             style={{
-              backgroundColor: "#2a2a2a",
-              color: "#e0e0e0",
-              padding: "40px",
+              backgroundColor: "#333",
+              padding: "20px",
               borderRadius: "8px",
+              width: "80%",
               maxWidth: "800px",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              width: "90%",
+              color: "#fff",
             }}
-            onClick={(e) => e.stopPropagation()}
           >
             <div
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}
             >
-              <h3 style={{ fontSize: "24px", color: "#fff", margin: 0 }}>Analysis History</h3>
+              <h3 style={{ fontSize: "20px" }}>Analysis History</h3>
               <button
                 onClick={() => setShowHistory(false)}
                 style={{
-                  background: "none",
+                  padding: "8px 16px",
+                  backgroundColor: "#6c757d",
+                  color: "white",
                   border: "none",
-                  fontSize: "24px",
-                  color: "#ccc",
+                  borderRadius: "4px",
+                  fontSize: "14px",
                   cursor: "pointer",
                 }}
               >
-                ×
+                Close
               </button>
             </div>
-
-            {analysisHistory.length === 0 ? (
-              <p style={{ color: "#ccc", textAlign: "center", padding: "40px" }}>
-                No previous versions found. Generate your first analysis to start building history.
-              </p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
+            {analysisHistory.length > 0 ? (
+              <ul style={{ listStyleType: "none", padding: 0 }}>
                 {analysisHistory.map((entry, index) => (
-                  <div
+                  <li
                     key={index}
                     style={{
-                      backgroundColor: "#1a1a1a",
-                      padding: "25px",
-                      borderRadius: "8px",
-                      border: "1px solid #444",
+                      marginBottom: "15px",
+                      padding: "15px",
+                      border: "1px solid #555",
+                      borderRadius: "4px",
+                      backgroundColor: "#444",
                     }}
                   >
                     <div
@@ -1791,29 +2173,54 @@ export default function ResearchTaskPage() {
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        marginBottom: "15px",
-                        borderBottom: "1px solid #444",
-                        paddingBottom: "10px",
+                        marginBottom: "10px",
                       }}
                     >
-                      <h4 style={{ fontSize: "16px", color: "#fff", margin: 0 }}>
-                        Version {analysisHistory.length - index}
-                      </h4>
-                      <span style={{ fontSize: "14px", color: "#888" }}>{entry.timestamp}</span>
+                      <span style={{ fontSize: "16px", fontWeight: "bold" }}>Version from: {entry.timestamp}</span>
+                      <button
+                        onClick={() => {
+                          // Restore this version
+                          sessionStorage.setItem("researchOverview", entry.content)
+                          setSavedAnalysis(entry.content)
+                          setShowHistory(false)
+
+                          // Navigate back to detail view
+                          const optionsParam = selectedOptions.join(",")
+                          window.location.href = `/research/detail?step=overview&options=${optionsParam}`
+                        }}
+                        style={{
+                          padding: "8px 16px",
+                          backgroundColor: "#28a745",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "4px",
+                          fontSize: "14px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Restore This Version
+                      </button>
                     </div>
-                    <div
+                    <textarea
+                      readOnly
+                      value={entry.content}
                       style={{
+                        width: "100%",
+                        minHeight: "100px",
+                        padding: "10px",
+                        backgroundColor: "#222",
+                        color: "#ddd",
+                        border: "1px solid #666",
+                        borderRadius: "4px",
                         fontSize: "14px",
-                        lineHeight: "1.6",
-                        color: "#e0e0e0",
-                        whiteSpace: "pre-wrap",
+                        resize: "vertical",
                       }}
-                    >
-                      {entry.content}
-                    </div>
-                  </div>
+                    />
+                  </li>
                 ))}
-              </div>
+              </ul>
+            ) : (
+              <p>No history available.</p>
             )}
           </div>
         </div>
@@ -1826,195 +2233,118 @@ export default function ResearchTaskPage() {
             position: "fixed",
             top: 0,
             left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.9)",
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000,
+            alignItems: "center",
+            zIndex: 1000,
           }}
-          onClick={() => setShowEducationModal(false)}
         >
           <div
             style={{
-              backgroundColor: "#2a2a2a",
-              color: "#e0e0e0",
-              padding: "60px",
+              backgroundColor: "#333",
+              padding: "20px",
               borderRadius: "8px",
-              maxWidth: "900px",
-              width: "90%",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              position: "relative",
+              width: "80%",
+              maxWidth: "800px",
+              color: "#fff",
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
-            <button
-              onClick={() => setShowEducationModal(false)}
-              style={{
-                position: "absolute",
-                top: "20px",
-                right: "20px",
-                background: "none",
-                border: "none",
-                fontSize: "32px", // increased from 24px to 32px to make X button bigger
-                color: "#ccc",
-                cursor: "pointer",
-              }}
-            >
-              ×
-            </button>
-
-            {/* Title and Subtitle - Always Visible */}
-            <div style={{ textAlign: "center", marginBottom: "50px" }}>
-              <h2 style={{ fontSize: "32px", color: "#fff", marginBottom: "15px", fontWeight: "bold" }}>
-                How to Write Great Interview Questions
-              </h2>
-              <p style={{ fontSize: "18px", color: "#ccc", lineHeight: "1.6" }}>
-                Want honest insights? It starts with asking the right questions — here's how.
-              </p>
-            </div>
-
-            {/* Navigation */}
             <div
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}
             >
+              <h3 style={{ fontSize: "20px" }}>How to Write Great Interview Questions</h3>
               <button
-                onClick={() => setCurrentEducationPart(Math.max(1, currentEducationPart - 1))}
-                disabled={currentEducationPart === 1}
+                onClick={() => setShowEducationModal(false)}
                 style={{
-                  padding: "10px 20px",
-                  backgroundColor: currentEducationPart === 1 ? "#444" : "#007bff",
-                  color: currentEducationPart === 1 ? "#888" : "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "16px",
-                  cursor: currentEducationPart === 1 ? "not-allowed" : "pointer",
-                }}
-              >
-                ← Previous
-              </button>
-
-              <div style={{ display: "flex", gap: "10px" }}>
-                {[1, 2, 3].map((part) => (
-                  <button
-                    key={part}
-                    onClick={() => setCurrentEducationPart(part)}
-                    style={{
-                      width: "12px",
-                      height: "12px",
-                      borderRadius: "50%",
-                      border: "none",
-                      backgroundColor: currentEducationPart === part ? "#007bff" : "#666",
-                      cursor: "pointer",
-                    }}
-                  />
-                ))}
-              </div>
-
-              <button
-                onClick={() => {
-                  if (currentEducationPart === 3) {
-                    setShowEducationModal(false)
-                  } else {
-                    setCurrentEducationPart(Math.min(3, currentEducationPart + 1))
-                  }
-                }}
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "#007bff", // removed disabled state since Exit button should always be clickable
+                  padding: "8px 16px",
+                  backgroundColor: "#6c757d",
                   color: "white",
                   border: "none",
                   borderRadius: "4px",
-                  fontSize: "16px",
+                  fontSize: "14px",
                   cursor: "pointer",
                 }}
               >
-                {currentEducationPart === 3 ? "Exit" : "Next →"}
+                Close
               </button>
             </div>
 
-            {/* Content Parts */}
-            <div style={{ minHeight: "300px", fontSize: "16px", lineHeight: "1.8" }}>
-              {currentEducationPart === 1 && (
-                <div>
-                  <h3 style={{ fontSize: "24px", color: "#fff", marginBottom: "30px" }}>📘 Part 1</h3>
-                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                    <li style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start" }}>
-                      <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>•</span>
-                      <span>Focus on learning, not confirming what you hope is true.</span>
-                    </li>
-                    <li style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start" }}>
-                      <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>•</span>
-                      <span>Ask about past behavior, not opinions or guesses about the future.</span>
-                    </li>
-                    <li style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start" }}>
-                      <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>•</span>
-                      <span>Avoid yes/no questions – aim for open-ended ones.</span>
-                    </li>
-                  </ul>
-                </div>
-              )}
+            {currentEducationPart === 1 && (
+              <div>
+                <h4 style={{ fontSize: "18px", marginBottom: "15px" }}>Part 1: Focus on Past Behavior</h4>
+                <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
+                  Instead of asking hypothetical questions, focus on what the user has done in the past. This gives you
+                  real, actionable insights.
+                </p>
+                <button
+                  onClick={() => setCurrentEducationPart(2)}
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: "#007bff",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Next
+                </button>
+              </div>
+            )}
 
-              {currentEducationPart === 2 && (
-                <div>
-                  <h3 style={{ fontSize: "24px", color: "#fff", marginBottom: "30px" }}>📘 Part 2</h3>
-                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                    <li style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start" }}>
-                      <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>•</span>
-                      <span>Don't pitch your idea – you're here to listen, not sell.</span>
-                    </li>
-                    <li style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start" }}>
-                      <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>•</span>
-                      <span>Steer clear of leading questions (e.g. "Would you use this?").</span>
-                    </li>
-                    <li style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start" }}>
-                      <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>•</span>
-                      <span>Don't ask hypotheticals (e.g. "Would you pay for it?").</span>
-                    </li>
-                  </ul>
-                </div>
-              )}
+            {currentEducationPart === 2 && (
+              <div>
+                <h4 style={{ fontSize: "18px", marginBottom: "15px" }}>Part 2: Avoid Leading Questions</h4>
+                <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
+                  Make sure your questions don't suggest the answer. You want to hear the user's genuine thoughts, not
+                  what they think you want to hear.
+                </p>
+                <button
+                  onClick={() => setCurrentEducationPart(3)}
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: "#007bff",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Next
+                </button>
+              </div>
+            )}
 
-              {currentEducationPart === 3 && (
-                <div>
-                  <h3 style={{ fontSize: "24px", color: "#fff", marginBottom: "30px" }}>📘 Part 3</h3>
-                  <div style={{ marginBottom: "30px" }}>
-                    <p style={{ marginBottom: "20px", fontWeight: "bold" }}>Great questions sound like:</p>
-                    <ul style={{ listStyle: "none", padding: 0, margin: 0, marginBottom: "30px" }}>
-                      <li style={{ marginBottom: "15px", display: "flex", alignItems: "flex-start" }}>
-                        <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>–</span>
-                        <span>"Tell me about the last time you…"</span>
-                      </li>
-                      <li style={{ marginBottom: "15px", display: "flex", alignItems: "flex-start" }}>
-                        <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>–</span>
-                        <span>"How do you currently handle…"</span>
-                      </li>
-                      <li style={{ marginBottom: "15px", display: "flex", alignItems: "flex-start" }}>
-                        <span style={{ color: "#007bff", marginRight: "10px", fontSize: "18px" }}>–</span>
-                        <span>"What's the hardest part about…"</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <div>
-                    <p style={{ marginBottom: "15px" }}>Let them talk – silence is powerful.</p>
-                    <p style={{ marginBottom: "15px" }}>
-                      If something's unclear, ask: "Why?" or "Can you tell me more?"
-                    </p>
-                    <p style={{ marginBottom: "15px" }}>
-                      Always take notes or ask to record the conversation (with permission).
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Part indicator */}
-            <div style={{ textAlign: "center", marginTop: "30px", color: "#888", fontSize: "14px" }}>
-              Part {currentEducationPart} of 3
-            </div>
+            {currentEducationPart === 3 && (
+              <div>
+                <h4 style={{ fontSize: "18px", marginBottom: "15px" }}>Part 3: Ask Open-Ended Questions</h4>
+                <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
+                  Encourage detailed responses by asking questions that can't be answered with a simple "yes" or "no".
+                </p>
+                <button
+                  onClick={() => {
+                    setCurrentEducationPart(1)
+                    setShowEducationModal(false)
+                  }}
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: "#28a745",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Finish
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -2026,74 +2356,64 @@ export default function ResearchTaskPage() {
             position: "fixed",
             top: 0,
             left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.9)",
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000,
+            alignItems: "center",
+            zIndex: 1000,
           }}
-          onClick={() => setShowMomTestGame(false)}
         >
           <div
             style={{
-              backgroundColor: "#2a2a2a",
-              color: "#e0e0e0",
-              padding: "60px",
+              backgroundColor: "#333",
+              padding: "20px",
               borderRadius: "8px",
+              width: "80%",
               maxWidth: "800px",
-              width: "90%",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              position: "relative",
+              color: "#fff",
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
-            <button
-              onClick={() => setShowMomTestGame(false)}
-              style={{
-                position: "absolute",
-                top: "20px",
-                right: "20px",
-                background: "none",
-                border: "none",
-                fontSize: "24px",
-                color: "#ccc",
-                cursor: "pointer",
-              }}
+            <div
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}
             >
-              ×
-            </button>
-
-            {/* History Header */}
-            <div style={{ textAlign: "center", marginBottom: "40px" }}>
-              <h2 style={{ fontSize: "28px", color: "#fff", marginBottom: "10px" }}>MomTest Game</h2>
-              <p style={{ fontSize: "16px", color: "#ccc" }}>
-                Test your skills in identifying good and bad interview questions.
-              </p>
+              <h3 style={{ fontSize: "20px" }}>MomTest Game</h3>
+              <button
+                onClick={() => setShowMomTestGame(false)}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#6c757d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
             </div>
 
             {!gameCompleted ? (
               <div>
-                <h3 style={{ fontSize: "24px", color: "#fff", marginBottom: "20px" }}>
+                <h4 style={{ fontSize: "18px", marginBottom: "15px" }}>
                   Question {currentQuestionIndex + 1} of {gameQuestions.length}
-                </h3>
-                <p style={{ fontSize: "18px", color: "#ccc", marginBottom: "30px" }}>
-                  {gameQuestions[currentQuestionIndex]?.question}
+                </h4>
+                <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
+                  {gameQuestions[currentQuestionIndex].question}
                 </p>
 
-                <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
+                <div style={{ display: "flex", gap: "15px", marginBottom: "20px" }}>
                   <button
                     onClick={() => answerQuestion("✅ Good Question")}
                     style={{
-                      padding: "12px 24px",
+                      padding: "10px 20px",
                       backgroundColor: "#28a745",
                       color: "white",
                       border: "none",
                       borderRadius: "4px",
-                      fontSize: "16px",
+                      fontSize: "14px",
                       cursor: "pointer",
                     }}
                   >
@@ -2102,281 +2422,180 @@ export default function ResearchTaskPage() {
                   <button
                     onClick={() => answerQuestion("❌ Bad Question")}
                     style={{
-                      padding: "12px 24px",
+                      padding: "10px 20px",
                       backgroundColor: "#dc3545",
                       color: "white",
                       border: "none",
                       borderRadius: "4px",
-                      fontSize: "16px",
+                      fontSize: "14px",
                       cursor: "pointer",
                     }}
                   >
                     ❌ Bad Question
                   </button>
                 </div>
+
+                {gameQuestions[currentQuestionIndex].userAnswer && (
+                  <div
+                    style={{
+                      backgroundColor: "#1a1a1a",
+                      padding: "15px",
+                      borderRadius: "4px",
+                      border: "1px solid #444",
+                    }}
+                  >
+                    <p style={{ marginBottom: "10px" }}>
+                      Your Answer: {gameQuestions[currentQuestionIndex].userAnswer}
+                    </p>
+                    <p>Explanation: {gameQuestions[currentQuestionIndex].explanation}</p>
+                  </div>
+                )}
               </div>
             ) : (
               <div>
-                <h3 style={{ fontSize: "28px", color: "#fff", marginBottom: "20px", textAlign: "center" }}>
-                  Game Over!
-                </h3>
-                <p style={{ fontSize: "20px", color: "#ccc", marginBottom: "30px", textAlign: "center" }}>
-                  Your Score: {gameScore} / {gameQuestions.length}
+                <h4 style={{ fontSize: "18px", marginBottom: "15px" }}>Game Over!</h4>
+                <p style={{ lineHeight: "1.6", marginBottom: "20px" }}>
+                  You scored {gameScore} out of {gameQuestions.length}.
                 </p>
-
-                <div style={{ marginBottom: "30px" }}>
-                  <h4 style={{ fontSize: "20px", color: "#fff", marginBottom: "15px" }}>Review:</h4>
-                  {gameQuestions.map((q, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        backgroundColor: "#1a1a1a",
-                        padding: "20px",
-                        borderRadius: "6px",
-                        marginBottom: "15px",
-                      }}
-                    >
-                      <p style={{ fontSize: "16px", color: "#fff", marginBottom: "10px" }}>
-                        {index + 1}. {q.question}
-                      </p>
-                      <p style={{ fontSize: "14px", color: "#888", marginBottom: "5px" }}>
-                        Correct Answer: {q.correctAnswer}
-                      </p>
-                      <p style={{ fontSize: "14px", color: "#888", marginBottom: "5px" }}>
-                        Your Answer: {q.userAnswer}
-                      </p>
-                      <p style={{ fontSize: "14px", color: "#888" }}>Explanation: {q.explanation}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{ textAlign: "center" }}>
-                  <button
-                    onClick={() => setShowMomTestGame(false)}
-                    style={{
-                      padding: "12px 24px",
-                      backgroundColor: "#007bff",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Close
-                  </button>
-                </div>
+                <button
+                  onClick={() => setShowMomTestGame(false)}
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: "#007bff",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Close
+                </button>
               </div>
             )}
           </div>
         </div>
       )}
 
+      {/* Game History Modal */}
       {showGameHistory && (
         <div
           style={{
             position: "fixed",
             top: 0,
             left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.9)",
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000,
-          }}
-          onClick={() => {
-            setShowGameHistory(false)
-            setViewingDetailedResults(null)
+            alignItems: "center",
+            zIndex: 1000,
           }}
         >
           <div
             style={{
-              backgroundColor: "#2a2a2a",
-              color: "#e0e0e0",
-              padding: "40px",
+              backgroundColor: "#333",
+              padding: "20px",
               borderRadius: "8px",
-              maxWidth: "600px",
-              width: "90%",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              position: "relative",
+              width: "80%",
+              maxWidth: "800px",
+              color: "#fff",
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
-            <button
-              onClick={() => {
-                if (viewingDetailedResults !== null) {
-                  setViewingDetailedResults(null)
-                } else {
-                  setShowGameHistory(false)
-                  setViewingDetailedResults(null)
-                }
-              }}
-              style={{
-                position: "absolute",
-                top: "20px",
-                right: "20px",
-                background: "none",
-                border: "none",
-                fontSize: "32px",
-                color: "#ccc",
-                cursor: "pointer",
-              }}
+            <div
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}
             >
-              ×
-            </button>
+              <h3 style={{ fontSize: "20px" }}>MomTest Game History</h3>
+              <button
+                onClick={() => setShowGameHistory(false)}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#6c757d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
+            </div>
 
-            {viewingDetailedResults !== null ? (
-              // Detailed Results View
-              <div>
-                <div style={{ textAlign: "center", marginBottom: "30px" }}>
-                  <h2 style={{ fontSize: "28px", color: "#fff", marginBottom: "10px" }}>Detailed Results</h2>
-                  <p style={{ fontSize: "16px", color: "#ccc" }}>
-                    Score: {gameScores[viewingDetailedResults].score} / 10 - {gameScores[viewingDetailedResults].date}
-                  </p>
-                </div>
-
-                {/* Questions and Answers */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                  {gameScores[viewingDetailedResults].results?.map((result, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        backgroundColor: "#1a1a1a",
-                        padding: "20px",
-                        borderRadius: "6px",
-                        border: `2px solid ${result.isCorrect ? "#28a745" : "#dc3545"}`,
-                      }}
-                    >
-                      <p style={{ fontSize: "16px", color: "#fff", marginBottom: "10px", fontWeight: "bold" }}>
-                        Question {index + 1}
-                      </p>
-                      <p style={{ fontSize: "14px", color: "#ccc", marginBottom: "15px" }}>{result.question}</p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <span
-                            style={{
-                              color: result.isCorrect ? "#28a745" : "#dc3545",
-                              fontSize: "18px",
-                            }}
-                          >
-                            {result.isCorrect ? "✓" : "✗"}
-                          </span>
-                          <span style={{ color: "#fff", fontSize: "14px" }}>Your answer: {result.userAnswer}</span>
-                        </div>
-                        {!result.isCorrect && (
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <span style={{ color: "#28a745", fontSize: "18px" }}>✓</span>
-                            <span style={{ color: "#ccc", fontSize: "14px" }}>
-                              Correct answer: {result.correctAnswer}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )) || (
-                    <p style={{ textAlign: "center", color: "#888" }}>No detailed results available for this game.</p>
-                  )}
-                </div>
-
-                {/* Back Button */}
-                <div style={{ textAlign: "center", marginTop: "30px" }}>
-                  <button
-                    onClick={() => setViewingDetailedResults(null)}
+            {gameScores.length > 0 ? (
+              <ul style={{ listStyleType: "none", padding: 0 }}>
+                {gameScores.map((score, index) => (
+                  <li
+                    key={index}
                     style={{
-                      padding: "12px 24px",
-                      backgroundColor: "#6c757d",
-                      color: "white",
-                      border: "none",
+                      marginBottom: "15px",
+                      padding: "15px",
+                      border: "1px solid #555",
                       borderRadius: "4px",
-                      fontSize: "16px",
-                      cursor: "pointer",
+                      backgroundColor: "#444",
                     }}
                   >
-                    Back to Scores
-                  </button>
-                </div>
-              </div>
-            ) : (
-              // Scores List View
-              <div>
-                {/* History Header */}
-                <div style={{ textAlign: "center", marginBottom: "30px" }}>
-                  <h2 style={{ fontSize: "28px", color: "#fff", marginBottom: "10px" }}>Past Scores</h2>
-                  <p style={{ fontSize: "16px", color: "#ccc" }}>Your MomTest Game performance history</p>
-                </div>
-
-                {/* Scores List */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-                  {gameScores.length > 0 ? (
-                    gameScores.map((score, index) => (
-                      <div
-                        key={index}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      <span style={{ fontSize: "16px", fontWeight: "bold" }}>Date: {score.date}</span>
+                      <span style={{ fontSize: "16px" }}>Score: {score.score}</span>
+                      <button
+                        onClick={() => setViewingDetailedResults(index)}
                         style={{
-                          backgroundColor: "#1a1a1a",
-                          padding: "20px",
-                          borderRadius: "6px",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          border: "1px solid #444",
+                          padding: "8px 16px",
+                          backgroundColor: "#007bff",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "4px",
+                          fontSize: "14px",
+                          cursor: "pointer",
                         }}
                       >
-                        <div>
-                          <p style={{ fontSize: "16px", color: "#fff", margin: 0 }}>Score: {score.score} / 10</p>
-                          <p style={{ fontSize: "14px", color: "#888", margin: "5px 0 0 0" }}>{score.date}</p>
-                        </div>
-                        <button
-                          onClick={() => setViewingDetailedResults(index)}
-                          style={{
-                            padding: "8px 16px",
-                            borderRadius: "4px",
-                            fontSize: "14px",
-                            fontWeight: "bold",
-                            backgroundColor: "#28a745", // Changed View button color to light green
-                            color: "#fff",
-                            border: "none",
-                            cursor: "pointer",
-                          }}
-                        >
-                          View
-                        </button>
-                      </div>
-                    ))
-                  ) : (
-                    <div
-                      style={{
-                        textAlign: "center",
-                        padding: "40px",
-                        color: "#888",
-                      }}
-                    >
-                      <p>No game scores yet. Play the MomTest Game to see your results here!</p>
+                        View Details
+                      </button>
                     </div>
-                  )}
-                </div>
 
-                {/* Close Button at Bottom */}
-                <div style={{ textAlign: "center", marginTop: "30px" }}>
-                  <button
-                    onClick={() => setShowGameHistory(false)}
-                    style={{
-                      padding: "12px 24px",
-                      backgroundColor: "#007bff",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
+                    {viewingDetailedResults === index && score.results && (
+                      <div style={{ marginTop: "15px" }}>
+                        <h5 style={{ fontSize: "16px", marginBottom: "10px" }}>Detailed Results:</h5>
+                        <ul style={{ listStyleType: "none", padding: 0 }}>
+                          {score.results.map((result, i) => (
+                            <li
+                              key={i}
+                              style={{
+                                marginBottom: "10px",
+                                padding: "10px",
+                                border: "1px solid #666",
+                                borderRadius: "4px",
+                                backgroundColor: "#555",
+                              }}
+                            >
+                              <p>
+                                Question: {result.question}
+                                <br />
+                                Your Answer: {result.userAnswer}
+                                <br />
+                                Correct Answer: {result.correctAnswer}
+                                <br />
+                                Correct: {result.isCorrect ? "Yes" : "No"}
+                              </p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No game scores available.</p>
             )}
           </div>
         </div>
