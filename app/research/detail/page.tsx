@@ -287,7 +287,6 @@ export default function ResearchDetailPage() {
               <p style={{ marginBottom: "15px" }}>
                 Write your interview questions and get instant feedback to make them stronger.
               </p>
-              <p>X0X0</p>
             </div>
           </GeometricCard>
         </div>
