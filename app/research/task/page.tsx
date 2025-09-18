@@ -385,7 +385,6 @@ export default function ResearchTaskPage() {
                   const assumptionsValidate =
                     (document.getElementById("current-assumptions-validate") as HTMLTextAreaElement)?.value || ""
 
-                  // Combine all sections into final content
                   const finalContent = `Problem Statement: ${problemStatement}\n\nTarget Audience: ${targetAudience}\n\nContext & Trigger: ${contextTrigger}\n\nImpact or Pain: ${impactPain}\n\nAssumptions to Validate: ${assumptionsValidate}`
 
                   // Save to session storage
@@ -481,7 +480,6 @@ export default function ResearchTaskPage() {
                   // The AI response should be a structured analysis with sections
                   const analysis = data.analysis || "Error generating analysis"
 
-                  // Function to extract content between headings
                   const extractSection = (text: string, heading: string) => {
                     const regex = new RegExp(
                       `\\*\\*${heading}[^:]*:\\*\\*\\s*([\\s\\S]*?)(?=\\*\\*[^:]*:\\*\\*|$)`,
@@ -739,7 +737,6 @@ export default function ResearchTaskPage() {
                   const assumptionsValidate = (document.getElementById("assumptions-validate") as HTMLTextAreaElement)
                     .value
 
-                  // Combine all sections into final content
                   const finalContent = `Problem Statement: ${problemStatement}\n\nTarget Audience: ${targetAudience}\n\nContext & Trigger: ${contextTrigger}\n\nImpact or Pain: ${impactPain}\n\nAssumptions to Validate: ${assumptionsValidate}`
 
                   // Save current version to history if it exists
@@ -1224,7 +1221,6 @@ export default function ResearchTaskPage() {
                                   return
                                 }
 
-                                // Create a simple text content for PDF
                                 const pdfContent = `Interview Questions Canvas\n\nGenerated on: ${new Date().toLocaleDateString()}\n\n${questions.map((q, i) => `${i + 1}. ${q}`).join("\n\n")}`
 
                                 // Create a blob and download
@@ -1814,7 +1810,6 @@ export default function ResearchTaskPage() {
                           return
                         }
 
-                        // Create a simple text content for PDF
                         const pdfContent = `Interview Questions Canvas\n\nGenerated on: ${new Date().toLocaleDateString()}\n\n${questions.map((q, i) => `${i + 1}. ${q}`).join("\n\n")}`
 
                         // Create a blob and download
