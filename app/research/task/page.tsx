@@ -1771,7 +1771,7 @@ export default function ResearchTaskPage() {
                 right: "20px",
                 background: "none",
                 border: "none",
-                fontSize: "24px",
+                fontSize: "32px", // increased from 24px to 32px to make X button bigger
                 color: "#ccc",
                 cursor: "pointer",
               }}
@@ -1827,19 +1827,24 @@ export default function ResearchTaskPage() {
               </div>
 
               <button
-                onClick={() => setCurrentEducationPart(Math.min(3, currentEducationPart + 1))}
-                disabled={currentEducationPart === 3}
+                onClick={() => {
+                  if (currentEducationPart === 3) {
+                    setShowEducationModal(false)
+                  } else {
+                    setCurrentEducationPart(Math.min(3, currentEducationPart + 1))
+                  }
+                }}
                 style={{
                   padding: "10px 20px",
-                  backgroundColor: currentEducationPart === 3 ? "#444" : "#007bff",
-                  color: currentEducationPart === 3 ? "#888" : "white",
+                  backgroundColor: "#007bff", // removed disabled state since Exit button should always be clickable
+                  color: "white",
                   border: "none",
                   borderRadius: "4px",
                   fontSize: "16px",
-                  cursor: currentEducationPart === 3 ? "not-allowed" : "pointer",
+                  cursor: "pointer",
                 }}
               >
-                Next →
+                {currentEducationPart === 3 ? "Exit" : "Next →"}
               </button>
             </div>
 
