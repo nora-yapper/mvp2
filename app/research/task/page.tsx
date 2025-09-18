@@ -22,8 +22,15 @@ export default function ResearchTaskPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [gameCompleted, setGameCompleted] = useState(false)
   const [gameScore, setGameScore] = useState(0)
-  const [gameScores, setGameScores] = useState<Array<{ date: string; score: number }>>([])
+  const [gameScores, setGameScores] = useState<
+    Array<{
+      date: string
+      score: number
+      results?: Array<{ question: string; userAnswer: string; correctAnswer: string; isCorrect: boolean }>
+    }>
+  >([])
   const [showGameHistory, setShowGameHistory] = useState(false)
+  const [viewingDetailedResults, setViewingDetailedResults] = useState<number | null>(null)
 
   // Add these state variables for the chatbot and questions functionality
   const [chatMessages, setChatMessages] = useState([
@@ -194,11 +201,33 @@ export default function ResearchTaskPage() {
       setGameScore(score)
       setGameCompleted(true)
 
-      // Save score to session storage
+      // Prepare detailed results for saving
+      const detailedResults = updatedQuestions.map((q) => ({
+        question: q.question,
+        userAnswer: q.userAnswer || "Not answered",
+        correctAnswer: q.correctAnswer,
+        isCorrect: q.userAnswer === q.correctAnswer,
+      }))
+
+      saveGameScore(score, detailedResults)
+
+      // Award tokens for good Mom Test score
+      if (score >= 7) {
+        earnTokensForStep("MOM_TEST_GOOD_SCORE")
+      }
+    }
+  }
+
+  const saveGameScore = (
+    score: number,
+    results?: Array<{ question: string; userAnswer: string; correctAnswer: string; isCorrect: boolean }>,
+  ) => {
+    if (typeof window !== "undefined") {
       const currentScores = JSON.parse(sessionStorage.getItem("momTestScores") || "[]")
       const newScore = {
         date: new Date().toLocaleString(),
         score: score,
+        results: results || [],
       }
       const updatedScores = [newScore, ...currentScores]
       sessionStorage.setItem("momTestScores", JSON.stringify(updatedScores))
@@ -2104,7 +2133,10 @@ export default function ResearchTaskPage() {
             justifyContent: "center",
             zIndex: 2000,
           }}
-          onClick={() => setShowGameHistory(false)}
+          onClick={() => {
+            setShowGameHistory(false)
+            setViewingDetailedResults(null)
+          }}
         >
           <div
             style={{
@@ -2122,7 +2154,10 @@ export default function ResearchTaskPage() {
           >
             {/* Close Button */}
             <button
-              onClick={() => setShowGameHistory(false)}
+              onClick={() => {
+                setShowGameHistory(false)
+                setViewingDetailedResults(null)
+              }}
               style={{
                 position: "absolute",
                 top: "20px",
@@ -2137,76 +2172,155 @@ export default function ResearchTaskPage() {
               ×
             </button>
 
-            {/* History Header */}
-            <div style={{ textAlign: "center", marginBottom: "30px" }}>
-              <h2 style={{ fontSize: "28px", color: "#fff", marginBottom: "10px" }}>Past Scores</h2>
-              <p style={{ fontSize: "16px", color: "#ccc" }}>Your MomTest Game performance history</p>
-            </div>
+            {viewingDetailedResults !== null ? (
+              // Detailed Results View
+              <div>
+                <div style={{ textAlign: "center", marginBottom: "30px" }}>
+                  <h2 style={{ fontSize: "28px", color: "#fff", marginBottom: "10px" }}>Detailed Results</h2>
+                  <p style={{ fontSize: "16px", color: "#ccc" }}>
+                    Score: {gameScores[viewingDetailedResults].score} / 10 - {gameScores[viewingDetailedResults].date}
+                  </p>
+                </div>
 
-            {/* Scores List */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-              {gameScores.length > 0 ? (
-                gameScores.map((score, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      backgroundColor: "#1a1a1a",
-                      padding: "20px",
-                      borderRadius: "6px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      border: "1px solid #444",
-                    }}
-                  >
-                    <div>
-                      <p style={{ fontSize: "16px", color: "#fff", margin: 0 }}>Score: {score.score} / 10</p>
-                      <p style={{ fontSize: "14px", color: "#888", margin: "5px 0 0 0" }}>{score.date}</p>
-                    </div>
+                {/* Questions and Answers */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                  {gameScores[viewingDetailedResults].results?.map((result, index) => (
                     <div
+                      key={index}
                       style={{
-                        padding: "6px 12px",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                        backgroundColor: score.score >= 7 ? "#28a745" : score.score >= 5 ? "#ffc107" : "#dc3545",
-                        color: score.score >= 5 ? "#000" : "#fff",
+                        backgroundColor: "#1a1a1a",
+                        padding: "20px",
+                        borderRadius: "6px",
+                        border: `2px solid ${result.isCorrect ? "#28a745" : "#dc3545"}`,
                       }}
                     >
-                      {score.score >= 7 ? "Great!" : score.score >= 5 ? "Good" : "Practice More"}
+                      <p style={{ fontSize: "16px", color: "#fff", marginBottom: "10px", fontWeight: "bold" }}>
+                        Question {index + 1}
+                      </p>
+                      <p style={{ fontSize: "14px", color: "#ccc", marginBottom: "15px" }}>{result.question}</p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span
+                            style={{
+                              color: result.isCorrect ? "#28a745" : "#dc3545",
+                              fontSize: "18px",
+                            }}
+                          >
+                            {result.isCorrect ? "✓" : "✗"}
+                          </span>
+                          <span style={{ color: "#fff", fontSize: "14px" }}>Your answer: {result.userAnswer}</span>
+                        </div>
+                        {!result.isCorrect && (
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span style={{ color: "#28a745", fontSize: "18px" }}>✓</span>
+                            <span style={{ color: "#ccc", fontSize: "14px" }}>
+                              Correct answer: {result.correctAnswer}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "40px",
-                    color: "#888",
-                  }}
-                >
-                  <p>No game scores yet. Play the MomTest Game to see your results here!</p>
+                  )) || (
+                    <p style={{ textAlign: "center", color: "#888" }}>No detailed results available for this game.</p>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Close Button at Bottom */}
-            <div style={{ textAlign: "center", marginTop: "30px" }}>
-              <button
-                onClick={() => setShowGameHistory(false)}
-                style={{
-                  padding: "12px 24px",
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "16px",
-                  cursor: "pointer",
-                }}
-              >
-                Close
-              </button>
-            </div>
+                {/* Back Button */}
+                <div style={{ textAlign: "center", marginTop: "30px" }}>
+                  <button
+                    onClick={() => setViewingDetailedResults(null)}
+                    style={{
+                      padding: "12px 24px",
+                      backgroundColor: "#6c757d",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Back to Scores
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // Scores List View
+              <div>
+                {/* History Header */}
+                <div style={{ textAlign: "center", marginBottom: "30px" }}>
+                  <h2 style={{ fontSize: "28px", color: "#fff", marginBottom: "10px" }}>Past Scores</h2>
+                  <p style={{ fontSize: "16px", color: "#ccc" }}>Your MomTest Game performance history</p>
+                </div>
+
+                {/* Scores List */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                  {gameScores.length > 0 ? (
+                    gameScores.map((score, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          backgroundColor: "#1a1a1a",
+                          padding: "20px",
+                          borderRadius: "6px",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          border: "1px solid #444",
+                        }}
+                      >
+                        <div>
+                          <p style={{ fontSize: "16px", color: "#fff", margin: 0 }}>Score: {score.score} / 10</p>
+                          <p style={{ fontSize: "14px", color: "#888", margin: "5px 0 0 0" }}>{score.date}</p>
+                        </div>
+                        <button
+                          onClick={() => setViewingDetailedResults(index)}
+                          style={{
+                            padding: "8px 16px",
+                            borderRadius: "4px",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            backgroundColor: "#007bff",
+                            color: "#fff",
+                            border: "none",
+                            cursor: "pointer",
+                          }}
+                        >
+                          View
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div
+                      style={{
+                        textAlign: "center",
+                        padding: "40px",
+                        color: "#888",
+                      }}
+                    >
+                      <p>No game scores yet. Play the MomTest Game to see your results here!</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Close Button at Bottom */}
+                <div style={{ textAlign: "center", marginTop: "30px" }}>
+                  <button
+                    onClick={() => setShowGameHistory(false)}
+                    style={{
+                      padding: "12px 24px",
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
