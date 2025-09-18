@@ -480,26 +480,31 @@ export default function CommandDeck() {
     }
   }
 
-  const handleKanbanDragStart = (task: Task) => {
+  const handleKanbanDragStart = (task: Task, e?: React.DragEvent) => {
     if (activeView !== "Kanban") {
+      console.log("[v0] Kanban drag blocked - not in Kanban view")
       return
+    }
+    if (e) {
+      e.stopPropagation()
     }
     console.log("[v0] Kanban drag started for task:", task.title)
     setDraggedTask(task)
+    setDragOverIndex(null) // Clear List view drag state
   }
 
-  const handleListDragStart = (task: Task) => {
+  const handleListDragStart = (task: Task, e?: React.DragEvent) => {
     if (activeView !== "List") {
+      console.log("[v0] List drag blocked - not in List view")
       return
+    }
+    if (e) {
+      e.stopPropagation()
     }
     console.log("[v0] List drag started for task:", task.title)
     setDraggedTask(task)
+    setDragOverTask(null) // Clear Kanban view drag state
   }
-
-  // const handleDragStart = (task: Task) => {
-  //   console.log("[v0] Drag started for task:", task.title)
-  //   setDraggedTask(task)
-  // }
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -515,6 +520,7 @@ export default function CommandDeck() {
     e.stopPropagation()
 
     if (activeView !== "Kanban") {
+      console.log("[v0] Kanban drop blocked - not in Kanban view")
       return
     }
 
@@ -685,7 +691,7 @@ export default function CommandDeck() {
           <div
             key={task.id}
             draggable
-            onDragStart={() => handleListDragStart(task)} // Use List-specific drag start
+            onDragStart={(e) => handleListDragStart(task, e)} // Pass event for better isolation
             onDragOver={(e) => handleListDragOver(e, index)}
             onDrop={(e) => handleListDrop(e, index)}
             className={`${dragOverIndex === index ? "border-t-2 border-blue-500" : ""}`}
@@ -730,8 +736,10 @@ export default function CommandDeck() {
 
   const handleListDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault()
+    e.stopPropagation()
 
     if (activeView !== "List") {
+      console.log("[v0] List drop blocked - not in List view")
       return
     }
 
@@ -871,7 +879,7 @@ export default function CommandDeck() {
             <Card
               key={task.id}
               draggable
-              onDragStart={() => handleKanbanDragStart(task)} // Use Kanban-specific drag start
+              onDragStart={(e) => handleKanbanDragStart(task, e)} // Pass event for better isolation
               onDragOver={(e) => handleDragOverTask(e, task.id)}
               onDrop={(e) => handleDropOnTask(e, task)}
               className={`bg-gray-800 border-gray-700 mb-4 cursor-move ${
@@ -909,7 +917,7 @@ export default function CommandDeck() {
             <Card
               key={task.id}
               draggable
-              onDragStart={() => handleKanbanDragStart(task)} // Use Kanban-specific drag start
+              onDragStart={(e) => handleKanbanDragStart(task, e)} // Pass event for better isolation
               onDragOver={(e) => handleDragOverTask(e, task.id)}
               onDrop={(e) => handleDropOnTask(e, task)}
               className={`bg-gray-800 border-gray-700 mb-4 cursor-move ${
@@ -947,7 +955,7 @@ export default function CommandDeck() {
             <Card
               key={task.id}
               draggable
-              onDragStart={() => handleKanbanDragStart(task)} // Use Kanban-specific drag start
+              onDragStart={(e) => handleKanbanDragStart(task, e)} // Pass event for better isolation
               onDragOver={(e) => handleDragOverTask(e, task.id)}
               onDrop={(e) => handleDropOnTask(e, task)}
               className={`bg-gray-800 border-gray-700 mb-4 cursor-move ${
