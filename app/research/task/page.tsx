@@ -2155,8 +2155,12 @@ export default function ResearchTaskPage() {
             {/* Close Button */}
             <button
               onClick={() => {
-                setShowGameHistory(false)
-                setViewingDetailedResults(null)
+                if (viewingDetailedResults !== null) {
+                  setViewingDetailedResults(null)
+                } else {
+                  setShowGameHistory(false)
+                  setViewingDetailedResults(null)
+                }
               }}
               style={{
                 position: "absolute",
@@ -2279,7 +2283,7 @@ export default function ResearchTaskPage() {
                             borderRadius: "4px",
                             fontSize: "14px",
                             fontWeight: "bold",
-                            backgroundColor: "#6c757d",
+                            backgroundColor: "#28a745", // Changed View button color to light green
                             color: "#fff",
                             border: "none",
                             cursor: "pointer",
