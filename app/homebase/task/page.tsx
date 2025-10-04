@@ -355,20 +355,46 @@ export default function HomebaseTaskPage() {
                     />
                   </div>
 
-                  {/* Business Model */}
-                  <div className="space-y-2">
-                    <Label htmlFor="businessModel" className="text-gray-300 font-medium">
-                      Business Model
-                    </Label>
-                    <Textarea
-                      id="businessModel"
-                      value={startupInfo.businessModel}
-                      onChange={(e) => handleInputChange("businessModel", e.target.value)}
-                      placeholder="How do you make money?"
-                      rows={3}
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
+                  {/* Revenue Status */}
+<div className="space-y-2">
+  <Label htmlFor="hasRevenue" className="text-gray-300 font-medium">
+    Do you currently generate revenue? *
+  </Label>
+  <Select
+    value={startupInfo.hasRevenue}
+    onValueChange={(value) => handleInputChange("hasRevenue", value)}
+  >
+    <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500">
+      <SelectValue placeholder="Select revenue status" />
+    </SelectTrigger>
+    <SelectContent className="bg-gray-700 border-gray-600 text-white">
+      <SelectItem value="yes">Yes</SelectItem>
+      <SelectItem value="no">No</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
+{/* Business Model - Conditional based on revenue */}
+{startupInfo.hasRevenue && (
+  <div className="space-y-2">
+    <Label htmlFor="businessModel" className="text-gray-300 font-medium">
+      {startupInfo.hasRevenue === "yes" ? "What is your business model?" : "How do you plan to make money?"}
+    </Label>
+    <Textarea
+      id="businessModel"
+      value={startupInfo.businessModel}
+      onChange={(e) => handleInputChange("businessModel", e.target.value)}
+      placeholder={
+        startupInfo.hasRevenue === "yes" 
+          ? "e.g., SaaS subscription, Marketplace commission, Freemium, Advertising..."
+          : "Describe your revenue strategy and monetization plans..."
+      }
+      rows={3}
+      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+    />
+  </div>
+)}
+
                 </div>
 
                 {/* Save Button */}
