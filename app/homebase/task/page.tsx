@@ -269,15 +269,11 @@ export default function HomebaseTaskPage() {
       <SelectValue placeholder="e.g., 1-5, 6-10, 11-25" />
     </SelectTrigger>
     <SelectContent className="bg-gray-700 border-gray-600 text-white">
-      <SelectItem value="1-5">1-5</SelectItem>
+      <SelectItem value="1">1</SelectItem>
+      <SelectItem value="2-3">2-3</SelectItem>
+      <SelectItem value="4-6">4-6</SelectItem>
       <SelectItem value="6-10">6-10</SelectItem>
-      <SelectItem value="11-25">11-25</SelectItem>
-      <SelectItem value="26-50">26-50</SelectItem>
-      <SelectItem value="51-100">51-100</SelectItem>
-      <SelectItem value="101-200">101-200</SelectItem>
-      <SelectItem value="201-500">201-500</SelectItem>
-      <SelectItem value="501-1000">501-1000</SelectItem>
-      <SelectItem value="1000+">1000+</SelectItem>
+      <SelectItem value="10+">10+</SelectItem>
     </SelectContent>
   </Select>
 </div>
