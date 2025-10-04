@@ -172,7 +172,7 @@ export default function HomebaseTaskPage() {
     onValueChange={(value) => handleInputChange("industry", value)}
   >
     <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500">
-      <SelectValue placeholder="e.g., FinTech, HealthTech, SaaS" />
+      <SelectValue placeholder="select" />
     </SelectTrigger>
     <SelectContent className="bg-gray-700 border-gray-600 text-white">
       <SelectItem value="AI & Machine Learning">AI & Machine Learning</SelectItem>
@@ -227,7 +227,7 @@ export default function HomebaseTaskPage() {
     onValueChange={(value) => handleInputChange("stage", value)}
   >
     <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500">
-      <SelectValue placeholder="e.g., Idea, MVP, Growth, Scale" />
+      <SelectValue placeholder="select" />
     </SelectTrigger>
     <SelectContent className="bg-gray-700 border-gray-600 text-white">
       <SelectItem value="Ideation / Discovery">Ideation / Discovery</SelectItem>
