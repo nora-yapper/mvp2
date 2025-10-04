@@ -217,19 +217,30 @@ export default function HomebaseTaskPage() {
 </div>
 
 
-                  {/* Stage */}
-                  <div className="space-y-2">
-                    <Label htmlFor="stage" className="text-gray-300 font-medium">
-                      Stage *
-                    </Label>
-                    <Input
-                      id="stage"
-                      value={startupInfo.stage}
-                      onChange={(e) => handleInputChange("stage", e.target.value)}
-                      placeholder="e.g., Idea, MVP, Growth, Scale"
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
+{/* Stage */}
+<div className="space-y-2">
+  <Label htmlFor="stage" className="text-gray-300 font-medium">
+    Stage *
+  </Label>
+  <Select
+    value={startupInfo.stage}
+    onValueChange={(value) => handleInputChange("stage", value)}
+  >
+    <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500">
+      <SelectValue placeholder="e.g., Idea, MVP, Growth, Scale" />
+    </SelectTrigger>
+    <SelectContent className="bg-gray-700 border-gray-600 text-white">
+      <SelectItem value="Ideation / Discovery">Ideation / Discovery</SelectItem>
+      <SelectItem value="Validation / Pre-MVP">Validation / Pre-MVP</SelectItem>
+      <SelectItem value="MVP Development">MVP Development</SelectItem>
+      <SelectItem value="Early Traction">Early Traction</SelectItem>
+      <SelectItem value="Growth / Product–Market Fit">Growth / Product–Market Fit</SelectItem>
+      <SelectItem value="Scaling">Scaling</SelectItem>
+      <SelectItem value="Maturity / Expansion">Maturity / Expansion</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
 
                   {/* Target Market */}
                   <div className="space-y-2">
