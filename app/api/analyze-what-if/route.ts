@@ -74,8 +74,8 @@ Market: How this affects market positioning and competitive advantage
 Investors: Impact on investor relations and fundraising prospects
 Recommendations: Specific actionable steps to handle this scenario
 
-Format your response as a JSON object with these exact keys: timeline, resources, team, market, investors, recommendations.
-Each value must be a clear, concise paragraph without markdown or special characters.`
+Format your response as a JSON object with these exact keys: timeline, resources, team, market, investors, recommendations. Each value must be a clear, concise paragraph without markdown or special characters.`
+
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
