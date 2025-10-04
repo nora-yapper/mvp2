@@ -288,7 +288,7 @@ export default function HomebaseTaskPage() {
     onValueChange={(value) => handleInputChange("funding", value)}
   >
     <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500">
-      <SelectValue placeholder="e.g., Bootstrapped, Pre-seed, Seed" />
+      <SelectValue placeholder="select" />
     </SelectTrigger>
     <SelectContent className="bg-gray-700 border-gray-600 text-white">
       <SelectItem value="Bootstrapped">Bootstrapped</SelectItem>
