@@ -395,6 +395,38 @@ export default function HomebaseTaskPage() {
   </div>
 )}
 
+{/* Key Accomplishments & Milestones */}
+<div className="space-y-2">
+  <Label htmlFor="accomplishments" className="text-gray-300 font-medium">
+    Key Accomplishments & Milestones
+  </Label>
+  <div className="text-xs text-gray-400 space-y-1 mb-2 p-3 bg-gray-800 rounded-md">
+    <p className="font-semibold text-gray-300">What to include:</p>
+    <ul className="list-disc list-inside space-y-1 ml-2">
+<li>Building your team (co-founders, first hires, advisors)</li>
+<li>Getting your paperwork in order (registering your company, protecting your idea)</li>
+<li>Building your product (early versions, prototypes, improvements)</li>
+<li>Testing with real people (talking to potential customers, running pilots, getting feedback)</li>
+<li>Learning about your market and competition</li>
+<li>Early wins and numbers (first users, customers, or revenue)</li>
+<li>Any programs you've joined (incubators, accelerators, mentorship)</li>
+<li>Awards or competitions you've won</li>
+<li>People or companies you've teamed up with</li>
+<li>Times people have talked about you (blog posts, press, media)</li>
+    </ul>
+  </div>
+  <Textarea
+    id="accomplishments"
+    value={startupInfo.accomplishments}
+    onChange={(e) => handleInputChange("accomplishments", e.target.value)}
+    placeholder="Example: Started working on this in February 2025 with my co-founder who I met at a hackathon. We talked to about 30 people in our target market to understand their problems. Built a working prototype and got 20 friends and colleagues to test it—they loved the core idea but had great feedback on making it easier to use. Officially registered our company in April. Applied to 3 local accelerator programs and got into one that starts next month. We're also finalists in a regional pitch competition happening in two weeks. Still learning as we go, but excited about the progress so far!"
+
+    rows={6}
+    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+  />
+</div>
+
+
                 </div>
 
                 {/* Save Button */}
