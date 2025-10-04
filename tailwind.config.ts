@@ -10,6 +10,12 @@ const config: Config = {
     "*.{js,ts,jsx,tsx,mdx}",
   ],
   prefix: "",
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
+  experimental: {
+    optimizeUniversalDefaults: true,
+  },
   theme: {
     container: {
       center: true,
