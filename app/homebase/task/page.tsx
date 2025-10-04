@@ -266,7 +266,7 @@ export default function HomebaseTaskPage() {
     onValueChange={(value) => handleInputChange("teamSize", value)}
   >
     <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500">
-      <SelectValue placeholder="e.g., 1-5, 6-10, 11-25" />
+      <SelectValue placeholder="select" />
     </SelectTrigger>
     <SelectContent className="bg-gray-700 border-gray-600 text-white">
       <SelectItem value="1">1</SelectItem>
