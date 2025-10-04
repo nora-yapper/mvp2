@@ -8,6 +8,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, Building2, Check, Save } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface StartupInfo {
   companyName: string
@@ -155,19 +162,60 @@ export default function HomebaseTaskPage() {
                     />
                   </div>
 
-                  {/* Industry */}
-                  <div className="space-y-2">
-                    <Label htmlFor="industry" className="text-gray-300 font-medium">
-                      Industry *
-                    </Label>
-                    <Input
-                      id="industry"
-                      value={startupInfo.industry}
-                      onChange={(e) => handleInputChange("industry", e.target.value)}
-                      placeholder="e.g., FinTech, HealthTech, SaaS"
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
+{/* Industry */}
+<div className="space-y-2">
+  <Label htmlFor="industry" className="text-gray-300 font-medium">
+    Industry *
+  </Label>
+  <Select
+    value={startupInfo.industry}
+    onValueChange={(value) => handleInputChange("industry", value)}
+  >
+    <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500">
+      <SelectValue placeholder="e.g., FinTech, HealthTech, SaaS" />
+    </SelectTrigger>
+    <SelectContent className="bg-gray-700 border-gray-600 text-white">
+      <SelectItem value="AI & Machine Learning">AI & Machine Learning</SelectItem>
+      <SelectItem value="Enterprise Software">Enterprise Software</SelectItem>
+      <SelectItem value="SaaS">SaaS</SelectItem>
+      <SelectItem value="HealthTech">HealthTech</SelectItem>
+      <SelectItem value="BioTech">BioTech</SelectItem>
+      <SelectItem value="FinTech">FinTech</SelectItem>
+      <SelectItem value="EdTech">EdTech</SelectItem>
+      <SelectItem value="Energy & CleanTech">Energy & CleanTech</SelectItem>
+      <SelectItem value="Transportation & Mobility">Transportation & Mobility</SelectItem>
+      <SelectItem value="Robotics & Automation">Robotics & Automation</SelectItem>
+      <SelectItem value="Cybersecurity">Cybersecurity</SelectItem>
+      <SelectItem value="Semiconductors & Hardware">Semiconductors & Hardware</SelectItem>
+      <SelectItem value="Food & AgTech">Food & AgTech</SelectItem>
+      <SelectItem value="E-commerce & Retail">E-commerce & Retail</SelectItem>
+      <SelectItem value="Marketing & AdTech">Marketing & AdTech</SelectItem>
+      <SelectItem value="Media & Entertainment">Media & Entertainment</SelectItem>
+      <SelectItem value="Gaming">Gaming</SelectItem>
+      <SelectItem value="Real Estate & PropTech">Real Estate & PropTech</SelectItem>
+      <SelectItem value="Travel & Hospitality">Travel & Hospitality</SelectItem>
+      <SelectItem value="Logistics & Supply Chain">Logistics & Supply Chain</SelectItem>
+      <SelectItem value="Legal Tech">Legal Tech</SelectItem>
+      <SelectItem value="HR Tech & Recruitment">HR Tech & Recruitment</SelectItem>
+      <SelectItem value="Telecom">Telecom</SelectItem>
+      <SelectItem value="Cloud Infrastructure">Cloud Infrastructure</SelectItem>
+      <SelectItem value="Blockchain & Web3">Blockchain & Web3</SelectItem>
+      <SelectItem value="DeepTech">DeepTech</SelectItem>
+      <SelectItem value="IoT">IoT</SelectItem>
+      <SelectItem value="Fashion & Apparel">Fashion & Apparel</SelectItem>
+      <SelectItem value="Beauty & Wellness">Beauty & Wellness</SelectItem>
+      <SelectItem value="Sports & Fitness">Sports & Fitness</SelectItem>
+      <SelectItem value="Home & Living">Home & Living</SelectItem>
+      <SelectItem value="Kids & Family">Kids & Family</SelectItem>
+      <SelectItem value="Music & Audio">Music & Audio</SelectItem>
+      <SelectItem value="Event Tech">Event Tech</SelectItem>
+      <SelectItem value="Social & Community">Social & Community</SelectItem>
+      <SelectItem value="Dating & Relationships">Dating & Relationships</SelectItem>
+      <SelectItem value="Other">Other</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
 
                   {/* Stage */}
                   <div className="space-y-2">
