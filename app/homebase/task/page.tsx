@@ -256,19 +256,32 @@ export default function HomebaseTaskPage() {
                     />
                   </div>
 
-                  {/* Team Size */}
-                  <div className="space-y-2">
-                    <Label htmlFor="teamSize" className="text-gray-300 font-medium">
-                      Team Size
-                    </Label>
-                    <Input
-                      id="teamSize"
-                      value={startupInfo.teamSize}
-                      onChange={(e) => handleInputChange("teamSize", e.target.value)}
-                      placeholder="e.g., 1-5, 6-10, 11-25"
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
+{/* Team Size */}
+<div className="space-y-2">
+  <Label htmlFor="teamSize" className="text-gray-300 font-medium">
+    Team Size
+  </Label>
+  <Select
+    value={startupInfo.teamSize}
+    onValueChange={(value) => handleInputChange("teamSize", value)}
+  >
+    <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500">
+      <SelectValue placeholder="e.g., 1-5, 6-10, 11-25" />
+    </SelectTrigger>
+    <SelectContent className="bg-gray-700 border-gray-600 text-white">
+      <SelectItem value="1-5">1-5</SelectItem>
+      <SelectItem value="6-10">6-10</SelectItem>
+      <SelectItem value="11-25">11-25</SelectItem>
+      <SelectItem value="26-50">26-50</SelectItem>
+      <SelectItem value="51-100">51-100</SelectItem>
+      <SelectItem value="101-200">101-200</SelectItem>
+      <SelectItem value="201-500">201-500</SelectItem>
+      <SelectItem value="501-1000">501-1000</SelectItem>
+      <SelectItem value="1000+">1000+</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
 
                   {/* Funding */}
                   <div className="space-y-2">
