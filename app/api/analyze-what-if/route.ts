@@ -7,25 +7,6 @@ export async function POST(request: NextRequest) {
     if (!scenario) {
       return NextResponse.json({ error: "Scenario is required" }, { status: 400 })
     }
-    const looksInvalid =
-  !scenario ||
-  scenario.trim().length < 8 ||
-  /^[^a-zA-Z0-9]+$/.test(scenario) || // mostly non-alphanumerics
-  /^(?:[a-z])\1{5,}$/i.test(scenario) || // repeated single char
-  /^[a-z0-9\s!?.,-]{0,}$/.test(scenario) === false; // weird unicode spam
-
-if (looksInvalid) {
-  return NextResponse.json({
-    analysis: {
-      timeline: "Invalid scenario: please enter a startup-related what-if scenario.",
-      resources: "Invalid scenario: please enter a startup-related what-if scenario.",
-      team: "Invalid scenario: please enter a startup-related what-if scenario.",
-      market: "Invalid scenario: please enter a startup-related what-if scenario.",
-      investors: "Invalid scenario: please enter a startup-related what-if scenario.",
-      recommendations: "Invalid scenario: please enter a startup-related what-if scenario.",
-    }
-  });
-}
 
     const looksInvalid =
       !scenario ||
@@ -76,7 +57,6 @@ Recommendations: Specific actionable steps to handle this scenario
 
 Format your response as a JSON object with these exact keys: timeline, resources, team, market, investors, recommendations. Each value must be a clear, concise paragraph without markdown or special characters.`
 
-
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -90,18 +70,39 @@ Format your response as a JSON object with these exact keys: timeline, resources
       }),
     })
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`)
+    // Parse body (even on non-200) so we can surface API error messages
+    const rawText = await response.text()
+    let json: any = null
+    try {
+      json = rawText ? JSON.parse(rawText) : null
+    } catch {
+      // leave json as null; we'll fallback to rawText
     }
 
-    const data = await response.json()
-    const text = data.choices[0].message.content
+    if (!response.ok) {
+      const apiMsg = json?.error?.message || rawText || `HTTP ${response.status}`
+      console.error("OpenAI API error:", apiMsg)
+      return NextResponse.json(
+        { error: `OpenAI API error: ${apiMsg}` },
+        { status: 502 } // Bad Gateway: upstream error
+      )
+    }
+
+    const text = json?.choices?.[0]?.message?.content ?? ""
+
+    if (!text) {
+      console.error("OpenAI response missing message content:", json)
+      return NextResponse.json(
+        { error: "OpenAI response did not contain any content." },
+        { status: 502 }
+      )
+    }
 
     // Try to parse as JSON first
     try {
       const analysis = JSON.parse(text)
       return NextResponse.json({ analysis })
-    } catch (parseError) {
+    } catch {
       // If JSON parsing fails, try to extract sections manually
       const sections = {
         timeline: extractSection(text, "Timeline:"),
@@ -123,7 +124,7 @@ Format your response as a JSON object with these exact keys: timeline, resources
 function extractSection(text: string, sectionName: string): string {
   const lines = text.split("\n")
   let capturing = false
-  const content = []
+  const content: string[] = []
 
   for (const line of lines) {
     if (line.includes(sectionName)) {
