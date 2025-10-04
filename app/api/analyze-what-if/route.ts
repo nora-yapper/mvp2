@@ -1,53 +1,61 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-// Simple validator to detect nonsense/off-topic input
-function validateScenario(raw: unknown): { ok: boolean; reason?: string } {
-  if (typeof raw !== "string") return { ok: false, reason: "Scenario must be a string." }
-  const scenario = raw.trim()
-
-  if (scenario.length < 8) return { ok: false, reason: "Too short." }
-  if (/^[^a-zA-Z0-9]+$/.test(scenario)) return { ok: false, reason: "Gibberish characters." }
-  if (/^(?:[a-zA-Z])\1{5,}$/.test(scenario)) return { ok: false, reason: "Repeated character spam." }
-  if (/[\uD800-\uDFFF]/.test(scenario)) return { ok: false, reason: "Unsupported surrogate characters." }
-
-  // Light topicality check for startup context
-  const keywords = [
-    "mvp","runway","fundraise","funding","seed","series a","burn","roadmap","milestone",
-    "churn","activation","retention","pricing","go-to-market","gtm","product","launch",
-    "engineer","team","hiring","budget","ad spend","marketing","sales","pipeline","users",
-    "competitor","market","traction","pilot","investor","kpi","arpu","cac","ltv","feature",
-    "timeline","delay","scope","pivot","incubator","accelerator"
-  ]
-  const sLower = scenario.toLowerCase()
-  const hits = keywords.reduce((acc, k) => acc + (sLower.includes(k) ? 1 : 0), 0)
-  if (hits === 0) return { ok: false, reason: "Not startup-related." }
-
-  return { ok: true }
-}
-
 export async function POST(request: NextRequest) {
   try {
     const { scenario, currentContext } = await request.json()
 
-    // Friendly message if missing
     if (!scenario) {
+      return NextResponse.json({ error: "Scenario is required" }, { status: 400 })
+    }
+    const looksInvalid =
+  !scenario ||
+  scenario.trim().length < 8 ||
+  /^[^a-zA-Z0-9]+$/.test(scenario) || // mostly non-alphanumerics
+  /^(?:[a-z])\1{5,}$/i.test(scenario) || // repeated single char
+  /^[a-z0-9\s!?.,-]{0,}$/.test(scenario) === false; // weird unicode spam
+
+if (looksInvalid) {
+  return NextResponse.json({
+    analysis: {
+      timeline: "Invalid scenario: please enter a startup-related what-if scenario.",
+      resources: "Invalid scenario: please enter a startup-related what-if scenario.",
+      team: "Invalid scenario: please enter a startup-related what-if scenario.",
+      market: "Invalid scenario: please enter a startup-related what-if scenario.",
+      investors: "Invalid scenario: please enter a startup-related what-if scenario.",
+      recommendations: "Invalid scenario: please enter a startup-related what-if scenario.",
+    }
+  });
+}
+
+    const looksInvalid =
+      !scenario ||
+      scenario.trim().length < 8 ||
+      /^[^a-zA-Z0-9]+$/.test(scenario) || // mostly non-alphanumerics
+      /^(?:[a-z])\1{5,}$/i.test(scenario) || // repeated single char
+      /^[a-z0-9\s!?.,-]{0,}$/.test(scenario) === false // weird unicode spam
+
+    if (looksInvalid) {
       return NextResponse.json({
-        ok: false,
-        message: "Please enter a startup-related what-if scenario to generate an analysis.",
+        analysis: {
+          timeline: "Invalid scenario: please enter a startup-related what-if scenario.",
+          resources: "Invalid scenario: please enter a startup-related what-if scenario.",
+          team: "Invalid scenario: please enter a startup-related what-if scenario.",
+          market: "Invalid scenario: please enter a startup-related what-if scenario.",
+          investors: "Invalid scenario: please enter a startup-related what-if scenario.",
+          recommendations: "Invalid scenario: please enter a startup-related what-if scenario.",
+        },
       })
     }
 
-    // Validate scenario text (no errors thrown; just message)
-    const v = validateScenario(scenario)
-    if (!v.ok) {
-      return NextResponse.json({
-        ok: false,
-        message: "Please enter a startup-related what-if scenario to generate an analysis.",
-      })
-    }
+    const prompt = `You are a startup advisor analyzing a what-if scenario.
 
-    // If input looks valid, continue with OpenAI call
-    const prompt = `You are a startup advisor analyzing a what-if scenario. 
+Before you do anything, VALIDATE the "scenario" text. Be strict:
+- If the scenario is gibberish (random characters, repeated nonsense, emoji spam), clearly off-topic (not about startups, products, teams, markets, funding, operations, users), or too vague to analyze (e.g., "idk", "??", "asdf"), DO NOT analyze.
+- If invalid, return a JSON object with these exact keys: timeline, resources, team, market, investors, recommendations.
+  * Set each value to the SAME short message: "Invalid scenario: please enter a startup-related what-if scenario (e.g., 'Launch is delayed by 6 weeks', 'Key engineer leaves', 'Ad budget is cut by 30%', 'Major competitor enters our niche')."
+  * No additional fields. No markdown. No special characters.
+
+If the scenario is valid, proceed with analysis.
 
 Current startup context:
 - Stage: ${currentContext?.stage || "early-stage"}
@@ -57,7 +65,8 @@ Current startup context:
 
 Scenario to analyze: "${scenario}"
 
-Provide a comprehensive analysis covering these areas (respond in plain text without markdown formatting):
+For VALID scenarios only, provide a comprehensive analysis covering these areas (respond in plain text, no markdown, no special characters):
+
 Timeline: How this scenario affects project timelines and milestones
 Resources: Impact on budget, runway, and resource allocation
 Team: Effects on team dynamics, workload, and morale
@@ -65,7 +74,8 @@ Market: How this affects market positioning and competitive advantage
 Investors: Impact on investor relations and fundraising prospects
 Recommendations: Specific actionable steps to handle this scenario
 
-Format your response as a JSON object with these exact keys: timeline, resources, team, market, investors, recommendations. Each value should be a clear, concise paragraph without any markdown formatting or special characters.`
+Format your response as a JSON object with these exact keys: timeline, resources, team, market, investors, recommendations.
+Each value must be a clear, concise paragraph without markdown or special characters.`
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -81,29 +91,17 @@ Format your response as a JSON object with these exact keys: timeline, resources
     })
 
     if (!response.ok) {
-      // Still keep a friendly, non-error response shape for the UI
-      return NextResponse.json({
-        ok: false,
-        message: "Something went wrong while analyzing the scenario.",
-      })
+      throw new Error(`OpenAI API error: ${response.status}`)
     }
 
     const data = await response.json()
-    const text = data.choices?.[0]?.message?.content ?? ""
+    const text = data.choices[0].message.content
 
-    // If the model ever says “invalid scenario”, keep UX consistent
-    if (/invalid scenario/i.test(text)) {
-      return NextResponse.json({
-        ok: false,
-        message: "Please enter a startup-related what-if scenario to generate an analysis.",
-      })
-    }
-
-    // Try to parse JSON first
+    // Try to parse as JSON first
     try {
       const analysis = JSON.parse(text)
-      return NextResponse.json({ ok: true, analysis })
-    } catch {
+      return NextResponse.json({ analysis })
+    } catch (parseError) {
       // If JSON parsing fails, try to extract sections manually
       const sections = {
         timeline: extractSection(text, "Timeline:"),
@@ -113,22 +111,19 @@ Format your response as a JSON object with these exact keys: timeline, resources
         investors: extractSection(text, "Investors:"),
         recommendations: extractSection(text, "Recommendations:"),
       }
-      return NextResponse.json({ ok: true, analysis: sections })
+
+      return NextResponse.json({ analysis: sections })
     }
   } catch (error) {
     console.error("What-if analysis error:", error)
-    // Friendly, consistent response
-    return NextResponse.json({
-      ok: false,
-      message: "Something went wrong while analyzing the scenario.",
-    })
+    return NextResponse.json({ error: "Failed to analyze scenario" }, { status: 500 })
   }
 }
 
 function extractSection(text: string, sectionName: string): string {
   const lines = text.split("\n")
   let capturing = false
-  const content: string[] = []
+  const content = []
 
   for (const line of lines) {
     if (line.includes(sectionName)) {
@@ -159,7 +154,7 @@ function extractSection(text: string, sectionName: string): string {
   }
 
   return (
-    content.join(" ").replace(/\*\*\*/g, "").replace(/\*\*/g, "").replace(/\*/g, "").trim() ||
+    content.join(" ").replace(/\*\*/g, "").replace(/\*/g, "").trim() ||
     `Analysis for ${sectionName.replace(":", "")} will be provided based on your specific scenario.`
   )
 }
