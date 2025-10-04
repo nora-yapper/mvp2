@@ -19,7 +19,7 @@ function validateScenario(raw: unknown): { ok: boolean; reason?: string } {
     "timeline","delay","scope","pivot","incubator","accelerator"
   ]
   const sLower = scenario.toLowerCase()
-  const hits = keywords.reduce((acc,k)=> acc + (sLower.includes(k) ? 1 : 0), 0)
+  const hits = keywords.reduce((acc, k) => acc + (sLower.includes(k) ? 1 : 0), 0)
   if (hits === 0) return { ok: false, reason: "Not startup-related." }
 
   return { ok: true }
@@ -29,14 +29,19 @@ export async function POST(request: NextRequest) {
   try {
     const { scenario, currentContext } = await request.json()
 
+    // Friendly message if missing
     if (!scenario) {
-      return NextResponse.json({ message: "Please enter a startup-related what-if scenario to generate an analysis." })
+      return NextResponse.json({
+        ok: false,
+        message: "Please enter a startup-related what-if scenario to generate an analysis.",
+      })
     }
 
-    // Validate scenario text
+    // Validate scenario text (no errors thrown; just message)
     const v = validateScenario(scenario)
     if (!v.ok) {
       return NextResponse.json({
+        ok: false,
         message: "Please enter a startup-related what-if scenario to generate an analysis.",
       })
     }
@@ -76,24 +81,30 @@ Format your response as a JSON object with these exact keys: timeline, resources
     })
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`)
+      // Still keep a friendly, non-error response shape for the UI
+      return NextResponse.json({
+        ok: false,
+        message: "Something went wrong while analyzing the scenario.",
+      })
     }
 
     const data = await response.json()
     const text = data.choices?.[0]?.message?.content ?? ""
 
-    // If the model ever says “invalid scenario”, just send the same friendly message
+    // If the model ever says “invalid scenario”, keep UX consistent
     if (/invalid scenario/i.test(text)) {
       return NextResponse.json({
+        ok: false,
         message: "Please enter a startup-related what-if scenario to generate an analysis.",
       })
     }
 
-    // Try to parse JSON
+    // Try to parse JSON first
     try {
       const analysis = JSON.parse(text)
-      return NextResponse.json({ analysis })
+      return NextResponse.json({ ok: true, analysis })
     } catch {
+      // If JSON parsing fails, try to extract sections manually
       const sections = {
         timeline: extractSection(text, "Timeline:"),
         resources: extractSection(text, "Resources:"),
@@ -102,11 +113,15 @@ Format your response as a JSON object with these exact keys: timeline, resources
         investors: extractSection(text, "Investors:"),
         recommendations: extractSection(text, "Recommendations:"),
       }
-      return NextResponse.json({ analysis: sections })
+      return NextResponse.json({ ok: true, analysis: sections })
     }
   } catch (error) {
     console.error("What-if analysis error:", error)
-    return NextResponse.json({ message: "Something went wrong while analyzing the scenario." })
+    // Friendly, consistent response
+    return NextResponse.json({
+      ok: false,
+      message: "Something went wrong while analyzing the scenario.",
+    })
   }
 }
 
@@ -137,12 +152,14 @@ function extractSection(text: string, sectionName: string): string {
       ) {
         break
       }
-      if (line.trim()) content.push(line.trim())
+      if (line.trim()) {
+        content.push(line.trim())
+      }
     }
   }
 
   return (
-    content.join(" ").replace(/\*\*/g, "").replace(/\*/g, "").trim() ||
+    content.join(" ").replace(/\*\*\*/g, "").replace(/\*\*/g, "").replace(/\*/g, "").trim() ||
     `Analysis for ${sectionName.replace(":", "")} will be provided based on your specific scenario.`
   )
 }
