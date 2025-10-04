@@ -278,21 +278,35 @@ export default function HomebaseTaskPage() {
   </Select>
 </div>
 
+{/* Funding */}
+<div className="space-y-2">
+  <Label htmlFor="funding" className="text-gray-300 font-medium">
+    Funding Status
+  </Label>
+  <Select
+    value={startupInfo.funding}
+    onValueChange={(value) => handleInputChange("funding", value)}
+  >
+    <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500">
+      <SelectValue placeholder="e.g., Bootstrapped, Pre-seed, Seed" />
+    </SelectTrigger>
+    <SelectContent className="bg-gray-700 border-gray-600 text-white">
+      <SelectItem value="Bootstrapped">Bootstrapped</SelectItem>
+      <SelectItem value="Pre-seed">Pre-seed</SelectItem>
+      <SelectItem value="Seed">Seed</SelectItem>
+      <SelectItem value="Series A">Series A</SelectItem>
+      <SelectItem value="Series B">Series B</SelectItem>
+      <SelectItem value="Series C">Series C</SelectItem>
+      <SelectItem value="Series D">Series D</SelectItem>
+      <SelectItem value="Series E+">Series E+</SelectItem>
+      <SelectItem value="Bridge Round">Bridge Round</SelectItem>
+      <SelectItem value="Growth Equity">Growth Equity</SelectItem>
+      <SelectItem value="Pre-IPO">Pre-IPO</SelectItem>
+      <SelectItem value="Public">Public</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
 
-                  {/* Funding */}
-                  <div className="space-y-2">
-                    <Label htmlFor="funding" className="text-gray-300 font-medium">
-                      Funding Status
-                    </Label>
-                    <Input
-                      id="funding"
-                      value={startupInfo.funding}
-                      onChange={(e) => handleInputChange("funding", e.target.value)}
-                      placeholder="e.g., Bootstrapped, Pre-seed, Seed"
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
 
                 {/* Full-width fields */}
                 <div className="mt-6 space-y-6">
