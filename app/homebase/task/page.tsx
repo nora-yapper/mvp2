@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Building2, Check, Save } from "lucide-react"
+import { ArrowLeft, Building2, Check, Save, ChevronDown, ChevronUp } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -27,6 +27,8 @@ interface StartupInfo {
   businessModel: string
   teamSize: string
   funding: string
+  hasRevenue: string
+  accomplishments: string
 }
 
 export default function HomebaseTaskPage() {
@@ -46,10 +48,13 @@ export default function HomebaseTaskPage() {
     businessModel: "",
     teamSize: "",
     funding: "",
+    hasRevenue: "",
+    accomplishments: "",
   })
 
   const [isSaved, setIsSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [showExample, setShowExample] = useState(false)
 
   useEffect(() => {
     // Load existing startup info
@@ -115,24 +120,6 @@ export default function HomebaseTaskPage() {
                 <span className="font-medium">Startup Information</span>
               </div>
             </div>
-            <Button onClick={handleSave} disabled={isLoading} className="bg-blue-600 hover:bg-blue-700 text-white">
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Saving...
-                </>
-              ) : isSaved ? (
-                <>
-                  <Check className="h-4 w-4 mr-2" />
-                  Saved
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save
-                </>
-              )}
-            </Button>
           </div>
         </div>
 
@@ -146,7 +133,8 @@ export default function HomebaseTaskPage() {
                   Tell us about your startup to get personalized insights and recommendations.
                 </p>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="p-6 space-y-6">
+                {/* Two-column grid for basic fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Company Name */}
                   <div className="space-y-2">
@@ -216,7 +204,6 @@ export default function HomebaseTaskPage() {
                     </Select>
                   </div>
 
-
                   {/* Stage */}
                   <div className="space-y-2">
                     <Label htmlFor="stage" className="text-gray-300 font-medium">
@@ -240,7 +227,6 @@ export default function HomebaseTaskPage() {
                       </SelectContent>
                     </Select>
                   </div>
-
 
                   {/* Target Market */}
                   <div className="space-y-2">
@@ -306,129 +292,166 @@ export default function HomebaseTaskPage() {
                       </SelectContent>
                     </Select>
                   </div>
-
-
-                {/* Full-width fields */}
-                <div className="mt-6 space-y-6">
-                  {/* Description */}
-                  <div className="space-y-2">
-                    <Label htmlFor="description" className="text-gray-300 font-medium">
-                      Company Description *
-                    </Label>
-                    <Textarea
-                      id="description"
-                      value={startupInfo.description}
-                      onChange={(e) => handleInputChange("description", e.target.value)}
-                      placeholder="Briefly describe what your company does..."
-                      rows={3}
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  {/* Key Problem */}
-                  <div className="space-y-2">
-                    <Label htmlFor="keyProblem" className="text-gray-300 font-medium">
-                      Key Problem You're Solving
-                    </Label>
-                    <Textarea
-                      id="keyProblem"
-                      value={startupInfo.keyProblem}
-                      onChange={(e) => handleInputChange("keyProblem", e.target.value)}
-                      placeholder="What problem does your startup solve?"
-                      rows={3}
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  {/* Solution */}
-                  <div className="space-y-2">
-                    <Label htmlFor="solution" className="text-gray-300 font-medium">
-                      Your Solution
-                    </Label>
-                    <Textarea
-                      id="solution"
-                      value={startupInfo.solution}
-                      onChange={(e) => handleInputChange("solution", e.target.value)}
-                      placeholder="How does your product/service solve the problem?"
-                      rows={3}
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  {/* Revenue Status */}
-                  <div className="space-y-2">
-                    <Label htmlFor="hasRevenue" className="text-gray-300 font-medium">
-                      Do you currently generate revenue? *
-                    </Label>
-                    <Select
-                      value={startupInfo.hasRevenue}
-                      onValueChange={(value) => handleInputChange("hasRevenue", value)}
-                    >
-                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500">
-                        <SelectValue placeholder="Select revenue status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-700 border-gray-600 text-white">
-                        <SelectItem value="yes">Yes</SelectItem>
-                        <SelectItem value="no">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Business Model - Conditional based on revenue */}
-                  {startupInfo.hasRevenue && (
-                    <div className="space-y-2">
-                      <Label htmlFor="businessModel" className="text-gray-300 font-medium">
-                        {startupInfo.hasRevenue === "yes" ? "What is your business model?" : "How do you plan to make money?"}
-                      </Label>
-                      <Textarea
-                        id="businessModel"
-                        value={startupInfo.businessModel}
-                        onChange={(e) => handleInputChange("businessModel", e.target.value)}
-                        placeholder={
-                          startupInfo.hasRevenue === "yes" 
-                            ? "e.g., SaaS subscription, Marketplace commission, Freemium, Advertising..."
-                            : "Describe your revenue strategy and monetization plans..."
-                        }
-                        rows={3}
-                        className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-                      />
-                    </div>
-                    )}
-
-                    {/* Key Accomplishments & Milestones */}
-                    <div className="space-y-2">
-                      <Label htmlFor="accomplishments" className="text-gray-300 font-medium">
-                        Key Accomplishments & Milestones
-                      </Label>
-                      <div className="text-xs text-gray-400 space-y-1 mb-2 p-3 bg-gray-800 rounded-md">
-                        <p className="font-semibold text-gray-300">What to include:</p>
-                        <ul className="list-disc list-inside space-y-1 ml-2">
-                    <li>Building your team (co-founders, first hires, advisors)</li>
-                    <li>Getting your paperwork in order (registering your company, protecting your idea)</li>
-                    <li>Building your product (early versions, prototypes, improvements)</li>
-                    <li>Testing with real people (talking to potential customers, running pilots, getting feedback)</li>
-                    <li>Learning about your market and competition</li>
-                    <li>Early wins and numbers (first users, customers, or revenue)</li>
-                    <li>Any programs you've joined (incubators, accelerators, mentorship)</li>
-                    <li>Awards or competitions you've won</li>
-                    <li>People or companies you've teamed up with</li>
-                    <li>Times people have talked about you (blog posts, press, media)</li>
-                        </ul>
-                      </div>
-                      <Textarea
-                        id="accomplishments"
-                        value={startupInfo.accomplishments}
-                        onChange={(e) => handleInputChange("accomplishments", e.target.value)}
-                        placeholder="Example: Started working on this in February 2025 with my co-founder who I met at a hackathon. We talked to about 30 people in our target market to understand their problems. Built a working prototype and got 20 friends and colleagues to test it—they loved the core idea but had great feedback on making it easier to use. Officially registered our company in April. Applied to 3 local accelerator programs and got into one that starts next month. We're also finalists in a regional pitch competition happening in two weeks. Still learning as we go, but excited about the progress so far!"
-
-                        rows={6}
-                        className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-                      />
-                    </div>
                 </div>
 
-                {/* Save Button */}
-                <div className="mt-8 flex justify-end">
+                {/* Full-width fields */}
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label htmlFor="description" className="text-gray-300 font-medium">
+                    Company Description *
+                  </Label>
+                  <Textarea
+                    id="description"
+                    value={startupInfo.description}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
+                    placeholder="Briefly describe what your company does..."
+                    rows={3}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Key Problem */}
+                <div className="space-y-2">
+                  <Label htmlFor="keyProblem" className="text-gray-300 font-medium">
+                    Key Problem You're Solving
+                  </Label>
+                  <Textarea
+                    id="keyProblem"
+                    value={startupInfo.keyProblem}
+                    onChange={(e) => handleInputChange("keyProblem", e.target.value)}
+                    placeholder="What problem does your startup solve?"
+                    rows={3}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Solution */}
+                <div className="space-y-2">
+                  <Label htmlFor="solution" className="text-gray-300 font-medium">
+                    Your Solution
+                  </Label>
+                  <Textarea
+                    id="solution"
+                    value={startupInfo.solution}
+                    onChange={(e) => handleInputChange("solution", e.target.value)}
+                    placeholder="How does your product/service solve the problem?"
+                    rows={3}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Revenue Status */}
+                <div className="space-y-2">
+                  <Label htmlFor="hasRevenue" className="text-gray-300 font-medium">
+                    Do you currently generate revenue? *
+                  </Label>
+                  <Select
+                    value={startupInfo.hasRevenue}
+                    onValueChange={(value) => handleInputChange("hasRevenue", value)}
+                  >
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500">
+                      <SelectValue placeholder="Select revenue status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-700 border-gray-600 text-white">
+                      <SelectItem value="yes">Yes</SelectItem>
+                      <SelectItem value="no">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Business Model - Conditional based on revenue */}
+                {startupInfo.hasRevenue && (
+                  <div className="space-y-2">
+                    <Label htmlFor="businessModel" className="text-gray-300 font-medium">
+                      {startupInfo.hasRevenue === "yes"
+                        ? "What is your business model?"
+                        : "How do you plan to make money?"}
+                    </Label>
+                    <Textarea
+                      id="businessModel"
+                      value={startupInfo.businessModel}
+                      onChange={(e) => handleInputChange("businessModel", e.target.value)}
+                      placeholder={
+                        startupInfo.hasRevenue === "yes"
+                          ? "e.g., SaaS subscription, Marketplace commission, Freemium, Advertising..."
+                          : "Describe your revenue strategy and monetization plans..."
+                      }
+                      rows={3}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                )}
+
+                {/* Key Accomplishments & Milestones */}
+                <div className="space-y-4">
+                  <Label htmlFor="accomplishments" className="text-gray-300 font-medium">
+                    Key Accomplishments & Milestones
+                  </Label>
+
+                  {/* Textarea at top */}
+                  <Textarea
+                    id="accomplishments"
+                    value={startupInfo.accomplishments}
+                    onChange={(e) => handleInputChange("accomplishments", e.target.value)}
+                    placeholder="Share what you've achieved so far..."
+                    rows={6}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                  />
+
+                  {/* Two-column layout: hints on left, example on right */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Left column: Hints */}
+                    <div className="text-xs text-gray-400 space-y-1 p-3 bg-gray-800 rounded-md">
+                      <p className="font-semibold text-gray-300 mb-2">What to include:</p>
+                      <ul className="list-disc list-inside space-y-1 ml-2">
+                        <li>Building your team (co-founders, first hires, advisors)</li>
+                        <li>Getting your paperwork in order (registering your company, protecting your idea)</li>
+                        <li>Building your product (early versions, prototypes, improvements)</li>
+                        <li>Testing with real people (talking to potential customers, running pilots, getting feedback)</li>
+                        <li>Learning about your market and competition</li>
+                        <li>Early wins and numbers (first users, customers, or revenue)</li>
+                        <li>Any programs you've joined (incubators, accelerators, mentorship)</li>
+                        <li>Awards or competitions you've won</li>
+                        <li>People or companies you've teamed up with</li>
+                        <li>Times people have talked about you (blog posts, press, media)</li>
+                      </ul>
+                    </div>
+
+                    {/* Right column: Example with toggle */}
+                    <div className="space-y-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowExample(!showExample)}
+                        className="text-gray-300 hover:text-white hover:bg-gray-700 w-full justify-between"
+                      >
+                        <span className="font-semibold">Example</span>
+                        {showExample ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </Button>
+
+                      {showExample && (
+                        <div className="text-xs text-gray-400 p-3 bg-gray-800 rounded-md">
+                          <p className="leading-relaxed">
+                            Started working on this in February 2025 with my co-founder who I met at a hackathon. We
+                            talked to about 30 people in our target market to understand their problems. Built a working
+                            prototype and got 20 friends and colleagues to test it—they loved the core idea but had
+                            great feedback on making it easier to use. Officially registered our company in April.
+                            Applied to 3 local accelerator programs and got into one that starts next month. We're also
+                            finalists in a regional pitch competition happening in two weeks. Still learning as we go,
+                            but excited about the progress so far!
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Save Button at bottom */}
+                <div className="pt-4 flex justify-end border-t border-gray-700">
                   <Button
                     onClick={handleSave}
                     disabled={isLoading}
